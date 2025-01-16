@@ -4,6 +4,15 @@
 ### 소개
 <b>AI 사회자가 진행하는 화상 회의 서비스</b>
 
+### 🙋🏻🙋🏻‍♀️ 구성원 
+
+<center>
+
+| 김선주 | 김민재 | 배지해 | 이송희 | 제동균 | 하시윤 |
+|:---:|---|---|---|---|---|
+|![Image](https://github.com/user-attachments/assets/d7a496c6-1df8-4621-a434-525f2ea21b3f)|![Image](https://github.com/user-attachments/assets/72c2b340-fd61-4aa4-80ea-8499f0644871)|![Image](https://github.com/user-attachments/assets/feb4f986-02da-4c21-9856-267184a11adf)|![Image](https://github.com/user-attachments/assets/4f27dd3f-98f5-4f64-a380-3850d05f54b4)|![image]()|![image]()|![image]()|
+
+</center>
 
 <b>[1/13 ~ 1/17]</b>
 | 날짜  | 전체 | 김선주 | 김민재 | 배지해 | 이송희 | 제동균 | 하시윤 |
