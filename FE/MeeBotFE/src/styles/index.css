@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Pretendard-Regular';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'STUNNING-Bd';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2410-2@1.0/STUNNING-Bd.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@keyframes gradient {
+  0% { background-position: 0%; }
+  100% { background-position: 400%; }
+}
+
+html {
+  scroll-snap-type: y mandatory;
+}
+
+.feature-section {
+  scroll-snap-align: start;
+}
