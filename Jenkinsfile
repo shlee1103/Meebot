@@ -18,12 +18,12 @@ pipeline {
             }
         }
 
-        stage('Move to BE/MeebotBE Directory') {
+        stage('Move to BE/MeeBotBE Directory') {
             steps {
-                dir('BE/MeebotBE') {
+                dir('BE/MeeBotBE') {
                     script {
                         sh """
-                        echo "Moving to BE/MeebotBE directory..."
+                        echo "Moving to BE/MeeBotBE directory..."
                         pwd
                         ls -la
                         """
@@ -34,7 +34,7 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             steps {
-                dir('BE/MeebotBE') {
+                dir('BE/MeeBotBE') {
                     script {
                         sh """
                         chmod +x ./gradlew
@@ -136,11 +136,11 @@ pipeline {
 
                 sh '''
                 curl -X POST -H "Content-Type: application/json" -d '{
-                    "text": "## :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
+                    "text": "### :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
                 }' "$WEBHOOK_BE"
 
                 curl -X POST -H "Content-Type: application/json" -d '{
-                    "text": "## :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
+                    "text": "### :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
                 }' "$WEBHOOK_FE"
                 '''
             }
