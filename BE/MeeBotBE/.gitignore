@@ -1,0 +1,65 @@
+# IntelliJ 관련 설정 파일 제외
+.idea/
+*.iml
+*.iws
+*.ipr
+/.run/
+
+# OS별 시스템 파일 제외
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 빌드 결과물 제외
+/build/
+out/
+
+# Gradle 관련 파일 제외
+.gradle/
+
+# 로그 및 임시 파일 제외
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# 환경 변수 파일 (보안 관련)
+.env
+*.key
+*.pem
+*.crt
+
+# Java 관련
+*.class
+*.jar
+*.war
+*.ear
+
+# Lombok 캐시 파일
+.lombok/
+
+# Maven 관련 (사용하지 않는다면 추가 가능)
+.mvn/
+target/
+
+# Node.js 관련 (프론트엔드 사용 시)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Docker 관련
+.dockerignore
+docker-compose.override.yml
+
+# 기타 IDE 관련
+.vscode/
+*.swp
+*.swo
+
+gradle.properties
+application-local.yml
+
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar

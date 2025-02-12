@@ -1,0 +1,49 @@
+# OpenVidu
+openvidu:
+  url: ${OPENVIDU_URL}
+  secret: ${OPENVIDU_SECRET}
+
+# JPA
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # DB
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# OAuth
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID}
+    pw: ${GOOGLE_CLIENT_PASSWORD}
+
+# JWT
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+
+# CLOVA
+clova:
+  api:
+    api-key: ${CLOVA_API_KEY}
+    request-id: ${CLOVA_REQUEST_ID}
+
+# LOGIN LOCALHOST URL
+app:
+  base:
+    url: ${APP_BASE_URL}
+
+# OpenAI
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+  model: gpt-4o-mini
