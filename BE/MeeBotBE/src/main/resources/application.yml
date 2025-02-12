@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: local
   jpa:
     hibernate:
       ddl-auto: update
