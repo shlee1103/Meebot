@@ -85,7 +85,7 @@ module.exports = {
           fontWeight: '500',
         }],
         'lg-lg': ['1.5rem', { // 24px
-          lineHeight: '120%',
+          lineHeight: '130%',
           fontWeight: '500',
         }],
         'p-lg': ['1.25rem', { // 20px
@@ -126,7 +126,7 @@ module.exports = {
           fontWeight: '500',
         }],
         'lg-md': ['1.375rem', { // 22px
-          lineHeight: '120%',
+          lineHeight: '130%',
           fontWeight: '500',
         }],
         'p-md': ['1.125rem', { // 18px
@@ -167,7 +167,7 @@ module.exports = {
           fontWeight: '500',
         }],
         'lg-sm': ['1.25rem', { // 20px
-          lineHeight: '120%',
+          lineHeight: '130%',
           fontWeight: '500',
         }],
         'p-sm': ['1rem', { // 16px
