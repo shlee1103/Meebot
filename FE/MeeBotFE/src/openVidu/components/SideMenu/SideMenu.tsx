@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
 import participantsOn from "../../assets/images/participants_on.png";
 import participantsOff from "../../assets/images/participants_off.png";
 import chatOn from "../../assets/images/chat_on.png";
@@ -8,6 +6,7 @@ import chatOff from "../../assets/images/chat_off.png";
 import scriptOn from "../../assets/images/script_on.png";
 import scriptOff from "../../assets/images/script_off.png";
 import SideMenuContent from "./SideMenuContent";
+import MeetingTitle from "./MeetingTitle";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
 
 interface SideMenuProps {
@@ -20,7 +19,7 @@ interface SideMenuProps {
   currentScript: string;
   myUserName: string;
   messages: {
-    sender: {name: string, image: string};
+    sender: { name: string; image: string };
     text?: string;
     summary?: string;
     question?: string;
@@ -33,6 +32,7 @@ interface SideMenuProps {
 type TabType = "participants" | "chat" | "script";
 
 const SideMenu: React.FC<SideMenuProps> = ({
+  sessionId,
   isMenuOpen,
   participants: participantsList,
   onToggle,
@@ -44,7 +44,6 @@ const SideMenu: React.FC<SideMenuProps> = ({
   sendMessage,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("participants");
-  const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
 
   return (
     <>
@@ -59,7 +58,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
       >
         {/* 헤더 */}
         <div className="h-14 flex items-center justify-between px-4">
-          <span className="font-pretendard text-lg font-semibold">{meetingTitle}</span>
+          <MeetingTitle roomCode={sessionId} />
         </div>
 
         {/* 탭 버튼 */}

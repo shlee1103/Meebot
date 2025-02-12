@@ -6,8 +6,8 @@ import { useChatGPT } from "../hooks/useChatGPT";
 import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresentationControls";
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
-import { useSelector } from "react-redux";
-import { RootState } from "../../stores/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, setPresentationTime, setQnATime, updateSpeakersOrder } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
@@ -30,6 +30,7 @@ const VideoConference: React.FC = () => {
   const isCameraEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
   const isOpen = useRef(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     session,
@@ -123,7 +124,7 @@ const VideoConference: React.FC = () => {
           if (data.action === CONFERENCE_STATUS.CONFERENCE_ENDED) {
             resetPresenter();
             setConferenceStatus(data.action);
-            setShowFinishPopup(true)
+            setShowFinishPopup(true);
             return;
           }
         }
@@ -134,6 +135,16 @@ const VideoConference: React.FC = () => {
         if (event.data) {
           const { text } = JSON.parse(event.data);
           setCurrentScript(text);
+        }
+      });
+
+      // 프레젠테이션 세팅에 대한 시그널
+      session.on("signal:presentation-setting", (event) => {
+        if (event.data) {
+          const { qnaTime, presentationTime, presentersOrder } = JSON.parse(event.data);
+          dispatch(setQnATime(qnaTime));
+          dispatch(setPresentationTime(presentationTime));
+          dispatch(updateSpeakersOrder(presentersOrder));
         }
       });
     }
@@ -181,6 +192,7 @@ const VideoConference: React.FC = () => {
           <div className="flex justify-between items-center p-2 flex-none">
             <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
             <ControlBar
+              session={session}
               isScreenShared={isScreenShared}
               isHandRaised={isHandRaised}
               toggleAudio={toggleAudio}
@@ -222,11 +234,8 @@ const VideoConference: React.FC = () => {
         </div>
       )}
 
-      <FinishPopup
-        isOpen={showFinishPopup}
-        onClose={() => setShowFinishPopup(false)}
-      ></FinishPopup>
-    </div >
+      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
+    </div>
   );
 };
 
