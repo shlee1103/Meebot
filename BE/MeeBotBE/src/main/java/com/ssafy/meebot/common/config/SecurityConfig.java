@@ -40,7 +40,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/sessions/**", "/api/sessions/{sessionId}/connections", "/",
                                     "/api/rooms/**", "/api/participants/**", "/api/summaries/**",
                                     "/api/users/**", "/api/v1/oauth2/google/**", "/api/v1/refresh",
-                                    "/api/v1/logout", "/api/chatgpt/**").permitAll()
+                                    "/api/v1/logout", "/api/chatgpt/**", "/api/notion/login", "/api/auth/notion/callback").permitAll()
 
                             .anyRequest().authenticated();
                 })

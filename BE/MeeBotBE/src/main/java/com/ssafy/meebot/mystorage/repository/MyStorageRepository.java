@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface MyStorageRepository extends JpaRepository<FinalSummary, Integer> {
 
-    @Query("SELECT new com.ssafy.meebot.mystorage.dto.MyStorageResponse(r.roomCode, r.roomTitle, f.content, r.createdAt) " +
+    @Query("SELECT new com.ssafy.meebot.mystorage.dto.MyStorageResponse(r.roomCode, r.roomTitle, f.notionContent, f.pdfLink, r.createdAt) " +
             "FROM FinalSummary f " +
             "JOIN f.room r " +
             "WHERE r.roomCode IN (" +
