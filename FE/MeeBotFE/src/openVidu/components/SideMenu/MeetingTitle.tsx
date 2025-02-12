@@ -5,11 +5,13 @@ import { updateRoomTitle } from "../../../apis/room";
 import { RootState, setMeetingTitle } from "../../../stores/store";
 import { Sm, Mn } from "../../../components/common/Typography";
 import information from "../../assets/images/information.png";
+import { Session } from "openvidu-browser";
 
 interface MeetingTitleProps {
   roomCode: string;
+  session: Session | undefined;
 }
-const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode }) => {
+const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
   const role = useSelector((state: RootState) => state.role.role);
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const { presentationTime, qnaTime, presentersOrder } = useSelector((state: RootState) => state.presentation);
@@ -46,6 +48,13 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode }) => {
   const handleClickEditText = async () => {
     try {
       await updateRoomTitle(roomCode, meetingTitle);
+      if (session) {
+        session.signal({
+          data: JSON.stringify({ title: meetingTitle }),
+          type: "meeting-title-change",
+        });
+      }
+      dispatch(setMeetingTitle(meetingTitle));
       setIsOpen(false);
       setHasBeenChanged(false);
     } catch {

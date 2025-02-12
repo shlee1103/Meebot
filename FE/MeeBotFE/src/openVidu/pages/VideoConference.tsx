@@ -7,7 +7,7 @@ import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresenta
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, setPresentationTime, setQnATime, updateSpeakersOrder } from "../../stores/store";
+import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
@@ -147,6 +147,14 @@ const VideoConference: React.FC = () => {
           dispatch(updateSpeakersOrder(presentersOrder));
         }
       });
+
+      // 방제목 변경 시그널
+      session.on("signal:meeting-title-change", (event) => {
+        if (event.data) {
+          const { title } = JSON.parse(event.data);
+          dispatch(setMeetingTitle(title));
+        }
+      });
     }
   }, [session, turnOffAudio, myUserName]);
 
@@ -210,6 +218,7 @@ const VideoConference: React.FC = () => {
           </div>
         </div>
         <SideMenu
+          session={session}
           isMenuOpen={isMenuOpen}
           sessionId={sessionId as string}
           participants={participants}

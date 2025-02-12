@@ -8,9 +8,11 @@ import scriptOff from "../../assets/images/script_off.png";
 import SideMenuContent from "./SideMenuContent";
 import MeetingTitle from "./MeetingTitle";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
+import { Session } from "openvidu-browser";
 
 interface SideMenuProps {
   isMenuOpen: boolean;
+  session: Session | undefined;
   sessionId: string;
   participants: ParticipantInfo[];
   onToggle: () => void;
@@ -33,6 +35,7 @@ type TabType = "participants" | "chat" | "script";
 
 const SideMenu: React.FC<SideMenuProps> = ({
   sessionId,
+  session,
   isMenuOpen,
   participants: participantsList,
   onToggle,
@@ -58,7 +61,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
       >
         {/* 헤더 */}
         <div className="h-14 flex items-center justify-between px-5">
-          <MeetingTitle roomCode={sessionId} />
+          <MeetingTitle roomCode={sessionId} session={session} />
         </div>
 
         {/* 탭 버튼 */}
