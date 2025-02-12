@@ -52,6 +52,19 @@ module.exports = {
         slideInRight: {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' }
+        },
+        sdb: {
+          "0%": { transform: "rotate(-45deg) translate(0, 0)", opacity: "0" },
+          "50%": { opacity: "1" },
+          "100%": { transform: "rotate(-45deg) translate(-20px, 20px)", opacity: "0" },
+        },
+        floating: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        blink: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' }
         }
       },
       animation: {
@@ -60,7 +73,10 @@ module.exports = {
         pulse: 'pulse 2s ease-in-out infinite',
         shake: "shake 0.3s ease-in-out",
         'slide-out-left': 'slideOutLeft 0.5s ease-in-out forwards',
-        'slide-in-right': 'slideInRight 0.5s ease-in-out forwards'
+        'slide-in-right': 'slideInRight 0.5s ease-in-out forwards',
+        sdb: "sdb 1.5s infinite",
+        floating: 'floating 2s ease-in-out infinite',
+        blink: 'blink 1s ease-in-out infinite'
       },
       fontSize: {
         // Desktop (lg)
@@ -89,7 +105,7 @@ module.exports = {
           fontWeight: '500',
         }],
         'p-lg': ['1.25rem', { // 20px
-          lineHeight: '120%',
+          lineHeight: '130%',
           letterSpacing: '0em',
           fontWeight: '400',
         }],
@@ -130,7 +146,7 @@ module.exports = {
           fontWeight: '500',
         }],
         'p-md': ['1.125rem', { // 18px
-          lineHeight: '120%',
+          lineHeight: '130%',
           letterSpacing: '0em',
           fontWeight: '400',
         }],
@@ -171,7 +187,7 @@ module.exports = {
           fontWeight: '500',
         }],
         'p-sm': ['1rem', { // 16px
-          lineHeight: '120%',
+          lineHeight: '130%',
           letterSpacing: '0em',
           fontWeight: '400',
         }],
@@ -197,6 +213,10 @@ module.exports = {
       textShadow: {
         sm: "0 1px 2px rgba(0, 0, 0, 0.25)",
       },
+      translate: {
+        'full': '100%',
+        '-full': '-100%'
+      }
     },
   },
   plugins: [
