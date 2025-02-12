@@ -197,24 +197,35 @@ const VideoConference: React.FC = () => {
           <div className="flex-none">
             <MeeU speech={speech} />
           </div>
-          <div className="flex justify-between items-center p-2 flex-none">
-            <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
-            <ControlBar
-              session={session}
-              isScreenShared={isScreenShared}
-              isHandRaised={isHandRaised}
-              toggleAudio={toggleAudio}
-              toggleVideo={toggleVideo}
-              startScreenShare={startScreenShare}
-              stopScreenShare={stopScreenShare}
-              toggleHand={toggleHand}
-              leaveSession={leaveSession}
-              participants={participants}
-              conferenceStatus={conferenceStatus}
-              amISharing={amISharing}
-              currentPresenter={currentPresenter}
-            />
-            <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={handleStatusChange} />
+
+          {/* 컨트롤 영역 */}
+          <div className="flex items-center p-2 flex-none">
+            {/* 좌측 */}
+            <div className="flex-1">
+              <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
+            </div>
+            {/* 중앙 */}
+            <div className="flex-1 flex justify-center">
+              <ControlBar
+                session={session}
+                isScreenShared={isScreenShared}
+                isHandRaised={isHandRaised}
+                toggleAudio={toggleAudio}
+                toggleVideo={toggleVideo}
+                startScreenShare={startScreenShare}
+                stopScreenShare={stopScreenShare}
+                toggleHand={toggleHand}
+                leaveSession={leaveSession}
+                participants={participants}
+                conferenceStatus={conferenceStatus}
+                amISharing={amISharing}
+                currentPresenter={currentPresenter}
+              />
+            </div>
+            {/* 우측 */}
+            <div className="flex-1 flex justify-end">
+              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={handleStatusChange} />
+            </div>
           </div>
         </div>
         <SideMenu
