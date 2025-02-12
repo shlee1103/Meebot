@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateRoomTitle } from "../../../apis/room";
 import { RootState, setMeetingTitle } from "../../../stores/store";
 import { Sm, Mn } from "../../../components/common/Typography";
+import information from "../../assets/images/information.png";
 
 interface MeetingTitleProps {
   roomCode: string;
@@ -15,7 +16,6 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode }) => {
   const dispatch = useDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
-  //   const [newTitle, setNewTitle] = useState(meetingTitle);
   const [hasBeenChanged, setHasBeenChanged] = useState(false);
 
   const titleRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,6 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode }) => {
   const handleClose = () => {
     setIsOpen(false);
     setHasBeenChanged(false);
-    // dispatch(setMeetingTitle(newTitle));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +46,6 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode }) => {
   const handleClickEditText = async () => {
     try {
       await updateRoomTitle(roomCode, meetingTitle);
-      //   setNewTitle(meetingTitle);
       setIsOpen(false);
       setHasBeenChanged(false);
     } catch {
@@ -58,8 +56,11 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode }) => {
   return (
     <div ref={titleRef} className="relative w-full max-w-none rounded font-pretendard text-lg font-semibold">
       {!isOpen ? (
-        <div onClick={() => setIsOpen(true)} className="font-pretendard py-[6px] cursor-pointer">
-          <Sm className="text-[#FFFFFF]">{meetingTitle}</Sm>
+        <div className="flex items-center justify-between">
+          <div onClick={() => setIsOpen(true)} className="font-pretendard py-[6px] cursor-pointer">
+            <Sm className="text-[#FFFFFF]">{meetingTitle}</Sm>
+          </div>
+          <img src={information} alt="Information" onClick={() => setIsOpen(true)} className="w-5 h-5 cursor-pointer" />
         </div>
       ) : (
         <div className="rounded-t shadow-sm text-white bg-[#171F2E] text-base font-normal relative">

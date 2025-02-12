@@ -10,7 +10,7 @@ interface ParticipantProps {
 
 const Participant: React.FC<ParticipantProps> = ({ participantsList }) => {
   return (
-    <div className="flex flex-col gap-2 p-4">
+    <div className="flex flex-col gap-2 py-4">
       {participantsList.map((participant, i) => (
         <div key={i} className="flex items-center gap-3">
           <img className="w-8 h-8 rounded-full" src={participant.image} alt="profile-image" />

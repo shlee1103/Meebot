@@ -57,13 +57,13 @@ const SideMenu: React.FC<SideMenuProps> = ({
           w-[380px]`}
       >
         {/* 헤더 */}
-        <div className="h-14 flex items-center justify-between px-4">
+        <div className="h-14 flex items-center justify-between px-5">
           <MeetingTitle roomCode={sessionId} />
         </div>
 
         {/* 탭 버튼 */}
         {/* 참여자 버튼 */}
-        <div className="flex justify-between px-4 py-2">
+        <div className="flex justify-between px-5 py-2">
           <button
             onClick={() => setActiveTab("participants")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
