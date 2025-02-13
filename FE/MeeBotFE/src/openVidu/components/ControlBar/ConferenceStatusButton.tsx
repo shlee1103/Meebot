@@ -1,4 +1,4 @@
-import { CONFERENCE_STATUS } from "../hooks/usePresentationControls";
+import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
 import { useState, useEffect } from "react";
 
 interface ConferenceStatusButtonProps {

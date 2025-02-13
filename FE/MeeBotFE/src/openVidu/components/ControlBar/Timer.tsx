@@ -1,10 +1,10 @@
 import React from "react";
 import { Session } from "openvidu-browser";
-import { useTimer } from "../hooks/useTimer";
+import { useTimer } from "../../hooks/useTimer";
 import { useSelector } from "react-redux";
-import { RootState } from "../../stores/store";
+import { RootState } from "../../../stores/store";
 import styled from 'styled-components';
-import { CONFERENCE_STATUS } from '../hooks/usePresentationControls';
+import { CONFERENCE_STATUS } from '../../hooks/usePresentationControls';
 
 interface TimerProps {
   conferenceStatus: string;

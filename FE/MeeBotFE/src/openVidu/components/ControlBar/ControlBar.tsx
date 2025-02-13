@@ -1,18 +1,18 @@
-import { usePresentationSetting } from "../hooks/usePresentationSetting";
-import { PresentationModal } from "./PresentationModal";
-import { CONFERENCE_STATUS } from "../hooks/usePresentationControls";
+import { usePresentationSetting } from "../../hooks/usePresentationSetting";
+import { PresentationModal } from "../VideoConferenceSetting/PresentationModal";
+import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
 import { useSelector } from "react-redux";
-import { RootState } from "../../stores/store";
-import { ParticipantInfo } from "../hooks/useOpenVidu";
-import LeavingConfirmPopup from "./Popup/LeavingConfirmPopup";
+import { RootState } from "../../../stores/store";
+import { ParticipantInfo } from "../../hooks/useOpenVidu";
+import LeavingConfirmPopup from "../Popup/LeavingConfirmPopup";
 import { useState } from "react";
 import { Session } from "openvidu-browser";
 import ConferenceStatusButton from "./ConferenceStatusButton";
 import Timer from "./Timer";
-import MicToggle from './ControlButton/MicToggle';
-import VideoToggle from './ControlButton/VideoToggle';
-import ControlButton from "./ControlButton/ControlButton";
-import HandButton from "./ControlButton/HandButton";
+import MicToggle from './MicToggle';
+import VideoToggle from './VideoToggle';
+import ControlButton from "./ControlButton";
+import HandButton from "./HandButton";
 
 interface ControlBarProps {
   isScreenShared: boolean;

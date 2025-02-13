@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
-import ControlBar from "../components/ControlBar";
+import ControlBar from "../components/ControlBar/ControlBar";
 import SideMenu from "../components/SideMenu/SideMenu";
 import MeeU from "../components/MeeU";
 import { ToastContainer } from "react-toastify";
