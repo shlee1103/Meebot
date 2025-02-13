@@ -45,7 +45,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
         className={`fixed top-0 right-0 bg-[#111827] text-white transform
           transition-transform duration-300 ease-in-out 
           ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
-          w-[380px] h-[calc(100vh-80px)] rounded-l-2xl border-l border-[#1f2937]
+          w-[380px] h-[calc(100vh-88px)] rounded-l-2xl border-l border-[#1f2937]
           shadow-[-4px_0px_15px_-5px_rgba(0,0,0,0.3)]`}
       >
         {/* 발표회 정보 */}
