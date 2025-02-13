@@ -20,6 +20,13 @@ import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
 
+interface QnAMessage {
+  sender: string;
+  text: string;
+  timestamp: number;
+  order: number;
+}
+
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -56,7 +63,7 @@ const VideoConference: React.FC = () => {
 
   const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
-  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript } = usePresentationControls(
+  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript, setQnaMessages } = usePresentationControls(
     session,
     myUserName as string
   );
@@ -117,6 +124,7 @@ const VideoConference: React.FC = () => {
           // 관리자가 질의 응답 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.QNA_COMPLETED) {
             setConferenceStatus(data.action);
+            turnOffAudio(); // 모든 참가자의 마이크 OFF
           }
 
           // 관리자가 발표회 종료 버튼 눌렀을 때
@@ -134,6 +142,29 @@ const VideoConference: React.FC = () => {
         if (event.data) {
           const { text } = JSON.parse(event.data);
           setCurrentScript(text);
+        }
+      });
+
+
+      // QnA 트랜스크립트 이벤트 리스너 수정
+      session.on('signal:qna-transcript', (event) => {
+        if (event.data) {
+          const messageData: QnAMessage = JSON.parse(event.data);
+
+          setQnaMessages(prev => {
+            const isExists = prev.some(msg =>
+              msg.text === messageData.text &&
+              msg.sender === messageData.sender &&
+              msg.timestamp === messageData.timestamp // 중복 체크 강화
+            );
+
+            // 자신이 보낸 메시지이거나 다른 사람이 보낸 메시지인 경우 모두 저장 (중복 방지)
+            if (!isExists) {
+              return [...prev, messageData].sort((a, b) => a.order - b.order);
+            }
+
+            return prev; // 중복된 경우 저장하지 않음
+          });
         }
       });
     }
