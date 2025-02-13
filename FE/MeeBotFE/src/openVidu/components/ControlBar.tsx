@@ -139,10 +139,13 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const popupContent = getPopupContent();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 py-2">
-      <div className="flex items-center px-3">
-        <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
-        <div className="flex items-center justify-center gap-7 px-6 py-3 rounded-[5%] absolute left-1/2 transform -translate-x-1/2">
+    <div className="fixed bottom-0 left-0 right-0">
+      <div className="flex items-center justify-between px-4">
+        <div className="flex w-[300px]">
+          <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
+        </div>
+        
+        <div className="flex-1 flex items-center justify-center gap-7 py-4">
           <MicToggle
             isEnabled={isAudioEnabled}
             onToggle={toggleAudio}
@@ -183,13 +186,14 @@ const ControlBar: React.FC<ControlBarProps> = ({
             </ControlButton>
           </div>
         </div>
-        <div className="absolute right-4 hidden lg:block">
+
+        <div className="flex w-[300px] justify-end">
           {role === "admin" && (
-            <div className="flex flex-row items-center gap-4">
+            <div className="hidden lg:flex flex-row items-center gap-4">
               <button
                 onClick={toggleModal}
                 className="px-4 py-3 rounded-xl bg-[#1f2937] hover:bg-[#374151] 
-                  text-white text-sm font-medium transition-all duration-300 
+                  text-white text-md font-medium transition-all duration-300 
                   border border-[#374151] hover:border-[#4B5563]
                   flex items-center gap-2 shadow-lg hover:shadow-xl font-pretendard"
               >
