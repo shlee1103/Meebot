@@ -7,7 +7,7 @@ import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresenta
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, addRaisedHand, removeRaisedHand, clearRaisedHands,addMessage } from "../../stores/store";
+import { RootState, addRaisedHand, removeRaisedHand, clearRaisedHands, addMessage } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
@@ -147,11 +147,49 @@ const VideoConference: React.FC = () => {
         }
       });
 
-      // 실시간 스크립트 이벤트 처리
+      // 문장 구분을 위한 헬퍼 함수 추가
+      const formatScript = (text: string) => {
+        const patterns = [
+          // 1. 문장 부호로 끝나는 경우
+          /([^.!?]+[.!?]+)\s*/g,  // 기본 문장 부호
+
+          // 2. 존댓말 종결어미
+          /([^습니다]+(습니다|습니까))\s*/g,     // ~습니다, ~습니까
+          /([^세요]+(세요|시죠|게요))\s*/g,      // ~세요, ~시죠, ~게요
+          /([^합니다]+(합니다|할게요))\s*/g,     // ~합니다, ~할게요
+
+          // 3. 발표 상황의 '~다' 종결어미
+          /([^겠]+(겠습니다|하겠습니다))\s*/g,     // "발표하겠습니다", "말씀드리겠습니다"
+          /([^니다]+(입니다|였습니다))\s*/g,      // "결과입니다", "내용이었습니다"
+          /([^다]+(드리겠습니다|드렸습니다))\s*/g, // "설명드리겠습니다", "말씀드렸습니다"
+          /([^다]+(됩니다|되겠습니다))\s*/g,      // "마무리됩니다", "진행되겠습니다"
+          /([^다]+(보겠습니다|봤습니다))\s*/g,    // "살펴보겠습니다", "확인해봤습니다"
+          /([^다]+(시작하겠습니다|마치겠습니다))\s*/g, // "시작하겠습니다", "마치겠습니다"
+          /([^니다]+(있습니다|없습니다))\s*/g,    // "존재합니다", "필요없습니다"
+          /([^니다]+(나타냅니다|보여줍니다))\s*/g, // "나타냅니다", "보여줍니다"
+
+          // 4. 의문형 종결어미
+          /([^나요]+(나요|까요|려고요|ㄹ까요))\s*/g,  // ~나요, ~까요, ~려고요, ~ㄹ까요
+
+          // 5. 기타 종결어미
+          /([^요]+(요|죠|네요))\s*/g,                 // ~요, ~죠, ~네요
+        ];
+
+        let formattedText = text;
+        patterns.forEach(pattern => {
+          formattedText = formattedText.replace(pattern, '$1\n');
+        });
+
+        return formattedText.trim();
+      };
+
+      // 시그널 핸들러 수정
       session.on("signal:stt-transcript", (event) => {
         if (event.data) {
           const { text } = JSON.parse(event.data);
-          setCurrentScript(text);
+          // 포맷팅된 텍스트로 설정
+          const formattedText = formatScript(text);
+          setCurrentScript(formattedText);
         }
       });
 
