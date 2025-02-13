@@ -12,9 +12,7 @@ import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
 import SideMenu from "../components/SideMenu/SideMenu";
-import Timer from "../components/Timer";
 import MeeU from "../components/MeeU";
-import ConferenceStatusButton from "../components/ConferenceStatusButton";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -167,8 +165,9 @@ const VideoConference: React.FC = () => {
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
+
       <div className="flex flex-1 min-h-0">
-        <div className={`flex flex-col transition-all duration-300 ease-in-out ${isMenuOpen ? "w-[calc(100%-380px)]" : "w-full"}`}>
+        <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "w-[calc(100%-380px)]" : "w-full"}`}>
           <div className="flex-none">
             <ParticipantsList subscribers={subscribers} currentSlide={currentSlide} isMenuOpen={isMenuOpen} handlePrevSlide={handlePrevSlide} handleNextSlide={handleNextSlide} />
           </div>
@@ -178,47 +177,44 @@ const VideoConference: React.FC = () => {
           <div className="flex-none">
             <MeeU speech={speech} />
           </div>
-          <div className="flex justify-between items-center p-2 flex-none">
-            <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
-            <ControlBar
-              isScreenShared={isScreenShared}
-              isHandRaised={isHandRaised}
-              toggleAudio={toggleAudio}
-              toggleVideo={toggleVideo}
-              startScreenShare={startScreenShare}
-              stopScreenShare={stopScreenShare}
-              toggleHand={toggleHand}
-              leaveSession={leaveSession}
-              participants={participants}
-              conferenceStatus={conferenceStatus}
-              amISharing={amISharing}
-              currentPresenter={currentPresenter}
-            />
-            <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={handleStatusChange} />
-          </div>
         </div>
-        <SideMenu
-          isMenuOpen={isMenuOpen}
-          sessionId={sessionId as string}
-          participants={participants}
-          onToggle={() => setIsMenuOpen(!isMenuOpen)}
-          conferenceStatus={conferenceStatus}
-          currentPresenter={currentPresenter}
-          currentScript={currentScript}
-          myUserName={myUserName as string}
-          messages={messages}
-          sendMessage={sendMessage}
-        />
+        <div className="pb-20">
+          <SideMenu
+            isMenuOpen={isMenuOpen}
+            sessionId={sessionId as string}
+            participants={participants}
+            onToggle={() => setIsMenuOpen(!isMenuOpen)}
+            conferenceStatus={conferenceStatus}
+            currentPresenter={currentPresenter}
+            currentScript={currentScript}
+            myUserName={myUserName as string}
+            messages={messages}
+            sendMessage={sendMessage}
+          />
+        </div>
       </div>
 
-      {/* LoadingOverlay를 마지막에 렌더링하여 최상단에 위치하도록 함 */}
+      <ControlBar
+        isScreenShared={isScreenShared}
+        isHandRaised={isHandRaised}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+        startScreenShare={startScreenShare}
+        stopScreenShare={stopScreenShare}
+        toggleHand={toggleHand}
+        leaveSession={leaveSession}
+        participants={participants}
+        conferenceStatus={conferenceStatus}
+        amISharing={amISharing}
+        currentPresenter={currentPresenter}
+        session={session}
+        isSpeaking={isSpeaking}
+        changeConferenceStatus={handleStatusChange}
+      />
+
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] pointer-events-auto">
-          <LoadingOverlay
-            onLoadingComplete={() => {
-              setIsLoading(false);
-            }}
-          />
+          <LoadingOverlay onLoadingComplete={() => setIsLoading(false)} />
         </div>
       )}
 
@@ -226,7 +222,7 @@ const VideoConference: React.FC = () => {
         isOpen={showFinishPopup}
         onClose={() => setShowFinishPopup(false)}
       ></FinishPopup>
-    </div >
+    </div>
   );
 };
 
