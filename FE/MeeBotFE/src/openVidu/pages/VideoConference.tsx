@@ -146,7 +146,6 @@ const VideoConference: React.FC = () => {
         }
       });
 
-
       // QnA 트랜스크립트 이벤트 리스너 수정
       session.on('signal:qna-transcript', (event) => {
         if (event.data) {

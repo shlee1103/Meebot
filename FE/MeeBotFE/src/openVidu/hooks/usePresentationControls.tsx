@@ -6,7 +6,6 @@ import { addMessage, incrementGlobalOrder, resetQnA, RootState, setCurrentPresen
 import { interimSummarize, QnARequest, saveQnA } from "../../apis/chatGpt";
 import ChatMEEU from "../../assets/chatMeeU.png"
 import { ParticipantInfo } from "./useOpenVidu";
-import { glob } from "fs";
 
 const formatDate = (date: Date) => {
   const year = date.getFullYear();
