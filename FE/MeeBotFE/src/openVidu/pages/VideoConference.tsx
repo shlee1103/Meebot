@@ -179,11 +179,39 @@ const VideoConference: React.FC = () => {
           </div>
         </div>
         <div className="pb-20">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`fixed top-1/2 right-0 transform -translate-y-1/2 z-50
+              w-7 h-28 
+              bg-[#1f2937] hover:bg-[#2d3748]
+              transition-all duration-300 ease-in-out
+              flex items-center justify-center
+              border-y border-l border-[#374151]
+              rounded-l-full
+              cursor-pointer
+              shadow-[-4px_0px_12px_-2px_rgba(0,0,0,0.3)]
+              ${isMenuOpen ? 'right-[380px]' : 'right-0'}`}
+          >
+            <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : ''}`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#6B4CFF"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="opacity-90 hover:opacity-100 transition-opacity"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </span>
+          </button>
+
           <SideMenu
             isMenuOpen={isMenuOpen}
             sessionId={sessionId as string}
             participants={participants}
-            onToggle={() => setIsMenuOpen(!isMenuOpen)}
             conferenceStatus={conferenceStatus}
             currentPresenter={currentPresenter}
             currentScript={currentScript}

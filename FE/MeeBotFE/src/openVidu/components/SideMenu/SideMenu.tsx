@@ -14,7 +14,6 @@ interface SideMenuProps {
   isMenuOpen: boolean;
   sessionId: string;
   participants: ParticipantInfo[];
-  onToggle: () => void;
   conferenceStatus: string;
   currentPresenter: ParticipantInfo | null;
   currentScript: string;
@@ -35,7 +34,6 @@ type TabType = "participants" | "chat" | "script";
 const SideMenu: React.FC<SideMenuProps> = ({
   isMenuOpen,
   participants: participantsList,
-  onToggle,
   conferenceStatus,
   currentScript,
   currentPresenter,
@@ -47,11 +45,8 @@ const SideMenu: React.FC<SideMenuProps> = ({
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
 
   return (
-    <>
-      <button onClick={onToggle} className="fixed bottom-5 right-5 z-50 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-        {isMenuOpen ? "닫기" : "메뉴"}
-      </button>
-
+    <div className="relative">
+      {/* 사이드 메뉴 */}
       <div
         className={`fixed top-0 right-0 h-screen bg-[#0A1017] text-white transform transition-transform duration-300 ease-in-out 
           ${isMenuOpen ? "translate-x-0" : "translate-x-full"}
@@ -107,7 +102,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
           sendMessage={sendMessage}
         />
       </div>
-    </>
+    </div>
   );
 };
 
