@@ -395,4 +395,38 @@ public class SummaryService {
         });
     }
 
+    public Mono<String> generateEndingMessage(Map<String, Object> request) {
+        String roomTitle = (String) request.get("roomTitle");
+
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role", "system", "content",
+                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. " +
+                                        "발표회가 모두 끝났어. 발표회를 마무리하는 감동적이고 마음을 울릴만한 멘트를 해줘. " +
+                                        "발표자들을 응원하고 격려하는 내용을 포함해줘. 안녕하세요는 빼주면 좋겠어. 3~4줄 정도로 말해줘."),
+                        Map.of("role", "user", "content",
+                                String.format("'%s' 발표회를 마무리하는 멘트를 해줘.", roomTitle))
+                ),
+                "temperature", 0.7
+        );
+
+        return webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                        return (String) message.get("content");
+                    }
+                    return "발표회를 마무리합니다. 모든 발표자분들 수고하셨습니다.";
+                });
+    }
+
 }
+
+
+
