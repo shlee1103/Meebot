@@ -22,7 +22,7 @@ const Timer: React.FC<TimerProps> = ({ conferenceStatus, session, isSpeaking }) 
   });
 
   return (
-    <div className="bg-[#0a1929] rounded-lg px-6 py-3 inline-block">
+    <div className="bg-[#0a1929] rounded-lg px-6 py-3 lg:inline-block hidden">
       <div className={`font-mono text-4xl tracking-wider ${isLastMinute ? "text-red-500" : "text-[#1AEBB8]"}`}>
         {String(minutes).padStart(2, "0")}:{String(remainingSeconds).padStart(2, "0")}
       </div>

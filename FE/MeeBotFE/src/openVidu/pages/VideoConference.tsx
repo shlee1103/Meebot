@@ -17,6 +17,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
+import BackgroundGradients from "../../components/common/BackgroundGradients";
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -164,10 +165,12 @@ const VideoConference: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
+      <BackgroundGradients/>
+
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
 
       <div className="flex flex-1 min-h-0">
-        <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "w-[calc(100%-380px)]" : "w-full"}`}>
+        <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "lg:w-[calc(100%-380px)]" : "lg:w-full"}`}>
           <div className="flex-none">
             <ParticipantsList subscribers={subscribers} currentSlide={currentSlide} isMenuOpen={isMenuOpen} handlePrevSlide={handlePrevSlide} handleNextSlide={handleNextSlide} />
           </div>
@@ -185,11 +188,12 @@ const VideoConference: React.FC = () => {
               w-7 h-28 
               bg-[#111827] hover:bg-[#1f2937]
               transition-all duration-300 ease-in-out
-              flex items-center justify-center
+              items-center justify-center
               border-y border-l border-[#1f2937]
               rounded-l-full
               cursor-pointer
               shadow-[-4px_0px_12px_-2px_rgba(0,0,0,0.3)]
+              hidden lg:flex
               ${isMenuOpen ? 'right-[380px]' : 'right-0'}`}
           >
             <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : ''}`}>
@@ -207,18 +211,19 @@ const VideoConference: React.FC = () => {
               </svg>
             </span>
           </button>
-
-          <SideMenu
-            isMenuOpen={isMenuOpen}
-            sessionId={sessionId as string}
-            participants={participants}
-            conferenceStatus={conferenceStatus}
-            currentPresenter={currentPresenter}
-            currentScript={currentScript}
-            myUserName={myUserName as string}
-            messages={messages}
-            sendMessage={sendMessage}
-          />
+          <div className="pb-20 hidden lg:block">
+            <SideMenu
+              isMenuOpen={isMenuOpen}
+              sessionId={sessionId as string}
+              participants={participants}
+              conferenceStatus={conferenceStatus}
+              currentPresenter={currentPresenter}
+              currentScript={currentScript}
+              myUserName={myUserName as string}
+              messages={messages}
+              sendMessage={sendMessage}
+              />
+          </div>
         </div>
       </div>
 
