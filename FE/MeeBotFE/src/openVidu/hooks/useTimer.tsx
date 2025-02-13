@@ -58,6 +58,17 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     return "1분 남았습니다!";
   };
 
+  // 발표종료 시 알림 메시지 생성
+  const getEndTimeMessage = () => {
+    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
+      return "주어진 발표 시간이 종료되었습니다! 발표자는 발표를 마무리해주세요";
+    }
+    if (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE) {
+      return "주어진 질의응답 시간이 종료되었습니다!";
+    }
+    return "주어진 시간이 종료되었습니다!";
+  };
+
   // 알림 시그널 전송
   const sendNotificationSignal = (message: string) => {
     if (!session || !isAdmin) return;
@@ -164,6 +175,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     setSeconds(initialMinutes * 60);
     setIsLastMinute(false);
     setLastMinuteNotified(false);
+    setIsOvertime(false);
 
     if (isAdmin) {
       sendTimerSignal(initialMinutes * 60, false);
@@ -180,6 +192,8 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
       interval = setInterval(() => {
         setSeconds((prev) => {
           if (prev === 0) {
+            const message = getEndTimeMessage();
+            sendNotificationSignal(message);
             setIsOvertime(true);
             return 1;
           }
@@ -213,6 +227,8 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     setSeconds(initialMinutes * 60);
     setIsLastMinute(false);
     setLastMinuteNotified(false);
+    setIsOvertime(false);
+
     if (isAdmin) {
       sendTimerSignal(initialMinutes * 60, false);
     }
