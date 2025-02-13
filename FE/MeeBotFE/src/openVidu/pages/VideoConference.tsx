@@ -184,7 +184,7 @@ const VideoConference: React.FC = () => {
         <div className="pb-20">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`fixed top-1/2 right-0 transform -translate-y-1/2 z-50
+            className={`fixed top-[50%] right-0 transform -translate-y-1/2
               w-7 h-28 
               bg-[#111827] hover:bg-[#1f2937]
               transition-all duration-300 ease-in-out
