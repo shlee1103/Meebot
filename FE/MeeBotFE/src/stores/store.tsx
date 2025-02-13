@@ -174,6 +174,37 @@ const qnaSlice = createSlice({
 });
 
 export const { toggleCamera, toggleMic, turnOnMic, turnOffMic } = deviceSlice.actions;
+
+interface RaisedHandParticipant {
+  connectionId: string;
+  userName: string;
+}
+
+interface RaisedHandsState {
+  raisedHands: RaisedHandParticipant[];
+}
+
+const initialRaisedHandsState: RaisedHandsState = {
+  raisedHands: [],
+};
+
+const raisedHandsSlice = createSlice({
+  name: "raisedHands",
+  initialState: initialRaisedHandsState,
+  reducers: {
+    addRaisedHand: (state, action: PayloadAction<RaisedHandParticipant>) => {
+      state.raisedHands.push(action.payload);
+    },
+    removeRaisedHand: (state, action: PayloadAction<string>) => {
+      state.raisedHands = state.raisedHands.filter((participant) => participant.connectionId !== action.payload);
+    },
+    clearRaisedHands: (state) => {
+      state.raisedHands = [];
+    },
+  },
+});
+
+export const { addRaisedHand, removeRaisedHand, clearRaisedHands } = raisedHandsSlice.actions;
 export const { addMessage, incrementGlobalOrder, resetQnA } = qnaSlice.actions;
 
 // Redux Store 통합
@@ -185,6 +216,7 @@ export const store = configureStore({
     device: deviceSlice.reducer,
     meetingTitle: meetingTitleSlice.reducer,
     qna: qnaSlice.reducer,
+    raisedHands: raisedHandsSlice.reducer,
   },
 });
 
