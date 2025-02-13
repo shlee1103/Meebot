@@ -20,11 +20,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    console.log("여기 찍힘? 2222");
     // access token 만료 시 refresh token으로 새 access token 요청
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.log("여기 찍힘? 11");
       try {
         const refreshToken = localStorage.getItem("refresh_token");
         const { data } = await apiClient.post(
@@ -34,11 +32,9 @@ apiClient.interceptors.response.use(
             headers: { "Refresh-Token": refreshToken },
           }
         );
-        console.log("여기 찍힘? 2222333322");
 
         localStorage.setItem("access_token", data.access_token);
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
-        console.log("여기 찍힘? 544444");
 
         return apiClient(originalRequest);
       } catch (refreshError) {
