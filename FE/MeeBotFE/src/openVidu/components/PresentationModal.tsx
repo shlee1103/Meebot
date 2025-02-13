@@ -68,7 +68,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
                     value={presentationTime}
                     onChange={(e) => setPresentationTime(Number(e.target.value))}
                   >
-                    {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((minutes) => (
+                    {Array.from({ length: 12 }, (_, i) => (i + 1) * 1).map((minutes) => (
                       <option key={minutes} value={minutes}>
                         {minutes} 분
                       </option>
@@ -89,7 +89,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
                     value={qnaTime}
                     onChange={(e) => setQnATime(Number(e.target.value))}
                   >
-                    {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((minutes) => (
+                    {Array.from({ length: 12 }, (_, i) => (i + 1) * 1).map((minutes) => (
                       <option key={minutes} value={minutes}>
                         {minutes} 분
                       </option>

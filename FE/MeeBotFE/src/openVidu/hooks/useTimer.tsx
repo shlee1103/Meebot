@@ -20,6 +20,7 @@ interface UseTimerReturn {
   isLastMinute: boolean;
   resetTimer: () => void;
   isRunning: boolean;
+  isOvertime: boolean;
 }
 
 interface TimerSignalData {
@@ -44,6 +45,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
   const [isLastMinute, setIsLastMinute] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [lastMinuteNotified, setLastMinuteNotified] = useState(false);
+  const [isOvertime, setIsOvertime] = useState(false);
 
   // 1분 전 알림 메시지 생성
   const getLastMinuteMessage = () => {
@@ -174,12 +176,20 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
 
     let interval: NodeJS.Timeout | undefined;
 
-    if (isRunning && seconds > 0) {
+    if (isRunning) {
       interval = setInterval(() => {
         setSeconds((prev) => {
+          if (prev === 0) {
+            setIsOvertime(true);
+            return 1;
+          }
+
+          if (prev > 0 && isOvertime) {
+            return prev + 1;
+          }
+
           const newSeconds = prev - 1;
 
-          // 1분 전 알림
           if (newSeconds === 60 && !lastMinuteNotified) {
             setIsLastMinute(true);
             setLastMinuteNotified(true);
@@ -188,11 +198,6 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
           }
 
           sendTimerSignal(newSeconds, isLastMinute);
-
-          if (newSeconds <= 0) {
-            if (interval) clearInterval(interval);
-            return 0;
-          }
           return newSeconds;
         });
       }, 1000);
@@ -201,7 +206,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, seconds, isAdmin, lastMinuteNotified, conferenceStatus]);
+  }, [isRunning, seconds, isAdmin, lastMinuteNotified, conferenceStatus, isOvertime]);
 
   const resetTimer = () => {
     const initialMinutes = getInitialMinutes();
@@ -219,5 +224,6 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     resetTimer,
     isLastMinute,
     isRunning,
+    isOvertime,
   };
 };

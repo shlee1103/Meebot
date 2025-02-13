@@ -14,16 +14,22 @@ const Timer: React.FC<TimerProps> = ({ conferenceStatus, session, isSpeaking }) 
   const role = useSelector((state: RootState) => state.role.role);
   const isAdmin = role === "admin";
 
-  const { minutes, remainingSeconds, isLastMinute } = useTimer({
+  const { minutes, remainingSeconds, isLastMinute, isOvertime } = useTimer({
     conferenceStatus,
     session,
     isAdmin,
     isSpeaking,
   });
 
+  const getTimerColor = () => {
+    if (isOvertime) return "text-yellow-400";
+    if (isLastMinute) return "text-red-500";
+    return "text-[#1AEBB8]";
+  };
+
   return (
     <div className="bg-[#0a1929] rounded-lg px-6 py-3 inline-block">
-      <div className={`font-mono text-4xl tracking-wider ${isLastMinute ? "text-red-500" : "text-[#1AEBB8]"}`}>
+      <div className={`font-mono text-4xl tracking-wider ${getTimerColor()}`}>
         {String(minutes).padStart(2, "0")}:{String(remainingSeconds).padStart(2, "0")}
       </div>
     </div>
