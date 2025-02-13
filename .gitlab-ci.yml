@@ -1,0 +1,57 @@
+notify-mattermost:
+  image: ubuntu:latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script: |
+    apt-get update && apt-get install -y curl jq
+
+    # 변경된 파일 경로 확인
+    CHANGED_FILES=$(curl --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/changes" | jq -r '.changes[].new_path')
+    
+    # BE 파일 변경 여부
+    BE_CHANGES=$(echo "$CHANGED_FILES" | grep "^BE/")
+    # FE 파일 변경 여부
+    FE_CHANGES=$(echo "$CHANGED_FILES" | grep "^FE/")
+
+    # MR 상태에 따른 메시지 설정
+    case "$CI_MERGE_REQUEST_EVENT_TYPE" in
+      "open")
+        STATUS=":manggom_1: **새로운 MR이 생성되었습니다!** :manggom_1: "
+        COLOR="#36a64f"
+        ;;
+      "reopen")
+        STATUS=":duck_dance: **MR이 다시 열렸습니다!** :duck_dance: "
+        COLOR="#ffcc00"
+        ;;
+      "merge")
+        STATUS=":kirby_shake: **MR이 머지되었습니다!** :kirby_shake: "
+        COLOR="#0000ff"
+        ;;
+      "close")
+        STATUS=":sad-shin-chang: **MR이 닫혔습니다.** :sad-shin-chang: "
+        COLOR="#ff0000"
+        ;;
+    esac
+
+    # JSON 페이로드 생성
+    PAYLOAD='{
+      "attachments": [{
+        "color": "'"$COLOR"'",
+        "title": "'"$STATUS"'",
+        "text": "📌 *제목:* **'"$CI_MERGE_REQUEST_TITLE"'** \n\n👤 *작성자:* **'"$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"'** \n\n🔗 [MR 링크]('"$CI_MERGE_REQUEST_PROJECT_URL/-/merge_requests/$CI_MERGE_REQUEST_IID"')",
+        "footer": "😺 Approve 필수! 😺 ",
+        "ts": '$(date +%s)'
+      }]
+    }'
+
+    # BE 변경사항이 있으면 BE 채널로 알림
+    if [ ! -z "$BE_CHANGES" ]; then
+      curl -X POST -H 'Content-Type: application/json' \
+        -d "$PAYLOAD" $MATTERMOST_BE_WEBHOOK_URL
+    fi
+
+    # FE 변경사항이 있으면 FE 채널로 알림
+    if [ ! -z "$FE_CHANGES" ]; then
+      curl -X POST -H 'Content-Type: application/json' \
+        -d "$PAYLOAD" $MATTERMOST_FE_WEBHOOK_URL
+    fi
