@@ -7,7 +7,7 @@ import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresenta
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, addRaisedHand, removeRaisedHand, clearRaisedHands } from "../../stores/store";
+import { RootState, addRaisedHand, removeRaisedHand, clearRaisedHands,addMessage } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
@@ -20,6 +20,13 @@ import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
 import HandsupList from "../components/HandsupList";
+
+interface QnAMessage {
+  sender: string;
+  text: string;
+  timestamp: number;
+  order: number;
+}
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -125,6 +132,7 @@ const VideoConference: React.FC = () => {
             dispatch(clearRaisedHands());
             setIsHandRaised(false);
             setConferenceStatus(data.action);
+            turnOffAudio();
           }
 
           // 관리자가 발표회 종료 버튼 눌렀을 때
@@ -144,6 +152,14 @@ const VideoConference: React.FC = () => {
         if (event.data) {
           const { text } = JSON.parse(event.data);
           setCurrentScript(text);
+        }
+      });
+
+      // QnA 트랜스크립트 이벤트 리스너 수정
+      session.on('signal:qna-transcript', (event) => {
+        if (event.data) {
+          const messageData: QnAMessage = JSON.parse(event.data);
+          dispatch(addMessage(messageData));
         }
       });
     }
