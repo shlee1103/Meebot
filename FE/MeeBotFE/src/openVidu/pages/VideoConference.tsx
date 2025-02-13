@@ -6,8 +6,8 @@ import { useChatGPT } from "../hooks/useChatGPT";
 import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresentationControls";
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
-import { useSelector } from "react-redux";
-import { RootState } from "../../stores/store";
+import { useSelector,useDispatch } from "react-redux";
+import { addMessage, RootState } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
@@ -37,6 +37,7 @@ const VideoConference: React.FC = () => {
   const isCameraEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
   const isOpen = useRef(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     session,
@@ -63,7 +64,7 @@ const VideoConference: React.FC = () => {
 
   const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
-  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript, setQnaMessages } = usePresentationControls(
+  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript } = usePresentationControls(
     session,
     myUserName as string
   );
@@ -150,21 +151,7 @@ const VideoConference: React.FC = () => {
       session.on('signal:qna-transcript', (event) => {
         if (event.data) {
           const messageData: QnAMessage = JSON.parse(event.data);
-
-          setQnaMessages(prev => {
-            const isExists = prev.some(msg =>
-              msg.text === messageData.text &&
-              msg.sender === messageData.sender &&
-              msg.timestamp === messageData.timestamp // 중복 체크 강화
-            );
-
-            // 자신이 보낸 메시지이거나 다른 사람이 보낸 메시지인 경우 모두 저장 (중복 방지)
-            if (!isExists) {
-              return [...prev, messageData].sort((a, b) => a.order - b.order);
-            }
-
-            return prev; // 중복된 경우 저장하지 않음
-          });
+          dispatch(addMessage(messageData));
         }
       });
     }

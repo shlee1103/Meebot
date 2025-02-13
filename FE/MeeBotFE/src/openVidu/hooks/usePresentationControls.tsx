@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Session } from "openvidu-browser";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, setCurrentPresenterIndex } from "../../stores/store";
+import { addMessage, incrementGlobalOrder, resetQnA, RootState, setCurrentPresenterIndex } from "../../stores/store";
 import { interimSummarize, QnARequest, saveQnA } from "../../apis/chatGpt";
 import ChatMEEU from "../../assets/chatMeeU.png"
 import { ParticipantInfo } from "./useOpenVidu";
+import { glob } from "fs";
 
 const formatDate = (date: Date) => {
   const year = date.getFullYear();
@@ -47,8 +48,9 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   const currentPresenterIndex = useSelector((state: RootState) => state.presentation.currentPresenterIndex);
   const presentersOrder = useSelector((state: RootState) => state.presentation.presentersOrder);
   const isMicEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
-  const [qnaMessages, setQnaMessages] = useState<QnAMessage[]>([]);
-  const [qnaMessageOrder, setQnaMessageOrder] = useState(0);
+  const globalOrder = useSelector((state: RootState) => state.qna.globalOrder);
+  const qnaMessages = useSelector((state: RootState) => state.qna.messages);
+
 
   // JSON 파일 전송
   const sendJSONToServer = async (presenter: string | null, sessionId?: string) => {
@@ -103,11 +105,11 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   const saveQnAJSON = async (sessionId?: string) => {
     if (!sessionId) return;
 
-    // 메시지를 order 기준으로 정렬 후 텍스트 추출
-    const sortedQnAScript = qnaMessages
-      .sort((a, b) => a.order - b.order)
-      .map(msg => `${msg.sender}: ${msg.text}`)
-      .join(' ');
+  // [...qnaMessages]로 새로운 배열을 만들어 정렬
+  const sortedQnAScript = [...qnaMessages]
+    .sort((a, b) => a.order - b.order)
+    .map(msg => `${msg.sender}: ${msg.text}`)
+    .join(' ');
 
     const qnaRequest: QnARequest = {
       roomCode: sessionId,
@@ -231,6 +233,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           type: "conference-status",
         });
       }
+      console.log("qna 종료 처리 완료");
     }
 
     // 발표회 종료 버튼을 눌렀을 때
@@ -276,54 +279,47 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   // 질의응답 중 발화 내용 추적을 위한 useEffect 수정
   useEffect(() => {
     if (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE) {
-      // finalTranscript가 있을 때만 처리
       if (finalTranscript) {
         const newMessage: QnAMessage = {
           sender: myUserName,
           text: finalTranscript,
           timestamp: Date.now(),
-          order: qnaMessageOrder
+          order: globalOrder
         };
 
-        // 메시지 추가 및 order 증가
-        setQnaMessages(prev => {
-          // 마지막 메시지와 동일한 내용인지 확인
-          const lastMessage = prev[prev.length - 1];
-          if (lastMessage && lastMessage.text === finalTranscript) {
-            return prev;
-          }
+        // Redux store에 메시지 추가
+        dispatch(addMessage(newMessage));
+        dispatch(incrementGlobalOrder());
 
-          return [...prev, newMessage];
-        });
-
-        setQnaMessageOrder(prev => prev + 1);
-
-        // 시그널로 다른 참가자들과 공유
+        // 시그널로 공유
         session?.signal({
-          data: JSON.stringify({
-            ...newMessage,
-            localOrder: qnaMessageOrder
-          }),
+          data: JSON.stringify(newMessage),
           type: 'qna-transcript',
         });
 
-        // 트랜스크립트 초기화
         resetTranscript();
       }
     }
   }, [finalTranscript, conferenceStatus]);
 
+  // 상태 변경 시 QnA 초기화 추가
+  useEffect(() => {
+    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_READY) {
+      dispatch(resetQnA());
+    }
+  }, [conferenceStatus]);
+
   // STT 동작 여부를 제어
   useEffect(() => {
     if ((conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && isMicEnabled) ||
-    (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && isMicEnabled)) {
+      (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && isMicEnabled)) {
       SpeechRecognition.startListening({
         continuous: true,
         language: "ko-KR",
         interimResults: true,
       });
     } else if ((conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && !isMicEnabled) ||
-    (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && !isMicEnabled)) {
+      (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && !isMicEnabled)) {
       SpeechRecognition.stopListening();
     } else {
       SpeechRecognition.stopListening();
@@ -346,7 +342,5 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     currentScript,
     setCurrentScript,
     currentPresenterIndex,
-    qnaMessages,
-    setQnaMessages,
   };
 };
