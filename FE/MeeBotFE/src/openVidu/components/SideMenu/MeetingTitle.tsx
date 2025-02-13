@@ -46,6 +46,12 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
     setTempTitle(meetingTitle);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && hasBeenChanged) {
+      handleClickEditText();
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempTitle(e.target.value);
     setHasBeenChanged(true);
@@ -95,7 +101,8 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
                     type="text"
                     value={tempTitle}
                     onChange={handleInputChange}
-                    className="w-full outline-none bg-[#171F2E] text-white border border-[#6B4CFF] rounded-lg px-2 pr-8 py-1"
+                    onKeyDown={handleKeyPress}
+                    className="w-full outline-none bg-[#171F2E] text-white border border-[#6B4CFF] rounded-lg px-2 pr-8 py-1 caret-white"
                     autoFocus
                   />
                   <button onClick={handleClose} className="absolute right-2 top-1/2 -translate-y-1/2">
