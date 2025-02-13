@@ -125,7 +125,7 @@ const VideoConference: React.FC = () => {
           // 관리자가 질의 응답 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.QNA_COMPLETED) {
             setConferenceStatus(data.action);
-            turnOffAudio(); // 모든 참가자의 마이크 OFF
+            turnOffAudio();
           }
 
           // 관리자가 발표회 종료 버튼 눌렀을 때
