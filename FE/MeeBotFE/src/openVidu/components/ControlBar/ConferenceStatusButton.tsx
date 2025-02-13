@@ -225,7 +225,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
 
       <button
         onClick={() => changeConferenceStatus(conferenceStatus)}
-        className={`relative px-4 py-2.5 rounded-xl text-white text-sm font-medium
+        className={`relative px-4 py-2.5 rounded-xl text-white text-md font-medium
           transition-all duration-300 ease-in-out
           border backdrop-blur-sm
           flex items-center gap-2.5
