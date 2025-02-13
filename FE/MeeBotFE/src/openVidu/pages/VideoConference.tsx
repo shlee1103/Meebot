@@ -147,14 +147,6 @@ const VideoConference: React.FC = () => {
         }
       });
 
-      // 실시간 스크립트 이벤트 처리
-      session.on("signal:stt-transcript", (event) => {
-        if (event.data) {
-          const { text } = JSON.parse(event.data);
-          setCurrentScript(text);
-        }
-      });
-
       // 문장 구분을 위한 헬퍼 함수 추가
       const formatScript = (text: string) => {
         const patterns = [
@@ -200,6 +192,15 @@ const VideoConference: React.FC = () => {
           setCurrentScript(formattedText);
         }
       });
+
+      // QnA 트랜스크립트 이벤트 리스너 수정
+      session.on('signal:qna-transcript', (event) => {
+        if (event.data) {
+          const messageData: QnAMessage = JSON.parse(event.data);
+          dispatch(addMessage(messageData));
+        }
+      });
+
     }
   }, [session, turnOffAudio, myUserName]);
 
