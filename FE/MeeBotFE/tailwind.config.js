@@ -3,6 +3,8 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      transform: ['group-focus', 'select-open'],
+      rotate: ['group-focus', 'select-open'],
       container: {
         center: true,
         padding: {
@@ -98,7 +100,17 @@ module.exports = {
             transform: 'translateY(0)',
             opacity: '0'
           }
-        }
+        },
+        modalFadeIn: {
+          '0%': { 
+            opacity: '0',
+            transform: 'translate3d(0, 20px, 0) scale(0.95)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translate3d(0, 0, 0) scale(1)'
+          },
+        },
       },
       animation: {
         gradient: 'gradient 8s linear infinite',
@@ -112,6 +124,7 @@ module.exports = {
         blink: 'blink 1s ease-in-out infinite',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'tooltip-bounce': 'tooltip-bounce 3s cubic-bezier(.25,0,.75,1)',
+        modalFadeIn: 'modalFadeIn 0.3s ease-out forwards',
       },
       fontSize: {
         // Desktop (lg)
