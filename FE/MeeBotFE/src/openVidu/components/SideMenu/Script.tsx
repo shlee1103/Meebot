@@ -28,7 +28,6 @@ const Script: React.FC<ScriptProps> = ({ conferenceStatus, currentScript, curren
     setSavedScript('');
   }, [currentPresenter?.name]); // connectionId로 발표자 변경 감지
 
-
   // 실제 표시할 스크립트 (현재 스크립트가 없으면 저장된 스크립트 사용)
   const displayScript = currentScript || savedScript;
 
