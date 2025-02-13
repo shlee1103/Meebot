@@ -183,10 +183,10 @@ const VideoConference: React.FC = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`fixed top-1/2 right-0 transform -translate-y-1/2 z-50
               w-7 h-28 
-              bg-[#1f2937] hover:bg-[#2d3748]
+              bg-[#111827] hover:bg-[#1f2937]
               transition-all duration-300 ease-in-out
               flex items-center justify-center
-              border-y border-l border-[#374151]
+              border-y border-l border-[#1f2937]
               rounded-l-full
               cursor-pointer
               shadow-[-4px_0px_12px_-2px_rgba(0,0,0,0.3)]
