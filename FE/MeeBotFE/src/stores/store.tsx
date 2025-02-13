@@ -129,7 +129,83 @@ const deviceSlice = createSlice({
   },
 });
 
+// QnA 관련 인터페이스와 slice 추가
+interface QnAMessage {
+  sender: string;
+  text: string;
+  timestamp: number;
+  order: number;
+}
+
+interface QnAState {
+  messages: QnAMessage[];
+  globalOrder: number;
+}
+
+const initialQnAState: QnAState = {
+  messages: [],
+  globalOrder: 0,
+};
+
+const qnaSlice = createSlice({
+  name: "qna",
+  initialState: initialQnAState,
+  reducers: {
+    addMessage: (state, action: PayloadAction<QnAMessage>) => {
+      const isExists = state.messages.some(msg =>
+        msg.text === action.payload.text &&
+        msg.sender === action.payload.sender &&
+        msg.timestamp === action.payload.timestamp
+      );
+
+      if (!isExists) {
+        state.messages.push(action.payload);
+        state.messages.sort((a, b) => a.order - b.order);
+      }
+    },
+    incrementGlobalOrder: (state) => {
+      state.globalOrder += 1;
+    },
+    resetQnA: (state) => {
+      state.messages = [];
+      state.globalOrder = 0;
+    },
+  },
+});
+
 export const { toggleCamera, toggleMic, turnOnMic, turnOffMic } = deviceSlice.actions;
+
+interface RaisedHandParticipant {
+  connectionId: string;
+  userName: string;
+}
+
+interface RaisedHandsState {
+  raisedHands: RaisedHandParticipant[];
+}
+
+const initialRaisedHandsState: RaisedHandsState = {
+  raisedHands: [],
+};
+
+const raisedHandsSlice = createSlice({
+  name: "raisedHands",
+  initialState: initialRaisedHandsState,
+  reducers: {
+    addRaisedHand: (state, action: PayloadAction<RaisedHandParticipant>) => {
+      state.raisedHands.push(action.payload);
+    },
+    removeRaisedHand: (state, action: PayloadAction<string>) => {
+      state.raisedHands = state.raisedHands.filter((participant) => participant.connectionId !== action.payload);
+    },
+    clearRaisedHands: (state) => {
+      state.raisedHands = [];
+    },
+  },
+});
+
+export const { addRaisedHand, removeRaisedHand, clearRaisedHands } = raisedHandsSlice.actions;
+export const { addMessage, incrementGlobalOrder, resetQnA } = qnaSlice.actions;
 
 // Redux Store 통합
 export const store = configureStore({
@@ -139,6 +215,8 @@ export const store = configureStore({
     presentation: presentationSlice.reducer,
     device: deviceSlice.reducer,
     meetingTitle: meetingTitleSlice.reducer,
+    qna: qnaSlice.reducer,
+    raisedHands: raisedHandsSlice.reducer,
   },
 });
 

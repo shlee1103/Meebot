@@ -13,24 +13,40 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git branch: 'master',
-                    credentialsId: 'GITHUB_SSH_KEY',
-                    url: 'git@github.com:SSAFY-D104/BE.git'
+                    credentialsId: 'gitlab',
+                    url: 'https://lab.ssafy.com/s12-webmobile1-sub1/S12P11D104.git'
+            }
+        }
+
+        stage('Move to BE/MeeBotBE Directory') {
+            steps {
+                dir('BE/MeeBotBE') {
+                    script {
+                        sh """
+                        echo "Moving to BE/MeeBotBE directory..."
+                        pwd
+                        ls -la
+                        """
+                    }
+                }
             }
         }
 
         stage('Build & Push Docker Image') {
             steps {
-                script {
-                    sh """
-                    chmod +x ./gradlew
-                    ./gradlew clean build --no-daemon
+                dir('BE/MeeBotBE') {
+                    script {
+                        sh """
+                        chmod +x ./gradlew
+                        ./gradlew clean build --no-daemon
 
-                    echo "Building Docker Image..."
-                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                        echo "Building Docker Image..."
+                        docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
 
-                    echo "Pushing Docker Image to Docker Hub..."
-                    docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
+                        echo "Pushing Docker Image to Docker Hub..."
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        """
+                    }
                 }
             }
         }
@@ -84,52 +100,50 @@ pipeline {
                 }
             }
         }
-
-
     }
 
     post {
-         success {
-                 script {
-                            withCredentials([
-                                string(credentialsId: 'MATTERMOST_WEBHOOK_URL_BE', variable: 'WEBHOOK_BE'),
-                                string(credentialsId: 'MATTERMOST_WEBHOOK_URL_FE', variable: 'WEBHOOK_FE')
-                            ]) {
-                                env.WEBHOOK_BE = WEBHOOK_BE
-                                env.WEBHOOK_FE = WEBHOOK_FE
-                            }
+        success {
+            script {
+                withCredentials([
+                    string(credentialsId: 'MATTERMOST_WEBHOOK_URL_BE', variable: 'WEBHOOK_BE'),
+                    string(credentialsId: 'MATTERMOST_WEBHOOK_URL_FE', variable: 'WEBHOOK_FE')
+                ]) {
+                    env.WEBHOOK_BE = WEBHOOK_BE
+                    env.WEBHOOK_FE = WEBHOOK_FE
+                }
 
-                            sh '''
-                            curl -X POST -H "Content-Type: application/json" -d '{
-                                "text": "## :backend_work: 배포 성공! 🎉\n :computer: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기>"
-                            }' "$WEBHOOK_BE"
+                sh '''
+                curl -X POST -H "Content-Type: application/json" -d '{
+                    "text": "## :backend_work: 배포 성공! 🎉\n :computer: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기>"
+                }' "$WEBHOOK_BE"
 
-                            curl -X POST -H "Content-Type: application/json" -d '{
-                                "text": "## :backend_work: 배포 성공! 🎉\n :computer: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기>"
-                            }' "$WEBHOOK_FE"
-                            '''
-                        }
-         }
+                curl -X POST -H "Content-Type: application/json" -d '{
+                    "text": "## :backend_work: 배포 성공! 🎉\n :computer: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기>"
+                }' "$WEBHOOK_FE"
+                '''
+            }
+        }
         failure {
-             script {
-                        withCredentials([
-                            string(credentialsId: 'MATTERMOST_WEBHOOK_URL_BE', variable: 'WEBHOOK_BE'),
-                            string(credentialsId: 'MATTERMOST_WEBHOOK_URL_FE', variable: 'WEBHOOK_FE')
-                        ]) {
-                            env.WEBHOOK_BE = WEBHOOK_BE
-                            env.WEBHOOK_FE = WEBHOOK_FE
-                        }
+            script {
+                withCredentials([
+                    string(credentialsId: 'MATTERMOST_WEBHOOK_URL_BE', variable: 'WEBHOOK_BE'),
+                    string(credentialsId: 'MATTERMOST_WEBHOOK_URL_FE', variable: 'WEBHOOK_FE')
+                ]) {
+                    env.WEBHOOK_BE = WEBHOOK_BE
+                    env.WEBHOOK_FE = WEBHOOK_FE
+                }
 
-                        sh '''
-                        curl -X POST -H "Content-Type: application/json" -d '{
-                            "text": "## :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
-                        }' "$WEBHOOK_BE"
+                sh '''
+                curl -X POST -H "Content-Type: application/json" -d '{
+                    "text": "### :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
+                }' "$WEBHOOK_BE"
 
-                        curl -X POST -H "Content-Type: application/json" -d '{
-                            "text": "## :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
-                        }' "$WEBHOOK_FE"
-                        '''
-                    }
+                curl -X POST -H "Content-Type: application/json" -d '{
+                    "text": "### :sad-shin-chang: 배포 실패! 🚨\n:backend_work: 프로젝트: MEEBOT-BE\n:git: 브랜치: master\n🔗 <${BUILD_URL}|빌드 상세 보기> \n@sunju701"
+                }' "$WEBHOOK_FE"
+                '''
+            }
         }
     }
 }

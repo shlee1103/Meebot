@@ -4,7 +4,7 @@ import { createSession, createToken } from "../../apis/room";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, setMeetingTitle } from "../../stores/store";
 import { useNavigate } from "react-router-dom";
-import ChatMEEU from "../../assets/chatMEEU.png";
+import ChatMEEU from "../../assets/chatMeeU.png";
 import ChatUnknown from "../../assets/user_icon.svg";
 
 export interface ParticipantInfo {

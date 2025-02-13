@@ -7,7 +7,7 @@ import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresenta
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder } from "../../stores/store";
+import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder, addRaisedHand, removeRaisedHand, clearRaisedHands, addMessage } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar";
@@ -19,6 +19,14 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
+import HandsupList from "../components/HandsupList";
+
+interface QnAMessage {
+  sender: string;
+  text: string;
+  timestamp: number;
+  order: number;
+}
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -48,19 +56,21 @@ const VideoConference: React.FC = () => {
     sendMessage,
   } = useOpenVidu();
 
-  const { isHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
-    publisher,
-    startScreenShareSession,
-    stopScreenShareSession,
-    isScreenShared
-  );
-
-  const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
-
   const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript } = usePresentationControls(
     session,
     myUserName as string
   );
+
+  const { isHandRaised, setIsHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
+    publisher,
+    session,
+    startScreenShareSession,
+    stopScreenShareSession,
+    isScreenShared,
+    conferenceStatus
+  );
+
+  const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
   const { speech, isSpeaking, handleConferenceStatusChange } = useChatGPT(session);
 
@@ -112,16 +122,23 @@ const VideoConference: React.FC = () => {
 
           // 관리자가 질의 응답 시작 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.QNA_ACTIVE) {
+            dispatch(clearRaisedHands());
+            setIsHandRaised(false);
             setConferenceStatus(data.action);
           }
 
           // 관리자가 질의 응답 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.QNA_COMPLETED) {
+            dispatch(clearRaisedHands());
+            setIsHandRaised(false);
             setConferenceStatus(data.action);
+            turnOffAudio();
           }
 
           // 관리자가 발표회 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.CONFERENCE_ENDED) {
+            dispatch(clearRaisedHands());
+            setIsHandRaised(false);
             resetPresenter();
             setConferenceStatus(data.action);
             setShowFinishPopup(true);
@@ -155,6 +172,14 @@ const VideoConference: React.FC = () => {
           dispatch(setMeetingTitle(title));
         }
       });
+
+      // QnA 트랜스크립트 이벤트 리스너 수정
+      session.on("signal:qna-transcript", (event) => {
+        if (event.data) {
+          const messageData: QnAMessage = JSON.parse(event.data);
+          dispatch(addMessage(messageData));
+        }
+      });
     }
   }, [session, turnOffAudio, myUserName]);
 
@@ -183,6 +208,42 @@ const VideoConference: React.FC = () => {
     };
   }, [leaveSession]);
 
+  // 손들기 로직입니다
+  useEffect(() => {
+    if (!session) return;
+
+    if (conferenceStatus === CONFERENCE_STATUS.QNA_COMPLETED) {
+      dispatch(clearRaisedHands());
+      setIsHandRaised(false);
+    }
+
+    const handleHandUpSignal = (event: any) => {
+      if (event.data) {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.isRaising) {
+            dispatch(
+              addRaisedHand({
+                connectionId: event.from.connectionId,
+                userName: data.userName,
+              })
+            );
+          } else {
+            dispatch(removeRaisedHand(event.from.connectionId));
+          }
+        } catch (error) {
+          console.log("에러 발생:", error);
+        }
+      }
+    };
+
+    session.on("signal:handup", handleHandUpSignal);
+
+    return () => {
+      session.off("signal:handup", handleHandUpSignal);
+    };
+  }, [session, conferenceStatus]);
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
@@ -194,8 +255,9 @@ const VideoConference: React.FC = () => {
           <div className="flex-1 min-h-0">
             <MainVideo mainStreamManager={mainStreamManager} />
           </div>
-          <div className="flex-none">
+          <div className="flex flex-none justify-between items-center">
             <MeeU speech={speech} />
+            <HandsupList conferenceStatus={conferenceStatus} />
           </div>
 
           {/* 컨트롤 영역 */}
