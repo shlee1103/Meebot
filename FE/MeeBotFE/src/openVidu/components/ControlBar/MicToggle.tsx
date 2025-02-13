@@ -54,7 +54,7 @@ const StyledWrapper = styled.div`
     padding: 6px;
     width: 100%;
     height: 100%;
-    background: #272727;
+    background: #202942;
     border-radius: 9999px;
     box-sizing: content-box;
     box-shadow: 0px 0px 8px -4px rgba(254, 254, 254, 0.3);
@@ -64,7 +64,7 @@ const StyledWrapper = styled.div`
     position: relative;
     width: 40px;
     aspect-ratio: 1 / 1;
-    background: #5e5e5e;
+    background: #2A3347;
     border-radius: 9999px;
     transition: all 0.5s cubic-bezier(1, 0, 0, 1);
   }

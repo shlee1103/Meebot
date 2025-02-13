@@ -46,7 +46,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     width: 80px;
     height: 50px;
     border-radius: 9999px;
-    background: #272727;
+    background: #232D45;
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -57,11 +57,11 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: #333333;
+      background: #2A3347;
     }
 
     &.active {
-      background: #333333;
+      background: #2A3347;
 
       .arrow-icon {
         background: #ffffff;
@@ -96,7 +96,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     width: 40px;
     height: 40px;
     border-radius: 9999px;
-    background: #5e5e5e;
+    background: #2A3347;
     border: none;
     cursor: pointer;
     display: flex;
@@ -105,7 +105,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     transition: all 0.3s ease;
 
     &:hover:not(.disabled) {
-      background: #333333;
+      background: #202942;
     }
   
     &.active {

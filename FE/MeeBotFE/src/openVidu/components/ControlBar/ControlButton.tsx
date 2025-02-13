@@ -36,7 +36,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     width: 50px;
     height: 50px;
     border-radius: 9999px;
-    background: ${props => props.backgroundColor || '#272727'};
+    background: ${props => props.backgroundColor || '#202942'};
     border: none;
     cursor: pointer;
     display: flex;
@@ -47,14 +47,14 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     transition: all 0.3s ease;
 
     &:hover:not(.disabled) {
-      background: ${props => props.hoverColor || '#333333'};
+      background: ${props => props.hoverColor || '#2A3347'};
     }
 
     &.active {
       background: #1AEBB8;
       
       img {
-        filter: brightness(0) saturate(100%) invert(0%) sepia(7%) saturate(98%) hue-rotate(346deg) brightness(95%) contrast(86%);
+        filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(288deg) brightness(102%) contrast(102%);
       }
     }
 
