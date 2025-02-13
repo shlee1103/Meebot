@@ -111,6 +111,16 @@ module.exports = {
             transform: 'translate3d(0, 0, 0) scale(1)'
           },
         },
+        bounce: {
+          '0%, 100%': {
+            transform: 'translateY(-10%)',
+            animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)',
+          },
+          '50%': {
+            transform: 'translateY(0)',
+            animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+          },
+        },
       },
       animation: {
         gradient: 'gradient 8s linear infinite',
@@ -125,6 +135,7 @@ module.exports = {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'tooltip-bounce': 'tooltip-bounce 3s cubic-bezier(.25,0,.75,1)',
         modalFadeIn: 'modalFadeIn 0.3s ease-out forwards',
+        'bounce-slow': 'bounce 3s ease-in-out infinite',
       },
       fontSize: {
         // Desktop (lg)

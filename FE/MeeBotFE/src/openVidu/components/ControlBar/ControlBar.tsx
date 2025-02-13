@@ -141,7 +141,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   return (
     <div className="fixed bottom-0 left-0 right-0">
       <div className="flex items-center justify-between px-4">
-        <div className="flex w-[300px]">
+        <div className="flex w-[350px]">
           <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
         </div>
         
@@ -187,7 +187,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
           </div>
         </div>
 
-        <div className="flex w-[300px] justify-end">
+        <div className="flex w-[350px] justify-end">
           {role === "admin" && (
             <div className="hidden lg:flex flex-row items-center gap-4">
               <button
