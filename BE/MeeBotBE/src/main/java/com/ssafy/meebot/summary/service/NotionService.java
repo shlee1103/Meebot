@@ -26,7 +26,6 @@ public class NotionService {
         this.finalSummarizeRepository = finalSummarizeRepository;
     }
 
-
     /**
      *
      * 하위 페이지 생성
@@ -42,14 +41,13 @@ public class NotionService {
             return Mono.error(new IllegalArgumentException("Invalid parent ID."));
         }
 
-        // 부모 페이지 판단 -> parent에 넣어줘야 함
+        // 부모 페이지 판단
         Map<String, Object> parent = switch (parentType) {
             case 0 -> Map.of("database_id", parentId);
             case 1, 2 -> Map.of("page_id", parentId);
             default -> throw new IllegalArgumentException("Invalid parent type code: " + parentType);
         };
 
-        // 수정 필요
         return Mono.defer(() -> Mono.justOrEmpty(finalSummarizeRepository.findByRoom_RoomCode(roomCode)))
                 .switchIfEmpty(Mono.error(new RuntimeException("No summary found for roomCode: " + roomCode)))
                 .flatMap(finalSummary -> {
@@ -94,52 +92,40 @@ public class NotionService {
     private List<Map<String, Object>> transformChildrenBlocks(Map<String, Object> notionData) {
         List<Map<String, Object>> transformedChildren = new ArrayList<>();
 
+        // Add title as heading
         transformedChildren.add(createHeadingBlock(getTitleContent(notionData)));
 
         List<Map<String, Object>> children = (List<Map<String, Object>>) notionData.get("children");
         if (children != null && !children.isEmpty()) {
+            for (Map<String, Object> block : children) {
+                String type = (String) block.get("type");
 
-            String formattedDate = formatDate(children);
-            if (formattedDate != null) {
-                transformedChildren.add(createParagraphBlock(formattedDate));
-            }
-
-            List<String> presenters = children.stream()
-                    .filter(item -> item.containsKey("presenter"))
-                    .map(item -> (String) item.get("presenter"))
-                    .collect(Collectors.toList());
-            if (!presenters.isEmpty()) {
-                transformedChildren.add(createParagraphBlock("👥 " + String.join(", ", presenters)));
-            }
-
-            for (Map<String, Object> presenterData : children) {
-                if (presenterData.containsKey("presenter")) {
-                    String presenter = (String) presenterData.get("presenter");
-                    String content = (String) presenterData.get("content");
-
-                    transformedChildren.add(createParagraphBlock("👤 " + presenter));
-
-                    if (content != null) {
-                        transformedChildren.add(createCalloutBlock(
-                                "✨ 발표 요약\n" + content,
-                                "✨",
-                                "gray_background"
-                        ));
-                    }
-
-                    List<Map<String, Object>> questions = (List<Map<String, Object>>) presenterData.get("questions");
-                    if (questions != null && !questions.isEmpty()) {
-                        StringBuilder qaContent = new StringBuilder("💬 질의응답\n");
-                        for (Map<String, Object> qa : questions) {
-                            qaContent.append("Q: ").append(qa.get("question"))
-                                    .append("\nA: ").append(qa.get("answer"))
-                                    .append("\n");
+                switch (type) {
+                    case "paragraph" -> {
+                        Map<String, Object> paragraph = (Map<String, Object>) block.get("paragraph");
+                        List<Map<String, Object>> richText = (List<Map<String, Object>>) paragraph.get("rich_text");
+                        if (!richText.isEmpty()) {
+                            String content = (String) ((Map<String, Object>) richText.get(0).get("text")).get("content");
+                            transformedChildren.add(createParagraphBlock(content));
                         }
-                        transformedChildren.add(createCalloutBlock(
-                                qaContent.toString().trim(),
-                                "💬",
-                                "gray_background"
-                        ));
+                    }
+                    case "bulleted_list_item" -> {
+                        Map<String, Object> item = (Map<String, Object>) block.get("bulleted_list_item");
+                        List<Map<String, Object>> richText = (List<Map<String, Object>>) item.get("rich_text");
+                        if (!richText.isEmpty()) {
+                            String content = (String) ((Map<String, Object>) richText.get(0).get("text")).get("content");
+                            transformedChildren.add(createBulletedListItemBlock(content));
+                        }
+                    }
+                    case "callout" -> {
+                        Map<String, Object> callout = (Map<String, Object>) block.get("callout");
+                        List<Map<String, Object>> richText = (List<Map<String, Object>>) callout.get("rich_text");
+                        Map<String, Object> icon = (Map<String, Object>) callout.get("icon");
+                        if (!richText.isEmpty()) {
+                            String content = (String) ((Map<String, Object>) richText.get(0).get("text")).get("content");
+                            String emoji = (String) icon.get("emoji");
+                            transformedChildren.add(createCalloutBlock(content, emoji, "gray_background"));
+                        }
                     }
                 }
             }
@@ -147,30 +133,6 @@ public class NotionService {
 
         return transformedChildren;
     }
-
-    private String formatDate(List<Map<String, Object>> children) {
-        try {
-            String date = children.stream()
-                    .filter(item -> item.containsKey("date"))
-                    .map(item -> (String) item.get("date"))
-                    .findFirst()
-                    .orElse(null);
-
-            if (date == null) {
-                return "📅 날짜 정보 없음";
-            }
-
-            String[] parts = date.split(" ")[0].split("-");
-            if (parts.length >= 3) {
-                return String.format("📅 %s년 %s월 %s일", parts[0], parts[1], parts[2]);
-            } else {
-                return "📅 " + date;
-            }
-        } catch (Exception e) {
-            return "📅 날짜 형식 오류";
-        }
-    }
-
 
     private Map<String, Object> createHeadingBlock(String content) {
         return Map.of(
@@ -191,6 +153,19 @@ public class NotionService {
                 "object", "block",
                 "type", "paragraph",
                 "paragraph", Map.of(
+                        "rich_text", List.of(Map.of(
+                                "type", "text",
+                                "text", Map.of("content", content)
+                        ))
+                )
+        );
+    }
+
+    private Map<String, Object> createBulletedListItemBlock(String content) {
+        return Map.of(
+                "object", "block",
+                "type", "bulleted_list_item",
+                "bulleted_list_item", Map.of(
                         "rich_text", List.of(Map.of(
                                 "type", "text",
                                 "text", Map.of("content", content)
@@ -257,13 +232,27 @@ public class NotionService {
                 .bodyToMono(Map.class)
                 .map(response -> {
                     List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
-                    for (Map<String, Object> item : results) {
-                        String objectType = item.get("object").toString();
-                        String id = item.get("id").toString();
-                        if ("database".equals(objectType)) {
-                            return Map.of("id", id, "type", "database");
-                        } else if ("page".equals(objectType)) {
-                            return Map.of("id", id, "type", "page");
+
+                    // parent.type이 workspace인 첫 번째 항목 찾기
+                    if (results != null && !results.isEmpty()) {
+                        Optional<Map<String, Object>> workspaceItem = results.stream()
+                                .filter(item -> {
+                                    Map<String, Object> parent = (Map<String, Object>) item.get("parent");
+                                    return parent != null && "workspace".equals(parent.get("type"));
+                                })
+                                .findFirst();
+
+                        if (workspaceItem.isPresent()) {
+                            Map<String, Object> firstResult = workspaceItem.get();
+                            String objectType = firstResult.get("object").toString();
+                            String id = firstResult.get("id").toString();
+
+                            // database와 page 타입 구분
+                            if ("database".equals(objectType)) {
+                                return Map.of("id", id, "type", "database");
+                            } else if ("page".equals(objectType)) {
+                                return Map.of("id", id, "type", "page");
+                            }
                         }
                     }
                     return null;
@@ -286,40 +275,5 @@ public class NotionService {
                 .map(response -> response.get("access_token").toString());
     }
 
-    private Mono<Map<String, Object>> getDatabaseProperties(String accessToken, String databaseId) {
-        return webClient.get()
-                .uri("/databases/{id}", databaseId)
-                .headers(headers -> {
-                    headers.setBearerAuth(accessToken);
-                    headers.set("Notion-Version", NOTION_VERSION);
-                })
-                .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> {
-                    Map<String, Object> properties = (Map<String, Object>) response.get("properties");
-                    Map<String, Object> mappedProperties = new HashMap<>();
-
-                    for (Map.Entry<String, Object> entry : properties.entrySet()) {
-                        Map<String, Object> propertyDetails = (Map<String, Object>) entry.getValue();
-                        String propertyType = (String) propertyDetails.get("type");
-
-                        if ("title".equals(propertyType)) {
-                            mappedProperties.put(entry.getKey(), Map.of("title", List.of(Map.of("text", Map.of("content", "새로운 프로젝트")))));
-                        } else if ("multi_select".equals(propertyType) || "select".equals(propertyType) || "status".equals(propertyType)) {
-                            Object optionsObj = propertyDetails.get("options");
-                            if (optionsObj instanceof List<?> options && !options.isEmpty()) {
-                                Map<String, Object> firstOption = (Map<String, Object>) options.get(0);
-                                mappedProperties.put(entry.getKey(), Map.of(propertyType, Map.of("name", firstOption.get("name"))));
-                            }
-                        } else if ("date".equals(propertyType)) {
-                            mappedProperties.put(entry.getKey(), Map.of("date", Map.of("start", "2025-02-10")));
-                        } else if ("checkbox".equals(propertyType)) {
-                            mappedProperties.put(entry.getKey(), Map.of("checkbox", false));
-                        } else if ("number".equals(propertyType)) {
-                            mappedProperties.put(entry.getKey(), Map.of("number", 0));
-                        }
-                    }
-                    return mappedProperties;
-                });
-    }
 }
+

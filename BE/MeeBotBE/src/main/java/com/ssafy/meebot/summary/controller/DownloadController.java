@@ -114,6 +114,7 @@ public class DownloadController {
                                 }
 
                                 String parentId = parentInfo.get("id");
+                                System.out.println("부모 정보!! : " + parentId);
                                 int parentType = switch (parentInfo.get("type")) {
                                     case "database" -> 0;
                                     case "page" -> 1;
@@ -135,6 +136,7 @@ public class DownloadController {
                             });
                 });
     }
+
 
 
     /**
