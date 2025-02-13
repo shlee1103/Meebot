@@ -1,6 +1,5 @@
 import { usePresentationSetting } from "../hooks/usePresentationSetting";
 import { PresentationModal } from "./PresentationModal";
-import settingBtn from "../assets/images/setting_btn.png";
 import { CONFERENCE_STATUS } from "../hooks/usePresentationControls";
 import { useSelector } from "react-redux";
 import { RootState } from "../../stores/store";
@@ -140,7 +139,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const popupContent = getPopupContent();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 py-3">
+    <div className="fixed bottom-0 left-0 right-0 py-2">
       <div className="flex items-center px-3">
         <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
         <div className="flex items-center justify-center gap-7 px-6 py-3 rounded-[5%] absolute left-1/2 transform -translate-x-1/2">
@@ -167,7 +166,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
               {amISharing ? <ScreenShareIcon /> : <ScreenShareOffIcon />}
             </ControlButton>
             <HandButton
-              onHandClick={toggleHand}  
+              onHandClick={toggleHand}
               onArrowClick={toggleHandList}
               isHandActive={isHandRaised}
               isArrowActive={isOpenHandList}
@@ -184,11 +183,42 @@ const ControlBar: React.FC<ControlBarProps> = ({
             </ControlButton>
           </div>
         </div>
-        <button className="p-2 border-none bg-transparent cursor-pointer" onClick={toggleModal}>
-          <img src={settingBtn} alt="Modal" className="w-6 h-6" />
-        </button>
-
-        <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
+        <div className="absolute right-4 hidden lg:block">
+          {role === "admin" && (
+            <div className="flex flex-row items-center gap-4">
+              <button
+                onClick={toggleModal}
+                className="px-4 py-3 rounded-xl bg-[#1f2937] hover:bg-[#374151] 
+                  text-white text-sm font-medium transition-all duration-300 
+                  border border-[#374151] hover:border-[#4B5563]
+                  flex items-center gap-2 shadow-lg hover:shadow-xl font-pretendard"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                발표회 설정
+              </button>
+              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
+            </div>
+          )}
+        </div>
       </div>
 
       <PresentationModal
