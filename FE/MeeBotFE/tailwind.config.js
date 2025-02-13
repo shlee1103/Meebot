@@ -65,6 +65,39 @@ module.exports = {
         blink: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0' }
+        },
+        'tooltip-bounce': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(10px)'
+          },
+          '15%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          },
+          '25%': {
+            transform: 'translateY(-4px)'
+          },
+          '35%': {
+            transform: 'translateY(2px)'
+          },
+          '45%': {
+            transform: 'translateY(-1px)'
+          },
+          '50%, 70%': {
+            transform: 'translateY(0)'
+          },
+          '80%': {
+            transform: 'translateY(-2px)'
+          },
+          '90%': {
+            transform: 'translateY(1px)',
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'translateY(0)',
+            opacity: '0'
+          }
         }
       },
       animation: {
@@ -76,7 +109,9 @@ module.exports = {
         'slide-in-right': 'slideInRight 0.5s ease-in-out forwards',
         sdb: "sdb 1.5s infinite",
         floating: 'floating 2s ease-in-out infinite',
-        blink: 'blink 1s ease-in-out infinite'
+        blink: 'blink 1s ease-in-out infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'tooltip-bounce': 'tooltip-bounce 3s cubic-bezier(.25,0,.75,1)',
       },
       fontSize: {
         // Desktop (lg)
