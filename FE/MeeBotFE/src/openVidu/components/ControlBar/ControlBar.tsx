@@ -15,6 +15,7 @@ import ControlButton from "./ControlButton";
 import HandButton from "./HandButton";
 
 interface ControlBarProps {
+  session: Session | undefined;
   isScreenShared: boolean;
   isHandRaised: boolean;
   toggleAudio: () => void;
@@ -27,12 +28,12 @@ interface ControlBarProps {
   conferenceStatus: string;
   amISharing: boolean;
   currentPresenter: ParticipantInfo | null;
-  session: Session | undefined;
   isSpeaking: boolean;
   changeConferenceStatus: (status: string) => void;
 }
 
 const ControlBar: React.FC<ControlBarProps> = ({
+  session,
   isScreenShared,
   isHandRaised,
   toggleAudio,
@@ -45,7 +46,6 @@ const ControlBar: React.FC<ControlBarProps> = ({
   amISharing,
   conferenceStatus,
   currentPresenter,
-  session,
   isSpeaking,
   changeConferenceStatus,
 }) => {
@@ -226,6 +226,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
       </div>
 
       <PresentationModal
+        session={session}
         isOpen={isModalOpen}
         presentationTime={presentationTime}
         setPresentationTime={setPresentationTime}

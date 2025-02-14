@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
 import SideMenuContent from "./SideMenuContent";
+import MeetingTitle from "./MeetingTitle";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
+import { Session } from "openvidu-browser";
 
 interface SideMenuProps {
   isMenuOpen: boolean;
+  session: Session | undefined;
   sessionId: string;
   participants: ParticipantInfo[];
   conferenceStatus: string;
@@ -13,7 +14,7 @@ interface SideMenuProps {
   currentScript: string;
   myUserName: string;
   messages: {
-    sender: {name: string, image: string};
+    sender: { name: string; image: string };
     text?: string;
     summary?: string;
     question?: string;
@@ -26,6 +27,8 @@ interface SideMenuProps {
 type TabType = "participants" | "chat" | "script";
 
 const SideMenu: React.FC<SideMenuProps> = ({
+  sessionId,
+  session,
   isMenuOpen,
   participants: participantsList,
   conferenceStatus,
@@ -36,7 +39,6 @@ const SideMenu: React.FC<SideMenuProps> = ({
   sendMessage,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("participants");
-  const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
 
   return (
     <div className="relative">
@@ -48,13 +50,13 @@ const SideMenu: React.FC<SideMenuProps> = ({
           w-[380px] h-[calc(100vh-88px)] rounded-l-2xl border-l border-[#1f2937]
           shadow-[-4px_0px_15px_-5px_rgba(0,0,0,0.3)]`}
       >
-        {/* 발표회 정보 */}
-        <div className="h-14 flex items-center justify-between px-4">
-          <span className="font-pretendard text-lg font-semibold">{meetingTitle}</span>
+        {/* 헤더 */}
+        <div className="h-14 flex items-center justify-between px-5">
+          <MeetingTitle roomCode={sessionId} session={session} />
         </div>
 
         {/* 탭 버튼 */}
-        <div className="flex justify-between items-center px-4 pb-3">
+        <div className="flex justify-between items-center px-5 pb-3">
           <div className="flex-1 mx-1 relative group">
             <button
               onClick={() => setActiveTab("participants")}

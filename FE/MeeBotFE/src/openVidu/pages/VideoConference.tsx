@@ -6,8 +6,8 @@ import { useChatGPT } from "../hooks/useChatGPT";
 import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresentationControls";
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
-import { useSelector } from "react-redux";
-import { RootState } from "../../stores/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder, addRaisedHand, removeRaisedHand, clearRaisedHands, addMessage } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar/ControlBar";
@@ -17,7 +17,18 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
+<<<<<<< HEAD
 import BackgroundGradients from "../../components/common/BackgroundGradients";
+=======
+import HandsupList from "../components/HandsupList";
+
+interface QnAMessage {
+  sender: string;
+  text: string;
+  timestamp: number;
+  order: number;
+}
+>>>>>>> 4f00a2b69659f06c1e6dcfb8e8238a8458cf680b
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -29,6 +40,7 @@ const VideoConference: React.FC = () => {
   const isCameraEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
   const isOpen = useRef(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const {
     session,
@@ -46,19 +58,21 @@ const VideoConference: React.FC = () => {
     sendMessage,
   } = useOpenVidu();
 
-  const { isHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
-    publisher,
-    startScreenShareSession,
-    stopScreenShareSession,
-    isScreenShared
-  );
-
-  const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
-
   const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript } = usePresentationControls(
     session,
     myUserName as string
   );
+
+  const { isHandRaised, setIsHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
+    publisher,
+    session,
+    startScreenShareSession,
+    stopScreenShareSession,
+    isScreenShared,
+    conferenceStatus
+  );
+
+  const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
   const { speech, isSpeaking, handleConferenceStatusChange } = useChatGPT(session);
 
@@ -110,29 +124,118 @@ const VideoConference: React.FC = () => {
 
           // 관리자가 질의 응답 시작 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.QNA_ACTIVE) {
+            dispatch(clearRaisedHands());
+            setIsHandRaised(false);
             setConferenceStatus(data.action);
           }
 
           // 관리자가 질의 응답 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.QNA_COMPLETED) {
+            dispatch(clearRaisedHands());
+            setIsHandRaised(false);
             setConferenceStatus(data.action);
+            turnOffAudio();
           }
 
           // 관리자가 발표회 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.CONFERENCE_ENDED) {
+            dispatch(clearRaisedHands());
+            setIsHandRaised(false);
             resetPresenter();
             setConferenceStatus(data.action);
-            setShowFinishPopup(true)
+            setShowFinishPopup(true);
             return;
           }
         }
       });
 
-      // 실시간 스크립트 이벤트 처리
+      // 문장 구분을 위한 헬퍼 함수 추가
+      const formatScript = (text: string) => {
+        const patterns = [
+          // 1. 문장 부호로 끝나는 경우
+          /([^.!?]+[.!?]+)\s*/g, // 기본 문장 부호
+
+          // 2. 존댓말 종결어미
+          /([^습니다]+(습니다|습니까))\s*/g, // ~습니다, ~습니까
+          /([^세요]+(세요|시죠|게요))\s*/g, // ~세요, ~시죠, ~게요
+          /([^합니다]+(합니다|할게요))\s*/g, // ~합니다, ~할게요
+
+          // 3. 발표 상황의 '~다' 종결어미
+          /([^겠]+(겠습니다|하겠습니다))\s*/g, // "발표하겠습니다", "말씀드리겠습니다"
+          /([^니다]+(입니다|였습니다))\s*/g, // "결과입니다", "내용이었습니다"
+          /([^다]+(드리겠습니다|드렸습니다))\s*/g, // "설명드리겠습니다", "말씀드렸습니다"
+          /([^다]+(됩니다|되겠습니다))\s*/g, // "마무리됩니다", "진행되겠습니다"
+          /([^다]+(보겠습니다|봤습니다))\s*/g, // "살펴보겠습니다", "확인해봤습니다"
+          /([^다]+(시작하겠습니다|마치겠습니다))\s*/g, // "시작하겠습니다", "마치겠습니다"
+          /([^니다]+(있습니다|없습니다))\s*/g, // "존재합니다", "필요없습니다"
+          /([^니다]+(나타냅니다|보여줍니다))\s*/g, // "나타냅니다", "보여줍니다"
+
+          // 4. 의문형 종결어미
+          /([^나요]+(나요|까요|려고요|ㄹ까요))\s*/g, // ~나요, ~까요, ~려고요, ~ㄹ까요
+
+          // 5. 기타 종결어미
+          /([^요]+(요|죠|네요))\s*/g, // ~요, ~죠, ~네요
+        ];
+
+        let formattedText = text;
+        patterns.forEach((pattern) => {
+          formattedText = formattedText.replace(pattern, "$1\n");
+        });
+
+        return formattedText.trim();
+      };
+
+      // 시그널 핸들러 수정
       session.on("signal:stt-transcript", (event) => {
         if (event.data) {
           const { text } = JSON.parse(event.data);
-          setCurrentScript(text);
+          // 포맷팅된 텍스트로 설정
+          const formattedText = formatScript(text);
+          setCurrentScript(formattedText);
+        }
+      });
+
+      // 프레젠테이션 세팅에 대한 시그널
+      session.on("signal:presentation-setting", (event) => {
+        if (event.data) {
+          const { qnaTime, presentationTime, presentersOrder } = JSON.parse(event.data);
+          dispatch(setQnATime(qnaTime));
+          dispatch(setPresentationTime(presentationTime));
+          dispatch(updateSpeakersOrder(presentersOrder));
+        }
+      });
+
+      // 방제목 변경 시그널
+      session.on("signal:meeting-title-change", (event) => {
+        if (event.data) {
+          const { title } = JSON.parse(event.data);
+          dispatch(setMeetingTitle(title));
+        }
+      });
+
+      // 프레젠테이션 세팅에 대한 시그널
+      session.on("signal:presentation-setting", (event) => {
+        if (event.data) {
+          const { qnaTime, presentationTime, presentersOrder } = JSON.parse(event.data);
+          dispatch(setQnATime(qnaTime));
+          dispatch(setPresentationTime(presentationTime));
+          dispatch(updateSpeakersOrder(presentersOrder));
+        }
+      });
+
+      // 방제목 변경 시그널
+      session.on("signal:meeting-title-change", (event) => {
+        if (event.data) {
+          const { title } = JSON.parse(event.data);
+          dispatch(setMeetingTitle(title));
+        }
+      });
+
+      // QnA 트랜스크립트 이벤트 리스너 수정
+      session.on("signal:qna-transcript", (event) => {
+        if (event.data) {
+          const messageData: QnAMessage = JSON.parse(event.data);
+          dispatch(addMessage(messageData));
         }
       });
     }
@@ -163,6 +266,42 @@ const VideoConference: React.FC = () => {
     };
   }, [leaveSession]);
 
+  // 손들기 로직입니다
+  useEffect(() => {
+    if (!session) return;
+
+    if (conferenceStatus === CONFERENCE_STATUS.QNA_COMPLETED) {
+      dispatch(clearRaisedHands());
+      setIsHandRaised(false);
+    }
+
+    const handleHandUpSignal = (event: any) => {
+      if (event.data) {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.isRaising) {
+            dispatch(
+              addRaisedHand({
+                connectionId: event.from.connectionId,
+                userName: data.userName,
+              })
+            );
+          } else {
+            dispatch(removeRaisedHand(event.from.connectionId));
+          }
+        } catch (error) {
+          console.log("에러 발생:", error);
+        }
+      }
+    };
+
+    session.on("signal:handup", handleHandUpSignal);
+
+    return () => {
+      session.off("signal:handup", handleHandUpSignal);
+    };
+  }, [session, conferenceStatus]);
+
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
       <BackgroundGradients/>
@@ -177,9 +316,11 @@ const VideoConference: React.FC = () => {
           <div className="flex-1 min-h-0">
             <MainVideo mainStreamManager={mainStreamManager} />
           </div>
-          <div className="flex-none">
+          <div className="flex flex-none justify-between items-center">
             <MeeU speech={speech} />
+            <HandsupList conferenceStatus={conferenceStatus} />
           </div>
+<<<<<<< HEAD
         </div>
         <div className="pb-20">
           <button
@@ -225,6 +366,52 @@ const VideoConference: React.FC = () => {
               />
           </div>
         </div>
+=======
+
+          {/* 컨트롤 영역 */}
+          <div className="flex items-center p-2 flex-none">
+            {/* 좌측 */}
+            <div className="flex-1">
+              <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
+            </div>
+            {/* 중앙 */}
+            <div className="flex-1 flex justify-center">
+              <ControlBar
+                session={session}
+                isScreenShared={isScreenShared}
+                isHandRaised={isHandRaised}
+                toggleAudio={toggleAudio}
+                toggleVideo={toggleVideo}
+                startScreenShare={startScreenShare}
+                stopScreenShare={stopScreenShare}
+                toggleHand={toggleHand}
+                leaveSession={leaveSession}
+                participants={participants}
+                conferenceStatus={conferenceStatus}
+                amISharing={amISharing}
+                currentPresenter={currentPresenter}
+              />
+            </div>
+            {/* 우측 */}
+            <div className="flex-1 flex justify-end">
+              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={handleStatusChange} />
+            </div>
+          </div>
+        </div>
+        <SideMenu
+          session={session}
+          isMenuOpen={isMenuOpen}
+          sessionId={sessionId as string}
+          participants={participants}
+          onToggle={() => setIsMenuOpen(!isMenuOpen)}
+          conferenceStatus={conferenceStatus}
+          currentPresenter={currentPresenter}
+          currentScript={currentScript}
+          myUserName={myUserName as string}
+          messages={messages}
+          sendMessage={sendMessage}
+        />
+>>>>>>> 4f00a2b69659f06c1e6dcfb8e8238a8458cf680b
       </div>
 
       <ControlBar
@@ -251,10 +438,14 @@ const VideoConference: React.FC = () => {
         </div>
       )}
 
+<<<<<<< HEAD
       <FinishPopup
         isOpen={showFinishPopup}
         onClose={() => setShowFinishPopup(false)}
       ></FinishPopup>
+=======
+      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
+>>>>>>> 4f00a2b69659f06c1e6dcfb8e8238a8458cf680b
     </div>
   );
 };

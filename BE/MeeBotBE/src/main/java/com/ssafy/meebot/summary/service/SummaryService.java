@@ -52,17 +52,22 @@ public class SummaryService {
         Integer presentationTeamsNum = (Integer) request.get("presentation_teams_num");
         Integer presentationTime = (Integer) request.get("presentation_time");
         Integer questionTime = (Integer) request.get("question_time");
+        List<String> presenters = (List<String>) request.get("presenters");
 
         StringBuilder query = new StringBuilder();
         query.append("발표를 시작합니다. 총 ").append(presentationTeamsNum).append("개의 팀이 발표하고 한 팀당 ")
-                .append(presentationTime).append("분 동안 발표를 진행합니다. 질문 시간은 ").append(questionTime).append("분 입니다.\n\n");
+                .append(presentationTime).append("분 동안 발표를 진행합니다. 질문 시간은 ")
+                .append(questionTime).append("분 이고 발표 순서는").append(presenters)
+                .append(questionTime).append("순 입니다.\n\n");
 
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content",
                                 "너는 발표 진행을 맡은 사회자고 이름은 미유야. 발표 흐름을 안내하는 역할을 해줘. " +
-                                        "친근하고 활기찬 톤으로 발표자를 응원하고 격려하는 멘트를 포함해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
+                                        "발표 주제, 발표자 순서를 먼저 말하고 그 다음으로" +
+                                        "첫 번째 발표자에게 화면 공유를 켜고, 공유가 완료되면 관리자는 발표 시작 버튼을 눌러달라고 해줘." +
+                                        " 답변은 이모티콘 없이 텍스트로만 해줘."),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -96,7 +101,7 @@ public class SummaryService {
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 이전 발표자의 발표가 끝나고, 다음과 같이 현재 발표자가 발표를 시작할거야. 화면 공유를 시작해 달라는 말과 함께" +
+                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 이전 발표자의 발표가 끝나고, 다음과 같이 현재 발표자가 발표를 시작할거야." +
                                         "이를 안내해줘. 친근하고 활기찬 톤으로 발표자를 응원하고 격려하는 멘트를 포함해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
                         Map.of("role", "user", "content", query.toString())
                 ),
@@ -390,4 +395,38 @@ public class SummaryService {
         });
     }
 
+    public Mono<String> generateEndingMessage(Map<String, Object> request) {
+        String roomTitle = (String) request.get("roomTitle");
+
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role", "system", "content",
+                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. " +
+                                        "발표회가 모두 끝났어. 발표회를 마무리하는 감동적이고 마음을 울릴만한 멘트를 해줘. " +
+                                        "발표자들을 응원하고 격려하는 내용을 포함해줘. 안녕하세요는 빼주면 좋겠어. 3~4줄 정도로 말해줘."),
+                        Map.of("role", "user", "content",
+                                String.format("'%s' 발표회를 마무리하는 멘트를 해줘.", roomTitle))
+                ),
+                "temperature", 0.7
+        );
+
+        return webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                        return (String) message.get("content");
+                    }
+                    return "발표회를 마무리합니다. 모든 발표자분들 수고하셨습니다.";
+                });
+    }
+
 }
+
+
+

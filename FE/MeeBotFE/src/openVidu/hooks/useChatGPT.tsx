@@ -156,10 +156,18 @@ export const useChatGPT = (session: Session | undefined) => {
 
       case CONFERENCE_STATUS.QNA_ACTIVE: {
         const nextPresenterIndex = currentPresenterIndex + 1;
-        const currentPresenter = presentersOrder[currentPresenterIndex].name;
-        const nextPresenter = presentersOrder[nextPresenterIndex].name;
+        const currentPresenter = presentersOrder[currentPresenterIndex]?.name;
+
+        if (!currentPresenter) {
+          console.error("Current presenter not found");
+          break;
+        }
+
         if (nextPresenterIndex < presentersOrder.length) {
-          await speakFixedMent(FIXED_MENTS.QNA_END(currentPresenter, nextPresenter));
+          const nextPresenter = presentersOrder[nextPresenterIndex]?.name;
+          if (nextPresenter) {
+            await speakFixedMent(FIXED_MENTS.QNA_END(currentPresenter, nextPresenter));
+          }
         } else {
           await speakFixedMent(FIXED_MENTS.FINAL_PRESENTATION_COMPLETED(currentPresenter));
         }

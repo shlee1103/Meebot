@@ -5,8 +5,10 @@ import { ParticipantInfo } from "../../hooks/useOpenVidu";
 import { H3, Lg, Mn, P, Sm } from "../../../components/common/Typography";
 import { RootState } from "../../../stores/store";
 import { useSelector } from "react-redux";
+import { Session } from "openvidu-browser";
 
 interface PresentationModalProps {
+  session: Session | undefined;
   isOpen: boolean;
   presentationTime: number;
   setPresentationTime: (time: number) => void;
@@ -24,6 +26,7 @@ interface PresentationModalProps {
 }
 
 export const PresentationModal: React.FC<PresentationModalProps> = ({
+  session,
   isOpen,
   presentationTime,
   setPresentationTime,
@@ -45,6 +48,24 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
   const timeSelectRef = useRef<HTMLDivElement>(null);
   const qnaSelectRef = useRef<HTMLDivElement>(null);
   const { meetingTitle } = useSelector((state: RootState) => state.meetingTitle);
+
+  const handleCompleteSetting = () => {
+    if (!session) {
+      alert("입력하신 정보가 저장되지 못했습니다.");
+      return;
+    }
+
+    session.signal({
+      data: JSON.stringify({
+        qnaTime: qnaTime,
+        presentationTime: presentationTime,
+        presentersOrder: presentersOrder,
+      }),
+      type: "presentation-setting",
+    });
+
+    onConfirm();
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -70,7 +91,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
     };
   }, []);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   return (
     <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1002]
@@ -345,7 +366,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
               <Sm>취소</Sm>
             </button>
             <button
-              onClick={onConfirm}
+              onClick={handleCompleteSetting}
               className="px-5 py-2.5 bg-[#6B4CFF] text-white rounded-lg
                 hover:bg-[#5940CC] transition-all duration-300 ease-in-out
                 font-medium shadow-lg shadow-[#6B4CFF]/20"
