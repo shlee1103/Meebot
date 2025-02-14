@@ -1,6 +1,7 @@
 import React from "react";
 import { StreamManager } from "openvidu-browser";
 import OpenViduVideoComponent from "./OpenViduVideoComponent";
+import { Mn } from "../../components/common/Typography";
 
 interface Props {
   streamManager: StreamManager;
@@ -16,8 +17,11 @@ const UserVideoComponent: React.FC<Props> = ({ streamManager }) => {
       {streamManager !== undefined ? (
         <div className="relative w-full h-full">
           <OpenViduVideoComponent streamManager={streamManager} />
-          <div className="absolute top-0 left-0 px-1.5 text-black font-bold bg-white text-sm">
-            <p className="m-0">{getNicknameTag()}</p>
+          <div className="absolute top-2 left-2 px-2 py-0.5 
+            bg-black/40 backdrop-blur-[2px] rounded-md">
+            <Mn className="text-white text-sm">
+              {getNicknameTag()}
+            </Mn>
           </div>
         </div>
       ) : null}
