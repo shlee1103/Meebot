@@ -55,3 +55,12 @@ notion:
     secret: ${NOTION_CLIENT_SECRET}
   base:
     uri: ${NOTION_BASE_URI}
+
+
+pdf:
+  storage:
+    path: ${PDF_STORAGE_PATH}
+  logo:
+    path: ${PDF_LOGO_PATH}
+  font:
+    path: ${PDF_FONT_PATH}
