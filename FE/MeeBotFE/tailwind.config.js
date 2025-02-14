@@ -3,6 +3,8 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      transform: ['group-focus', 'select-open'],
+      rotate: ['group-focus', 'select-open'],
       container: {
         center: true,
         padding: {
@@ -52,7 +54,73 @@ module.exports = {
         slideInRight: {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' }
-        }
+        },
+        sdb: {
+          "0%": { transform: "rotate(-45deg) translate(0, 0)", opacity: "0" },
+          "50%": { opacity: "1" },
+          "100%": { transform: "rotate(-45deg) translate(-20px, 20px)", opacity: "0" },
+        },
+        floating: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        blink: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' }
+        },
+        'tooltip-bounce': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(10px)'
+          },
+          '15%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          },
+          '25%': {
+            transform: 'translateY(-4px)'
+          },
+          '35%': {
+            transform: 'translateY(2px)'
+          },
+          '45%': {
+            transform: 'translateY(-1px)'
+          },
+          '50%, 70%': {
+            transform: 'translateY(0)'
+          },
+          '80%': {
+            transform: 'translateY(-2px)'
+          },
+          '90%': {
+            transform: 'translateY(1px)',
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'translateY(0)',
+            opacity: '0'
+          }
+        },
+        modalFadeIn: {
+          '0%': { 
+            opacity: '0',
+            transform: 'translate3d(0, 20px, 0) scale(0.95)'
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'translate3d(0, 0, 0) scale(1)'
+          },
+        },
+        bounce: {
+          '0%, 100%': {
+            transform: 'translateY(-10%)',
+            animationTimingFunction: 'cubic-bezier(0.8, 0, 1, 1)',
+          },
+          '50%': {
+            transform: 'translateY(0)',
+            animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
+          },
+        },
       },
       animation: {
         gradient: 'gradient 8s linear infinite',
@@ -60,7 +128,14 @@ module.exports = {
         pulse: 'pulse 2s ease-in-out infinite',
         shake: "shake 0.3s ease-in-out",
         'slide-out-left': 'slideOutLeft 0.5s ease-in-out forwards',
-        'slide-in-right': 'slideInRight 0.5s ease-in-out forwards'
+        'slide-in-right': 'slideInRight 0.5s ease-in-out forwards',
+        sdb: "sdb 1.5s infinite",
+        floating: 'floating 2s ease-in-out infinite',
+        blink: 'blink 1s ease-in-out infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'tooltip-bounce': 'tooltip-bounce 3s cubic-bezier(.25,0,.75,1)',
+        modalFadeIn: 'modalFadeIn 0.3s ease-out forwards',
+        'bounce-slow': 'bounce 3s ease-in-out infinite',
       },
       fontSize: {
         // Desktop (lg)
@@ -85,11 +160,11 @@ module.exports = {
           fontWeight: '500',
         }],
         'lg-lg': ['1.5rem', { // 24px
-          lineHeight: '120%',
+          lineHeight: '130%',
           fontWeight: '500',
         }],
         'p-lg': ['1.25rem', { // 20px
-          lineHeight: '120%',
+          lineHeight: '130%',
           letterSpacing: '0em',
           fontWeight: '400',
         }],
@@ -126,11 +201,11 @@ module.exports = {
           fontWeight: '500',
         }],
         'lg-md': ['1.375rem', { // 22px
-          lineHeight: '120%',
+          lineHeight: '130%',
           fontWeight: '500',
         }],
         'p-md': ['1.125rem', { // 18px
-          lineHeight: '120%',
+          lineHeight: '130%',
           letterSpacing: '0em',
           fontWeight: '400',
         }],
@@ -167,11 +242,11 @@ module.exports = {
           fontWeight: '500',
         }],
         'lg-sm': ['1.25rem', { // 20px
-          lineHeight: '120%',
+          lineHeight: '130%',
           fontWeight: '500',
         }],
         'p-sm': ['1rem', { // 16px
-          lineHeight: '120%',
+          lineHeight: '130%',
           letterSpacing: '0em',
           fontWeight: '400',
         }],
@@ -197,6 +272,10 @@ module.exports = {
       textShadow: {
         sm: "0 1px 2px rgba(0, 0, 0, 0.25)",
       },
+      translate: {
+        'full': '100%',
+        '-full': '-100%'
+      }
     },
   },
   plugins: [

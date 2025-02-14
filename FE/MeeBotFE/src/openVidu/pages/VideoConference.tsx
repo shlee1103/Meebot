@@ -10,16 +10,15 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder, addRaisedHand, removeRaisedHand, clearRaisedHands, addMessage } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
-import ControlBar from "../components/ControlBar";
+import ControlBar from "../components/ControlBar/ControlBar";
 import SideMenu from "../components/SideMenu/SideMenu";
-import Timer from "../components/Timer";
 import MeeU from "../components/MeeU";
-import ConferenceStatusButton from "../components/ConferenceStatusButton";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
 import HandsupList from "../components/HandsupList";
+import BackgroundGradients from "../../components/common/BackgroundGradients";
 
 interface QnAMessage {
   sender: string;
@@ -302,77 +301,98 @@ const VideoConference: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
+      <BackgroundGradients/>
+
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
+
       <div className="flex flex-1 min-h-0">
-        <div className={`flex flex-col transition-all duration-300 ease-in-out ${isMenuOpen ? "w-[calc(100%-380px)]" : "w-full"}`}>
-          <div className="flex-none">
+        <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "lg:w-[calc(100%-380px)]" : "lg:w-full"}`}>
+          <div className="flex-none hidden">
             <ParticipantsList subscribers={subscribers} currentSlide={currentSlide} isMenuOpen={isMenuOpen} handlePrevSlide={handlePrevSlide} handleNextSlide={handleNextSlide} />
           </div>
           <div className="flex-1 min-h-0">
             <MainVideo mainStreamManager={mainStreamManager} />
           </div>
-          <div className="flex flex-none justify-between items-center">
+          <div className="flex-none hidden lg:block md:block">
             <MeeU speech={speech} />
             <HandsupList conferenceStatus={conferenceStatus} />
           </div>
-
-          {/* 컨트롤 영역 */}
-          <div className="flex items-center p-2 flex-none">
-            {/* 좌측 */}
-            <div className="flex-1">
-              <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
-            </div>
-            {/* 중앙 */}
-            <div className="flex-1 flex justify-center">
-              <ControlBar
-                session={session}
-                isScreenShared={isScreenShared}
-                isHandRaised={isHandRaised}
-                toggleAudio={toggleAudio}
-                toggleVideo={toggleVideo}
-                startScreenShare={startScreenShare}
-                stopScreenShare={stopScreenShare}
-                toggleHand={toggleHand}
-                leaveSession={leaveSession}
-                participants={participants}
-                conferenceStatus={conferenceStatus}
-                amISharing={amISharing}
-                currentPresenter={currentPresenter}
+        </div>
+        <div className="pb-20">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`fixed top-[50%] right-0 transform -translate-y-1/2
+              w-7 h-28 
+              bg-[#111827] hover:bg-[#1f2937]
+              transition-all duration-300 ease-in-out
+              items-center justify-center
+              border-y border-l border-[#1f2937]
+              rounded-l-full
+              cursor-pointer
+              shadow-[-4px_0px_12px_-2px_rgba(0,0,0,0.3)]
+              hidden lg:flex
+              ${isMenuOpen ? 'right-[380px]' : 'right-0'}`}
+          >
+            <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : ''}`}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#6B4CFF"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="opacity-90 hover:opacity-100 transition-opacity"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </span>
+          </button>
+          <div className="pb-20 hidden lg:block">
+            <SideMenu
+              isMenuOpen={isMenuOpen}
+              sessionId={sessionId as string}
+              session={session}
+              participants={participants}
+              conferenceStatus={conferenceStatus}
+              currentPresenter={currentPresenter}
+              currentScript={currentScript}
+              myUserName={myUserName as string}
+              messages={messages}
+              sendMessage={sendMessage}
               />
-            </div>
-            {/* 우측 */}
-            <div className="flex-1 flex justify-end">
-              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={handleStatusChange} />
-            </div>
           </div>
         </div>
-        <SideMenu
-          session={session}
-          isMenuOpen={isMenuOpen}
-          sessionId={sessionId as string}
-          participants={participants}
-          onToggle={() => setIsMenuOpen(!isMenuOpen)}
-          conferenceStatus={conferenceStatus}
-          currentPresenter={currentPresenter}
-          currentScript={currentScript}
-          myUserName={myUserName as string}
-          messages={messages}
-          sendMessage={sendMessage}
-        />
       </div>
 
-      {/* LoadingOverlay를 마지막에 렌더링하여 최상단에 위치하도록 함 */}
+      <ControlBar
+        isScreenShared={isScreenShared}
+        isHandRaised={isHandRaised}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+        startScreenShare={startScreenShare}
+        stopScreenShare={stopScreenShare}
+        toggleHand={toggleHand}
+        leaveSession={leaveSession}
+        participants={participants}
+        conferenceStatus={conferenceStatus}
+        amISharing={amISharing}
+        currentPresenter={currentPresenter}
+        session={session}
+        isSpeaking={isSpeaking}
+        changeConferenceStatus={handleStatusChange}
+      />
+
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] pointer-events-auto">
-          <LoadingOverlay
-            onLoadingComplete={() => {
-              setIsLoading(false);
-            }}
-          />
+          <LoadingOverlay onLoadingComplete={() => setIsLoading(false)} />
         </div>
       )}
 
-      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
+      <FinishPopup
+        isOpen={showFinishPopup}
+        onClose={() => setShowFinishPopup(false)}
+      ></FinishPopup>
     </div>
   );
 };
