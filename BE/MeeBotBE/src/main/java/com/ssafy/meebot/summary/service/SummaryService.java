@@ -40,9 +40,6 @@ public class SummaryService {
     @Value("${openai.model}")
     private String model;
 
-    @Value("${pdf.storage.path}")
-    private String pdfLocation;
-
     private final String gptModel = "gpt-3.5-turbo";
 
     private final WebClient webClient;

@@ -88,9 +88,6 @@ public class DownloadController {
         String stateToken = stateParts[0];  // 원래 state 값
         String roomCode = stateParts.length > 1 ? stateParts[1] : "null";
 
-        System.out.println("Extracted roomCode: " + roomCode);
-        System.out.println("Extracted stateToken: " + stateToken);
-
         // JWT 기반 state 검증
         if (!verifyStateToken(stateToken)) {
             return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -114,7 +111,6 @@ public class DownloadController {
                                 }
 
                                 String parentId = parentInfo.get("id");
-                                System.out.println("부모 정보!! : " + parentId);
                                 int parentType = switch (parentInfo.get("type")) {
                                     case "database" -> 0;
                                     case "page" -> 1;
