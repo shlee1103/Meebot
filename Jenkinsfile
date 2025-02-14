@@ -93,6 +93,9 @@ pipeline {
                         -e "CLOVA_REQUEST_ID=${CLOVA_REQUEST_ID}" \
                         -e "APP_BASE_URL=${APP_BASE_URL}" \
                         -e "OPENAI_API_KEY=${OPENAI_API_KEY}" \
+                        -e "OPENAI_API_KEY=${NOTION_CLIENT_ID}" \
+                        -e "OPENAI_API_KEY=${NOTION_CLIENT_SECRET}" \
+                        -e "OPENAI_API_KEY=${NOTION_BASE_URI}" \
                         ${DOCKER_IMAGE}:${DOCKER_TAG}
 
                         echo "Checking running container logs..."
