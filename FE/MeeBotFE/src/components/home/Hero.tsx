@@ -47,7 +47,28 @@ const Hero = () => {
             와 함께 더 효율적이고 스마트한 화상 회의를 시작하세요
           </P>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xl animate-fade-in-up animation-delay-600">
+          <div className="flex flex-col gap-2 text-white/80 animate-fade-in-up animation-delay-800">
+            <div className="flex items-center gap-2 hover:translate-x-2 transition-transform duration-300">
+              <svg className="w-5 h-5 text-[#1AEBB8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="font-pretendard font-medium">AI가 자동으로 발표회를 진행하고 요약해드립니다</span>
+            </div>
+            <div className="flex items-center gap-2 hover:translate-x-2 transition-transform duration-300">
+              <svg className="w-5 h-5 text-[#1AEBB8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="font-pretendard font-medium">실시간 음성 인식으로 발표 내용을 텍스트로 확인</span>
+            </div>
+            <div className="flex items-center gap-2 hover:translate-x-2 transition-transform duration-300">
+              <svg className="w-5 h-5 text-[#1AEBB8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="font-pretendard font-medium">AI가 발표회에 맞는 질문을 추천해드립니다</span>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 w-full max-w-xl animate-fade-in-up animation-delay-600">
             <button
               onClick={() => clickModal("create")}
               className="feature-card w-full sm:w-64 bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] backdrop-blur-sm rounded-xl py-4 px-8 border border-[#8B5CF6]/20 transition-all duration-300 hover:shadow-lg hover:shadow-[#8B5CF6]/20 hover:scale-[1.02] hover:-translate-y-1"
@@ -62,35 +83,14 @@ const Hero = () => {
               <span className="text-white/90 font-pretendard font-medium text-xl">회의 참여하기</span>
             </button>
           </div>
-
-          <Modal isOpen={isOpenModal} onClose={closeModal}>
-            {modalType === "create" && accessToken && <MeetingCreatePopup onClose={closeModal} />}
-            {modalType === "create" && !accessToken && <LoginPopup onClose={closeModal} />}
-            {modalType === "join" && <MeetingJoinPopup onClose={closeModal} />}
-          </Modal>
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 text-white/80 animate-fade-in-up animation-delay-800">
-          <div className="flex items-center gap-2 hover:translate-x-2 transition-transform duration-300">
-            <svg className="w-5 h-5 text-[#1AEBB8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="font-pretendard font-medium">AI가 자동으로 발표회를 진행하고 요약해드립니다</span>
-          </div>
-          <div className="flex items-center gap-2 hover:translate-x-2 transition-transform duration-300">
-            <svg className="w-5 h-5 text-[#1AEBB8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="font-pretendard font-medium">실시간 음성 인식으로 발표 내용을 텍스트로 확인</span>
-          </div>
-          <div className="flex items-center gap-2 hover:translate-x-2 transition-transform duration-300">
-            <svg className="w-5 h-5 text-[#1AEBB8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="font-pretendard font-medium">AI가 발표회에 맞는 질문을 추천해드립니다</span>
-          </div>
-        </div>
       </div>
+      <Modal isOpen={isOpenModal} onClose={closeModal}>
+        {modalType === "create" && accessToken && <MeetingCreatePopup onClose={closeModal} />}
+        {modalType === "create" && !accessToken && <LoginPopup onClose={closeModal} />}
+        {modalType === "join" && <MeetingJoinPopup onClose={closeModal} />}
+      </Modal>
     </div>
   )
 }
