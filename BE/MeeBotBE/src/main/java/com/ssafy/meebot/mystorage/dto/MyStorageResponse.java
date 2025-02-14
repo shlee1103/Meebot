@@ -12,6 +12,7 @@ public class MyStorageResponse {
 
     private String roomCode;
     private String roomTitle;
-    private String content;
+    private String notionContent;
+    private String pdfLink;
     private LocalDateTime createdAt;
 }

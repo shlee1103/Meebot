@@ -1,6 +1,7 @@
 package com.ssafy.meebot.summary.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.meebot.summary.repository.FinalSummarizeRepository;
 import com.ssafy.meebot.summary.entity.Answer;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,8 @@ public class SummaryService {
     @Value("${openai.model}")
     private String model;
 
+    private final String gptModel = "gpt-3.5-turbo";
+
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final InterimSummarizeRepository interimSummarizeRepository;
@@ -44,6 +49,10 @@ public class SummaryService {
     private final AnswerRepository answerRepository;
     private final RoomRepository roomRepository;
     private final FinalSummarizeRepository finalSummarizeRepository;
+
+    public List<Question> getQuestionsByRoomCode(String roomCode) {
+        return questionRepository.findByRoom_RoomCodeOrderByPresentationOrder(roomCode);
+    }
 
     /**
      * 발표 팀 수, 발표 시간, 질의응답 시간 줘야함
@@ -122,7 +131,6 @@ public class SummaryService {
                     return "OpenAI 응답 실패";
                 });
     }
-
 
 
     public Mono<ResponseEntity<Map<String, Object>>> generateSummaryAndQuestions(Map<String, Object> request) {
@@ -204,9 +212,11 @@ public class SummaryService {
         return interimSummarizeRepository.findByRoomOrderByPresentationOrderAsc(Room.builder().roomCode(roomCode).build());
     }
 
-    public Mono<ResponseEntity<Map<String, Object>>> finalSummarize(Map<String, Object> request) {
+    public Mono<ResponseEntity<Map<String, Object>>> finalSummarize(Map<String, Object> request) throws JsonProcessingException {
         String roomCode = (String) request.get("roomCode");
         Room room = roomRepository.findByRoomCode(roomCode);
+        // order(발표 순서) 기준으로 question 불러옴 -> question_id 순으로 final script에 저장
+        List<Question> questions = getQuestionsByRoomCode(roomCode);
 
         if (room == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -225,23 +235,192 @@ public class SummaryService {
                     )));
         }
 
-        StringBuilder query = new StringBuilder();
+        // JSON 데이터 생성
+        List<Map<String, Object>> jsonData = new ArrayList<>();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 방 제목 저장
+        jsonData.add(Map.of("room_title", room.getRoomTitle()));
+        jsonData.add(Map.of("date", room.getCreatedAt().format(formatter)));
         for (InterimSummary summary : summaries) {
             String presenter = summary.getPresenter();
             String content = summary.getContent();
-            query.append("발표자: ").append(presenter).append("\n");
-            query.append(content).append("\n");
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            // JSON 문자열을 JsonNode로 변환
+            JsonNode rootNode = objectMapper.readTree(content);
+            String summaryContent = rootNode.get("summary").asText();
+
+            // 발표 순서와 동일한 질문 찾기
+            int presentationOrder = summary.getPresentationOrder();
+            List<Question> filteredQuestions = questions.stream()
+                    .filter(q -> q.getPresentationOrder() != null && q.getPresentationOrder() == presentationOrder)
+                    .toList();
+
+            for (Question q : filteredQuestions) {
+                System.out.println(q.getContent());
+            }
+            // 질문-답변 리스트 생성
+            List<Map<String, String>> questionList = new ArrayList<>();
+            for (Question question : filteredQuestions) {
+                Integer questionId = question.getId();
+
+                String questionContent = question.getContent();
+
+                List<Answer> answers = answerRepository.findByQuestionId(questionId);
+                String answerContent = answers.isEmpty() ? "답변 없음" : answers.get(0).getContent();
+
+                System.out.println("질문: " + questionContent);
+                System.out.println("대답: " + answerContent);
+                questionList.add(Map.of("question", questionContent, "answer", answerContent));
+            }
+
+            // 발표 데이터 저장
+            Map<String, Object> presenterData = new HashMap<>();
+            presenterData.put("presenter", presenter);
+            presenterData.put("content", summaryContent);
+            presenterData.put("questions", questionList);
+
+            jsonData.add(presenterData);
         }
 
+        // JSON 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonPayload = objectMapper.writeValueAsString(jsonData);
+        System.out.println("JSON Payload: " + jsonPayload);
+
         Map<String, Object> requestBody = Map.of(
-                "model", model,
+                "model", gptModel,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "너는 발표 진행 사회자 역할을 맡고 있어. 지금 발표회가 종료되었고 오늘 발표회에서 진행했던 모든 내용들을 요약해줘. 반환할 형식은 다음과 같아:\n" +
-                                        "{\n  \"topic\": \"오늘 발표회의 주제(요약해서)\",\n  \"presenters\": \"오늘 발표한 사람들 (발표순서대로)\",\n  \"summary\": \"오늘 발표 내용 요약\"\n}"),
-                        Map.of("role", "user", "content", query.toString())
+                                "당신은 발표 진행 사회자입니다. 발표회가 종료되었고, 오늘 발표회의 내용을 요약본으로 정리해야 합니다.\n" +
+                                        "주어진 JSON 데이터를 기반으로 아래와 같은 구조의 JSON을 생성해주세요. " +
+                                        "백틱(`)이나 마크다운 코드 블록(```json) 없이 순수 JSON만 응답하세요.\n" +
+                                        "주어진 JSON 데이터를 기반으로 정확히 구조화된 JSON으로 응답하세요.\n" +
+                                        "pdf_html은 xhtml로 작성하세요.\n" +
+                                        "각 presenter의 content와 questions는 입력된 순서대로 유지되어야 합니다.\n" +
+                                        "\n" +
+                                        "{\n" +
+                                        "    \"notion_rich_text\": {\n" +
+                                        "        \"properties\": {\n" +
+                                        "            \"title\": {\n" +
+                                        "                \"title\": [\n" +
+                                        "                    {\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"[room_title 값]\"\n" +
+                                        "                        }\n" +
+                                        "                    }\n" +
+                                        "                ]\n" +
+                                        "            }\n" +
+                                        "        },\n" +
+                                        "        \"children\": [\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"📅 [date를 'YYYY년 MM월 DD일' 형식으로 변환]\" }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n\n\n\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            }\n" +
+                                        "        ]\n" +
+                                        "    },\n" +
+                                        "    \"pdf_html\": {" +
+                                        "        \"properties\": {\n" +
+                                        "            \"title\": {\n" +
+                                        "                \"title\": [\n" +
+                                        "                    {\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"[room_title 값]\"\n" +
+                                        "                        }\n" +
+                                        "                    }\n" +
+                                        "                ]\n" +
+                                        "            }\n" +
+                                        "        },\n" +
+                                        "        \"children\": [\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"📅 [date를 'YYYY년 MM월 DD일' 형식으로 변환]\" }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            }\n" +
+                                        "        ]\n" +
+                                        "    }\n" +
+                                        "}\n" +
+                                        "\n" +
+                                        "그 다음, 각 presenter에 대해 순서대로 다음 구조를 notion_rich_text에 추가:\n" +
+                                        "\n" +
+                                        "1. 발표자 표시:\n" +
+                                        "{\n" +
+                                        "    \"object\": \"block\",\n" +
+                                        "    \"type\": \"paragraph\",\n" +
+                                        "    \"paragraph\": {\n" +
+                                        "        \"rich_text\": [{\n" +
+                                        "            \"type\": \"text\",\n" +
+                                        "            \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [presenter 이름]\" }\n\n" +
+                                        "        }]\n" +
+                                        "    }\n" +
+                                        "}\n" +
+                                        "\n" +
+                                        "2. 발표 내용 요약:\n" +
+                                        "{\n" +
+                                        "    \"object\": \"block\",\n" +
+                                        "    \"type\": \"callout\",\n" +
+                                        "    \"callout\": {\n" +
+                                        "        \"rich_text\": [{\n" +
+                                        "            \"type\": \"text\",\n" +
+                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content]\" }\n\n" +
+                                        "        }],\n" +
+                                        "        \"icon\": { \"emoji\": \"✨\" }\n" +
+                                        "    }\n" +
+                                        "}\n" +
+                                        "\n" +
+                                        "3. 질의응답 (questions가 있는 경우):\n" +
+                                        "{\n" +
+                                        "    \"object\": \"block\",\n" +
+                                        "    \"type\": \"callout\",\n" +
+                                        "    \"callout\": {\n" +
+                                        "        \"rich_text\": [{\n" +
+                                        "            \"type\": \"text\",\n" +
+                                        "            \"text\": { \"content\": \"질의응답\\n[presenter의 questions를 Q: ,\n A: 형식으로 줄바꿈하여 표시]\" }\n" +
+                                        "        }],\n" +
+                                        "        \"icon\": { \"emoji\": \"💬\" }\n" +
+                                        "    }\n" +
+                                        "}\n" +
+                                        "\n" +
+                                        "응답은 반드시 순수 JSON 형식이어야 하며, 불필요한 설명이나 마크다운, 백틱을 포함하지 않아야 합니다. " +
+                                        "pdf_html json 내용에는 아무 내용도 들어가지 않아야 합니다." +
+                                        "notion_rich_text와 pdf_html은 구조와 내용이 완전히 동일해야 합니다."),
+                        Map.of("role", "user", "content", jsonPayload)
                 ),
-                "temperature", 0.6
+                "temperature", 0.5
         );
 
         return webClient.post()
@@ -252,21 +431,27 @@ public class SummaryService {
                 .map(response -> {
                     List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
                     if (!choices.isEmpty()) {
-                        String assistantContent = (String) ((Map<String, Object>) choices.get(0).get("message")).get("content");
+                        Map<String, Object> messageMap = (Map<String, Object>) choices.get(0).get("message");
+                        String assistantContent = (String) messageMap.get("content");
 
                         try {
+                            // JSON 문자열을 Map으로 파싱
                             Map<String, Object> contentMap = objectMapper.readValue(assistantContent, Map.class);
 
+                            // notion_rich_text
+                            Object notionRichText = contentMap.get("notion_rich_text");
+
+                            // Notion 데이터만 DB에 저장
                             FinalSummary finalSummary = new FinalSummary();
                             finalSummary.setRoom(room);
-                            finalSummary.setContent(objectMapper.writeValueAsString(contentMap));
+                            finalSummary.setNotionContent(objectMapper.writeValueAsString(notionRichText));
                             finalSummarizeRepository.save(finalSummary);
 
-                            Map<String, Object> successResponse = Map.of(
-                                    "summation", contentMap
-                            );
 
-                            return ResponseEntity.ok(successResponse);
+                            // JSON으로 응답 반환
+                            return ResponseEntity.ok(Map.of(
+                                    "notion_rich_text", notionRichText
+                            ));
                         } catch (JsonProcessingException e) {
                             log.error("Error parsing GPT response: ", e);
                             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -284,7 +469,6 @@ public class SummaryService {
                             ));
                 });
     }
-
 
     @Transactional
     public Mono<ResponseEntity<Map<String, String>>> saveQna(Map<String, Object> request) {
@@ -378,7 +562,7 @@ public class SummaryService {
                     Question question = new Question();
                     question.setRoom(room);
                     question.setContent((String) qna.get("question"));
-                    question.setQuestionOrder(presentationOrder);
+                    question.setPresentationOrder(presentationOrder);
                     Question savedQuestion = questionRepository.save(question);
 
                     Answer answer = new Answer();
