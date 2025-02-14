@@ -21,6 +21,6 @@ public class Question {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "question_order")
-    private Integer questionOrder;
+    @Column(name = "presentation_order")
+    private Integer presentationOrder;
 }

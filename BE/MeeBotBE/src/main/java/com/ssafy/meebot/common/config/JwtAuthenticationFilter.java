@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 requestURI.equals("/oauth/callback") ||          // 구글 OAuth 콜백
                 requestURI.equals("/") ||                        // 루트 경로
                 requestURI.startsWith("/api/sessions") ||        // OpenVidu 세션 관련
-                requestURI.startsWith("/api/chatgpt")) {         // ChatGPT 관련 API (하위 경로 모두 포함)
+                requestURI.startsWith("/api/chatgpt") || requestURI.startsWith("/api/notion/login") || requestURI.startsWith("/api/auth/notion/callback")) {         // ChatGPT 관련 API (하위 경로 모두 포함)
             filterChain.doFilter(request, response);
             return;
         }

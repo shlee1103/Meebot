@@ -47,3 +47,11 @@ openai:
   api:
     key: ${OPENAI_API_KEY}
   model: gpt-4o-mini
+
+# Notion
+notion:
+  client:
+    id: ${NOTION_CLIENT_ID}
+    secret: ${NOTION_CLIENT_SECRET}
+  base:
+    uri: ${NOTION_BASE_URI}
