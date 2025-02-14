@@ -52,7 +52,7 @@ public class SummaryController {
     }
     @PostMapping("/end-presentation")
     public Mono<Map<String, String>> endPresentation(@RequestBody Map<String, Object> request) {
-        return summaryService.generateEndingMessage(request)
+        return summaryService.endPresentation(request)
                 .map(response -> Map.of("message", response));
     }
 
