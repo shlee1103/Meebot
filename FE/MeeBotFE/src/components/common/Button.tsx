@@ -37,24 +37,6 @@ const variantStyles = {
     hover:after:opacity-100 hover:after:animate-[gradient_8s_linear_infinite] hover:bg-transparent 
     hover:scale-105
   `,
-  outline: `
-    inline-flex whitespace-nowrap w-fit
-    bg-transparent ring-2 ring-[#6B4CFF] text-[#E9E5FF]
-    hover:bg-[#6B4CFF]/10 transition-all duration-300
-    px-14 py-4 rounded-full font-pretendard 
-    text-p-sm md:text-p-md lg:text-p-lg
-    hover:ring-4 hover:shadow-[0_0_15px_rgba(107,76,255,0.5)]
-    hover:scale-[1.02]
-  `,
-  filled: `
-    inline-flex whitespace-nowrap w-fit
-    bg-[#6B4CFF] text-white
-    transition-all duration-300
-    px-14 py-4 rounded-full font-pretendard 
-    text-p-sm md:text-p-md lg:text-p-lg
-    hover:bg-[#6B4CFF]/90 hover:shadow-[0_0_20px_rgba(107,76,255,0.6)]
-    hover:scale-[1.02] hover:animate-pulse
-  `,
   cancel: `
     inline-flex whitespace-nowrap w-fit
     transition-all duration-300 ease-in-out
@@ -95,7 +77,7 @@ const Button: React.FC<ButtonProps> = ({
       className={`
         inline-flex justify-center items-center gap-1
         disabled:cursor-not-allowed
-        ${variantStyles[variant]}
+        ${variantStyles[variant as keyof typeof variantStyles]}
         ${className}
       `.trim()}
     >
