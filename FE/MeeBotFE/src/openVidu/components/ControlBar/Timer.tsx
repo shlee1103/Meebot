@@ -26,15 +26,15 @@ const Timer: React.FC<TimerProps> = ({ conferenceStatus, session, isSpeaking }) 
   const getTimerColor = () => {
     if (isOvertime) return "text-yellow-400";
     if (isLastMinute) return "text-red-500";
-    return "text-[#1AEBB8]";
+    return "text-white";
   };
 
   return (
     <TimerWrapper $isActive={isSpeaking && conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE}>
       <TimerDisplay>
-        <p className={`font-lab text-3xl leading-none text-white tracking-widere ${getTimerColor()}`}>{minutes.toString().padStart(2, "0")}</p>
+        <p className={`font-lab text-3xl leading-none tracking-widere ${getTimerColor()}`}>{minutes.toString().padStart(2, "0")}</p>
         <Separator>:</Separator>
-        <p className={`font-lab text-3xl leading-none text-white tracking-widere ${getTimerColor()}`}>{remainingSeconds.toString().padStart(2, "0")}</p>
+        <p className={`font-lab text-3xl leading-none tracking-widere ${getTimerColor()}`}>{remainingSeconds.toString().padStart(2, "0")}</p>
       </TimerDisplay>
     </TimerWrapper>
   );
