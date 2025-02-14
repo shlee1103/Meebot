@@ -69,7 +69,10 @@ pipeline {
                         string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
                         string(credentialsId: 'NOTION_CLIENT_ID', variable: 'NOTION_CLIENT_ID'),
                         string(credentialsId: 'NOTION_CLIENT_SECRET', variable: 'NOTION_CLIENT_SECRET'),
-                        string(credentialsId: 'NOTION_BASE_URI', variable: 'NOTION_BASE_URI')
+                        string(credentialsId: 'NOTION_BASE_URI', variable: 'NOTION_BASE_URI'),
+                        string(credentialsId: 'PDF_STORAGE_PATH', variable: 'PDF_STORAGE_PATH'),
+                        string(credentialsId: 'PDF_LOGO_PATH', variable: 'PDF_LOGO_PATH'),
+                        string(credentialsId: 'PDF_FONT_PATH', variable: 'PDF_FONT_PATH')
                     ]) {
                         sh """
                         echo "Stopping and removing existing container..."
@@ -96,6 +99,9 @@ pipeline {
                         -e "NOTION_CLIENT_ID=${NOTION_CLIENT_ID}" \
                         -e "NOTION_CLIENT_SECRET=${NOTION_CLIENT_SECRET}" \
                         -e "NOTION_BASE_URI=${NOTION_BASE_URI}" \
+                        -e "NOTION_BASE_URI=${PDF_STORAGE_PATH}" \
+                        -e "NOTION_BASE_URI=${PDF_LOGO_PATH}" \
+                        -e "NOTION_BASE_URI=${	PDF_FONT_PATH}" \
                         ${DOCKER_IMAGE}:${DOCKER_TAG}
 
                         echo "Checking running container logs..."
