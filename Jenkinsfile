@@ -99,9 +99,9 @@ pipeline {
                         -e "NOTION_CLIENT_ID=${NOTION_CLIENT_ID}" \
                         -e "NOTION_CLIENT_SECRET=${NOTION_CLIENT_SECRET}" \
                         -e "NOTION_BASE_URI=${NOTION_BASE_URI}" \
-                        -e "NOTION_BASE_URI=${PDF_STORAGE_PATH}" \
-                        -e "NOTION_BASE_URI=${PDF_LOGO_PATH}" \
-                        -e "NOTION_BASE_URI=${	PDF_FONT_PATH}" \
+                        -e "PDF_STORAGE_PATH=${PDF_STORAGE_PATH}" \
+                        -e "PDF_LOGO_PATH=${PDF_LOGO_PATH}" \
+                        -e "PDF_FONT_PATH=${PDF_FONT_PATH}" \
                         ${DOCKER_IMAGE}:${DOCKER_TAG}
 
                         echo "Checking running container logs..."
