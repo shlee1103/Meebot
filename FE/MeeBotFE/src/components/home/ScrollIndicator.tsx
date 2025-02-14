@@ -1,3 +1,5 @@
+import { Mn } from "../common/Typography";
+
 const ScrollIndicator = () => {
   const scrollToNextSection = () => {
     window.scrollBy({
@@ -16,7 +18,7 @@ const ScrollIndicator = () => {
         border-l border-b border-white rotate-[-45deg]
         animate-[sdb_1.5s_infinite]">
       </span>
-      <span className="text-sm font-light font-pretendar">아래로 스크롤하기</span>
+      <Mn className="!font-light">아래로 스크롤하기</Mn>
     </button>
   );
 };

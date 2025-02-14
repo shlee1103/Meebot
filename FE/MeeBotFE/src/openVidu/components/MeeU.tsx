@@ -18,7 +18,7 @@ const MeeU: React.FC<MeeUProps> = ({ speech }) => {
       const words = speech.split(" ");
 
       for (const word of words) {
-        if (currentLine.length + word.length > 80) {
+        if (currentLine.length + word.length > 72) {
           splitLines.push(currentLine.trim());
           currentLine = word + " ";
         } else {
@@ -65,18 +65,24 @@ const MeeU: React.FC<MeeUProps> = ({ speech }) => {
   }, [currentCharIndex, currentLineIndex, lines]);
 
   return (
-    <div className="flex flex-col items-start justify-center bg-[#171f2e] p-4">
-      <div className="flex flex-row items-start justify-start bg-[#171f2e] p-4 space-x-4">
-        <div className="w-16 h-16">
-          <img src={Meeu} alt="MeeU character" className="w-full h-full object-contain" />
+    <div className="flex flex-col items-start justify-center bg-[#171f2e] p-3">
+      <div className="flex flex-row items-start justify-start bg-[#171f2e] p-2 space-x-3">
+        <div className="w-12 h-12 animate-bounce-slow">
+          <img 
+            src={Meeu} 
+            alt="MeeU character" 
+            className="w-full h-full object-contain hover:scale-110 transition-transform duration-300" 
+          />
         </div>
 
         {displayText && (
-          <div className="relative bg-[#616161] rounded-lg p-4">
+          <div className="relative bg-gradient-to-r from-[#2A3347] to-[#232D45] rounded-2xl p-3 min-w-[200px]
+            shadow-lg border border-[#464E62]/30 backdrop-blur-sm
+            animate-in fade-in slide-in-from-left-4 duration-300">
             <div className="absolute top-1/2 -left-2 transform -translate-y-1/2">
-              <div className="w-4 h-4 bg-[#616161] transform rotate-45" />
+              <div className="w-3 h-3 bg-[#2A3347] transform rotate-45 border-l border-t border-[#464E62]/30" />
             </div>
-            <P className="text-white whitespace-nowrap">{displayText}</P>
+            <P className="text-white whitespace-nowrap text-sm">{displayText}</P>
           </div>
         )}
       </div>
