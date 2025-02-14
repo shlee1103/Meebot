@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 
 interface TypographyProps {
   children: ReactNode;
@@ -55,14 +55,19 @@ export const Lg = ({ children, className = '' }: TypographyProps) => (
   </p>
 );
 
-export const P = ({ children, className = '' }: TypographyProps) => (
-  <p className={`
-    font-pretendard 
-    text-p-sm md:text-p-md lg:text-p-lg 
-    ${className}
-  `}>
-    {children}
-  </p>
+export const P = forwardRef<HTMLParagraphElement, TypographyProps>(
+  ({ children, className = '' }, ref) => (
+    <p
+      ref={ref}
+      className={`
+        font-pretendard 
+        text-p-sm md:text-p-md lg:text-p-lg 
+        ${className}
+      `}
+    >
+      {children}
+    </p>
+  )
 );
 
 export const Sm = ({ children, className = '' }: TypographyProps) => (
