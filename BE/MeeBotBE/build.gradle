@@ -23,7 +23,10 @@ dependencies {
     implementation 'com.auth0:java-jwt:4.4.0'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-}
+    implementation 'org.xhtmlrenderer:flying-saucer-pdf:9.3.0'
+    implementation 'com.lowagie:itext:2.1.7'
+    implementation 'org.xhtmlrenderer:flying-saucer-core:9.3.0'
+   }
 
 group = 'io.openvidu'
 version = '2.31.0'
