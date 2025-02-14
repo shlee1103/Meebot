@@ -50,6 +50,11 @@ public class SummaryController {
         return summaryService.generateEndingMessage(request)
                 .map(response -> Map.of("message", response));
     }
+    @PostMapping("/end-presentation")
+    public Mono<Map<String, String>> endPresentation(@RequestBody Map<String, Object> request) {
+        return summaryService.generateEndingMessage(request)
+                .map(response -> Map.of("message", response));
+    }
 
 }
 
