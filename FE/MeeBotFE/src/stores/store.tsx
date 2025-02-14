@@ -70,8 +70,8 @@ interface PresentationState {
 }
 
 const initialPresentationState: PresentationState = {
-  presentationTime: 15,
-  qnaTime: 15,
+  presentationTime: 0,
+  qnaTime: 0,
   presentersOrder: [],
   currentPresenterIndex: 0,
 };

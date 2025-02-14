@@ -13,7 +13,7 @@ interface SideMenuContentProps {
   currentScript: string;
   myUserName: string;
   messages: {
-    sender: {name: string, image: string};
+    sender: { name: string; image: string };
     text?: string;
     summary?: string;
     question?: string;
@@ -23,13 +23,13 @@ interface SideMenuContentProps {
   sendMessage: (message: string) => void;
 }
 
-const SideMenuContent: React.FC<SideMenuContentProps> = ({ activeTab, participantsList, currentScript, conferenceStatus, currentPresenter, myUserName, messages, sendMessage}) => {
-  console.log('참가 목록 :', participantsList);
+const SideMenuContent: React.FC<SideMenuContentProps> = ({ activeTab, participantsList, currentScript, conferenceStatus, currentPresenter, myUserName, messages, sendMessage }) => {
+  console.log("참가 목록 :", participantsList);
   return (
-    <div className="h-[calc(100%-7rem)] overflow-y-auto">
-      {activeTab === 'participants' && <Participant participantsList={participantsList} />}
-      {activeTab === 'chat' && <Chat myUserName={myUserName} messages={messages} sendMessage={sendMessage}/>}
-      {activeTab === 'script' && <Script currentScript={currentScript} conferenceStatus={conferenceStatus} currentPresenter={currentPresenter} />}
+    <div className="h-[calc(100%-7rem)] overflow-y-auto px-5">
+      {activeTab === "participants" && <Participant participantsList={participantsList} />}
+      {activeTab === "chat" && <Chat myUserName={myUserName} messages={messages} sendMessage={sendMessage} />}
+      {activeTab === "script" && <Script currentScript={currentScript} conferenceStatus={conferenceStatus} currentPresenter={currentPresenter} />}
     </div>
   );
 };

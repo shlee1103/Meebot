@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: `https://meebot.site/`
+  baseURL: `https://meebot.site/`,
 });
 
 // API 요청 시 모든 요청 헤더에 access token 포함
@@ -32,14 +32,16 @@ apiClient.interceptors.response.use(
             headers: { "Refresh-Token": refreshToken },
           }
         );
+
         localStorage.setItem("access_token", data.access_token);
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+
         return apiClient(originalRequest);
       } catch (refreshError) {
-        console.error('토큰 갱신 샐패 : ', refreshError)
-        localStorage.clear()
+        console.error("토큰 갱신 샐패 : ", refreshError);
+        localStorage.clear();
         // Todo: 새 access token 갱신 실패 시 로직 처리하기
-        return Promise.reject(refreshError)
+        return Promise.reject(refreshError);
       }
     }
     return Promise.reject(error);

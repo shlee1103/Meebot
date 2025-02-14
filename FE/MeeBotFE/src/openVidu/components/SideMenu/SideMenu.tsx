@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
 import participantsOn from "../../assets/images/participants_on.png";
 import participantsOff from "../../assets/images/participants_off.png";
 import chatOn from "../../assets/images/chat_on.png";
@@ -8,10 +6,13 @@ import chatOff from "../../assets/images/chat_off.png";
 import scriptOn from "../../assets/images/script_on.png";
 import scriptOff from "../../assets/images/script_off.png";
 import SideMenuContent from "./SideMenuContent";
+import MeetingTitle from "./MeetingTitle";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
+import { Session } from "openvidu-browser";
 
 interface SideMenuProps {
   isMenuOpen: boolean;
+  session: Session | undefined;
   sessionId: string;
   participants: ParticipantInfo[];
   onToggle: () => void;
@@ -20,7 +21,7 @@ interface SideMenuProps {
   currentScript: string;
   myUserName: string;
   messages: {
-    sender: {name: string, image: string};
+    sender: { name: string; image: string };
     text?: string;
     summary?: string;
     question?: string;
@@ -33,6 +34,8 @@ interface SideMenuProps {
 type TabType = "participants" | "chat" | "script";
 
 const SideMenu: React.FC<SideMenuProps> = ({
+  sessionId,
+  session,
   isMenuOpen,
   participants: participantsList,
   onToggle,
@@ -44,7 +47,6 @@ const SideMenu: React.FC<SideMenuProps> = ({
   sendMessage,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("participants");
-  const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
 
   return (
     <>
@@ -58,13 +60,13 @@ const SideMenu: React.FC<SideMenuProps> = ({
           w-[380px]`}
       >
         {/* 헤더 */}
-        <div className="h-14 flex items-center justify-between px-4">
-          <span className="font-pretendard text-lg font-semibold">{meetingTitle}</span>
+        <div className="h-14 flex items-center justify-between px-5">
+          <MeetingTitle roomCode={sessionId} session={session} />
         </div>
 
         {/* 탭 버튼 */}
         {/* 참여자 버튼 */}
-        <div className="flex justify-between px-4 py-2">
+        <div className="flex justify-between px-5 py-2">
           <button
             onClick={() => setActiveTab("participants")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
