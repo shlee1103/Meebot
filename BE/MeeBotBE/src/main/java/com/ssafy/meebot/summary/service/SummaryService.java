@@ -1,6 +1,7 @@
 package com.ssafy.meebot.summary.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.meebot.summary.repository.FinalSummarizeRepository;
 import com.ssafy.meebot.summary.entity.Answer;
@@ -22,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,6 +39,11 @@ public class SummaryService {
 
     @Value("${openai.model}")
     private String model;
+
+    @Value("${pdf.storage.path}")
+    private String pdfLocation;
+
+    private final String gptModel = "gpt-3.5-turbo";
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
@@ -247,10 +252,10 @@ public class SummaryService {
             // 발표 순서와 동일한 질문 찾기
             int presentationOrder = summary.getPresentationOrder();
             List<Question> filteredQuestions = questions.stream()
-                    .filter(q -> q.getPresentationOrder() != null && q.getPresentationOrder()==presentationOrder)
+                    .filter(q -> q.getPresentationOrder() != null && q.getPresentationOrder() == presentationOrder)
                     .toList();
 
-            for(Question q: filteredQuestions){
+            for (Question q : filteredQuestions) {
                 System.out.println(q.getContent());
             }
             // 질문-답변 리스트 생성
@@ -283,11 +288,15 @@ public class SummaryService {
         System.out.println("JSON Payload: " + jsonPayload);
 
         Map<String, Object> requestBody = Map.of(
-                "model", model,
+                "model", gptModel,
                 "messages", List.of(
                         Map.of("role", "system", "content",
                                 "당신은 발표 진행 사회자입니다. 발표회가 종료되었고, 오늘 발표회의 내용을 요약본으로 정리해야 합니다.\n" +
-                                        "아래 형식의 JSON을 생성해주세요. 백틱(```)이나 다른 마크다운 형식 없이 순수 JSON만 반환해야 합니다.\n" +
+                                        "주어진 JSON 데이터를 기반으로 아래와 같은 구조의 JSON을 생성해주세요. " +
+                                        "백틱(`)이나 마크다운 코드 블록(```json) 없이 순수 JSON만 응답하세요.\n" +
+                                        "주어진 JSON 데이터를 기반으로 정확히 구조화된 JSON으로 응답하세요.\n" +
+                                        "pdf_html은 xhtml로 작성하세요.\n" +
+                                        "각 presenter의 content와 questions는 입력된 순서대로 유지되어야 합니다.\n" +
                                         "\n" +
                                         "{\n" +
                                         "    \"notion_rich_text\": {\n" +
@@ -297,116 +306,120 @@ public class SummaryService {
                                         "                    {\n" +
                                         "                        \"type\": \"text\",\n" +
                                         "                        \"text\": {\n" +
-                                        "                            \"content\": \"발표회 제목\"\n" +
+                                        "                            \"content\": \"[room_title 값]\"\n" +
                                         "                        }\n" +
                                         "                    }\n" +
                                         "                ]\n" +
                                         "            }\n" +
                                         "        },\n" +
-                                        "        \"children\": []\n" +
+                                        "        \"children\": [\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"📅 [date를 'YYYY년 MM월 DD일' 형식으로 변환]\" }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n\n\n\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            }\n" +
+                                        "        ]\n" +
                                         "    },\n" +
-                                        "    \"pdf_html\": \"여기에 XHTML 코드가 문자열로 들어갑니다\"\n" +
+                                        "    \"pdf_html\": {" +
+                                        "        \"properties\": {\n" +
+                                        "            \"title\": {\n" +
+                                        "                \"title\": [\n" +
+                                        "                    {\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"[room_title 값]\"\n" +
+                                        "                        }\n" +
+                                        "                    }\n" +
+                                        "                ]\n" +
+                                        "            }\n" +
+                                        "        },\n" +
+                                        "        \"children\": [\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"📅 [date를 'YYYY년 MM월 DD일' 형식으로 변환]\" }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            }\n" +
+                                        "        ]\n" +
+                                        "    }\n" +
                                         "}\n" +
                                         "\n" +
-                                        "1. notion_rich_text 필드 구조:\n" +
-                                        "   A. 제목 블록:\n" +
-                                        "      - object: \"block\"\n" +
-                                        "      - type: \"heading_1\"\n" +
-                                        "      - 발표회 제목 (큰 글씨)\n" +
+                                        "그 다음, 각 presenter에 대해 순서대로 다음 구조를 notion_rich_text에 추가:\n" +
                                         "\n" +
-                                        "   B. 날짜와 발표자 정보:\n" +
-                                        "      - object: \"block\"\n" +
-                                        "      - type: \"paragraph\"\n" +
-                                        "      - 형식: \"\uD83D\uDCC5 [date를 'YYYY년 MM월 DD일 형식으로 반환]\"\n" +
-                                        "      - 다음 줄: \"\uD83D\uDC65 [모든 presenter를 쉼표로 구분하여 나열]\"\n" +
-                                        "\n" +
-                                        "   C. 발표자별 섹션:\n" +
-                                        "      - object: \"block\"\n" +
-                                        "      - type: \"bulleted_list_item\"\n" +
-                                        "      - 형식: \"[발표 요약을 2~3단어로 표현]\" \n \uD83D\uDC64 발표자명 \n " +
-                                        "      예시: \"\uD83D\uDC64 환경 보호의 중요성 \"\n \uD83D\uDC64 홍길동" +
-                                        "\n" +
-                                        "   D. 발표 요약 (✨ 발표 요약):\n" +
-                                        "      - object: \"block\"\n" +
-                                        "      - type: \"paragraph\"\n" +
-                                        "      - 제목: \"✨ 발표 요약\"\n" +
-                                        "      - 번호가 매겨진 요약 내용\n" +
+                                        "1. 발표자 표시:\n" +
                                         "{\n" +
-                                        "             \"object\": \"block\",\n" +
-                                        "             \"type\": \"callout\",\n" +
-                                        "             \"callout\": {\n" +
-                                        "                 \"rich_text\": [{\n" +
-                                        "                     \"type\": \"text\",\n" +
-                                        "                     \"text\": { \"content\": \"✨ 발표 요약\\n[content 내용을 줄바꿈하여 표시]\" }\n" +
-                                        "                 }],\n" +
-                                        "                 \"icon\": { \"emoji\": \"✨\" }\n" +
-                                        "             }\n" +
-                                        "         }"+
+                                        "    \"object\": \"block\",\n" +
+                                        "    \"type\": \"paragraph\",\n" +
+                                        "    \"paragraph\": {\n" +
+                                        "        \"rich_text\": [{\n" +
+                                        "            \"type\": \"text\",\n" +
+                                        "            \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [presenter 이름]\" }\n\n" +
+                                        "        }]\n" +
+                                        "    }\n" +
+                                        "}\n" +
                                         "\n" +
-                                        "   E. 질의응답 (\uD83D\uDCAC 질의응답):\n" +
-                                        "      - object: \"block\"\n" +
-                                        "      - type: \"paragraph\"\n" +
-                                        "      - 제목: \"\uD83D\uDCAC 질의응답\"\n" +
-                                        "      - Q: 질문 내용\n" +
-                                        "      - A: 답변 내용\n" +
+                                        "2. 발표 내용 요약:\n" +
                                         "{\n" +
-                                        "             \"object\": \"block\",\n" +
-                                        "             \"type\": \"callout\",\n" +
-                                        "             \"callout\": {\n" +
-                                        "                 \"rich_text\": [{\n" +
-                                        "                     \"type\": \"text\",\n" +
-                                        "                     \"text\": { \"content\": \"\uD83D\uDCAC 질의응답\\n[각 Q&A를 줄바꿈하여 표시]\" }\n" +
-                                        "                 }],\n" +
-                                        "                 \"icon\": { \"emoji\": \"\uD83D\uDCAC\" }\n" +
-                                        "             }\n" +
-                                        "         }" +
+                                        "    \"object\": \"block\",\n" +
+                                        "    \"type\": \"callout\",\n" +
+                                        "    \"callout\": {\n" +
+                                        "        \"rich_text\": [{\n" +
+                                        "            \"type\": \"text\",\n" +
+                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content]\" }\n\n" +
+                                        "        }],\n" +
+                                        "        \"icon\": { \"emoji\": \"✨\" }\n" +
+                                        "    }\n" +
+                                        "}\n" +
                                         "\n" +
-                                        "2. pdf_html 필드 구조:\n" +
-                                        "   ```html\n" +
-                                        "   <!DOCTYPE html>\n" +
-                                        "   <html>\n" +
-                                        "   <head>\n" +
-                                        "       <meta charset=\"UTF-8\">\n" +
-                                        "       <style>\n" +
-                                        "           body { font-family: Arial, sans-serif; line-height: 1.6; }\n" +
-                                        "           .title { font-size: 24px; font-weight: bold; }\n" +
-                                        "           .info { color: #666; margin: 10px 0; }\n" +
-                                        "           .speaker { margin: 10px 0; }\n" +
-                                        "           .speaker-topic { color: #555; font-style: italic; }\n" +
-                                        "           .summary { margin: 15px 0; }\n" +
-                                        "           .qa { margin: 15px 0; }\n" +
-                                        "           .question { font-weight: bold; }\n" +
-                                        "           .answer { margin-left: 20px; }\n" +
-                                        "       </style>\n" +
-                                        "   </head>\n" +
-                                        "   <body>\n" +
-                                        "       <!-- 동일한 구조로 HTML 컨텐츠 구성 -->\n" +
-                                        "   </body>\n" +
-                                        "   </html>\n" +
-                                        "   ```\n" +
+                                        "3. 질의응답 (questions가 있는 경우):\n" +
+                                        "{\n" +
+                                        "    \"object\": \"block\",\n" +
+                                        "    \"type\": \"callout\",\n" +
+                                        "    \"callout\": {\n" +
+                                        "        \"rich_text\": [{\n" +
+                                        "            \"type\": \"text\",\n" +
+                                        "            \"text\": { \"content\": \"질의응답\\n[presenter의 questions를 Q: ,\n A: 형식으로 줄바꿈하여 표시]\" }\n" +
+                                        "        }],\n" +
+                                        "        \"icon\": { \"emoji\": \"💬\" }\n" +
+                                        "    }\n" +
+                                        "}\n" +
                                         "\n" +
-                                        "3. 공통 규칙:\n" +
-                                        "   - 이모지 사용:\n" +
-                                        "     * 날짜: \uD83D\uDCC5\n" +
-                                        "     * 발표자 목록: \uD83D\uDC65\n" +
-                                        "     * 개별 발표자: \uD83D\uDC64\n" +
-                                        "     * 발표 요약: ✨\n" +
-                                        "     * 질의응답: \uD83D\uDCAC\n" +
-                                        "   - 구조적 일관성:\n" +
-                                        "     * 제목 → 정보 → 발표자/주제 → 요약 → 질의응답 순서\n" +
-                                        "   - 발표자 키워드:\n" +
-                                        "     * 각 발표자의 발표 내용을 2-3개의 핵심 키워드로 요약\n" +
-                                        "     * 키워드는 간결하고 명확하게 작성\n" +
-                                        "   - 포맷팅:\n" +
-                                        "     * 질문/답변 쌍은 항상 Q/A 형식 유지\n" +
-                                        "     * 모든 섹션은 명확한 구분자로 분리\n" +
-                                        "\n" +
-                                        "응답은 반드시 순수 JSON 형식이어야 하며, 불필요한 설명이나 마크다운을 포함하지 않아야 합니다."),
+                                        "응답은 반드시 순수 JSON 형식이어야 하며, 불필요한 설명이나 마크다운, 백틱을 포함하지 않아야 합니다. " +
+                                        "pdf_html json 내용에는 아무 내용도 들어가지 않아야 합니다." +
+                                        "notion_rich_text와 pdf_html은 구조와 내용이 완전히 동일해야 합니다."),
                         Map.of("role", "user", "content", jsonPayload)
                 ),
-                "temperature", 0.6
+                "temperature", 0.5
         );
-
 
         return webClient.post()
                 .uri("/v1/chat/completions")
@@ -416,15 +429,15 @@ public class SummaryService {
                 .map(response -> {
                     List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
                     if (!choices.isEmpty()) {
-                        String assistantContent = (String) ((Map<String, Object>) choices.get(0).get("message")).get("content");
+                        Map<String, Object> messageMap = (Map<String, Object>) choices.get(0).get("message");
+                        String assistantContent = (String) messageMap.get("content");
 
                         try {
-                            // GPT 응답을 JSON으로 변환
+                            // JSON 문자열을 Map으로 파싱
                             Map<String, Object> contentMap = objectMapper.readValue(assistantContent, Map.class);
 
-                            // notion_rich_text와 pdf_html 추출
+                            // notion_rich_text
                             Object notionRichText = contentMap.get("notion_rich_text");
-                            String pdfHtml = (String) contentMap.get("pdf_html");
 
                             // Notion 데이터만 DB에 저장
                             FinalSummary finalSummary = new FinalSummary();
@@ -432,10 +445,10 @@ public class SummaryService {
                             finalSummary.setNotionContent(objectMapper.writeValueAsString(notionRichText));
                             finalSummarizeRepository.save(finalSummary);
 
+
                             // JSON으로 응답 반환
                             return ResponseEntity.ok(Map.of(
-                                    "notion_rich_text", notionRichText,
-                                    "pdf_html", pdfHtml
+                                    "notion_rich_text", notionRichText
                             ));
                         } catch (JsonProcessingException e) {
                             log.error("Error parsing GPT response: ", e);
@@ -453,9 +466,7 @@ public class SummaryService {
                                     "message", "GPT 응답을 처리할 수 없습니다."
                             ));
                 });
-
     }
-
 
     @Transactional
     public Mono<ResponseEntity<Map<String, String>>> saveQna(Map<String, Object> request) {
