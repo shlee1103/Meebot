@@ -66,9 +66,9 @@ pipeline {
                         string(credentialsId: 'CLOVA_API_KEY', variable: 'CLOVA_API_KEY'),
                         string(credentialsId: 'CLOVA_REQUEST_ID', variable: 'CLOVA_REQUEST_ID'),
                         string(credentialsId: 'APP_BASE_URL', variable: 'APP_BASE_URL'),
-                        string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY')
-                        string(credentialsId: 'NOTION_CLIENT_ID', variable: 'NOTION_CLIENT_ID')
-                        string(credentialsId: 'NOTION_CLIENT_SECRET', variable: 'NOTION_CLIENT_SECRET')
+                        string(credentialsId: 'OPENAI_API_KEY', variable: 'OPENAI_API_KEY'),
+                        string(credentialsId: 'NOTION_CLIENT_ID', variable: 'NOTION_CLIENT_ID'),
+                        string(credentialsId: 'NOTION_CLIENT_SECRET', variable: 'NOTION_CLIENT_SECRET'),
                         string(credentialsId: 'NOTION_BASE_URI', variable: 'NOTION_BASE_URI')
                     ]) {
                         sh """
