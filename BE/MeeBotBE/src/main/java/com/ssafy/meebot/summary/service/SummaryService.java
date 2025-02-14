@@ -61,22 +61,22 @@ public class SummaryService {
         Integer presentationTeamsNum = (Integer) request.get("presentation_teams_num");
         Integer presentationTime = (Integer) request.get("presentation_time");
         Integer questionTime = (Integer) request.get("question_time");
+        String roomTitle = (String) request.get("roomTitle");
         List<String> presenters = (List<String>) request.get("presenters");
 
         StringBuilder query = new StringBuilder();
-        query.append("발표를 시작합니다. 총 ").append(presentationTeamsNum).append("개의 팀이 발표하고 한 팀당 ")
-                .append(presentationTime).append("분 동안 발표를 진행합니다. 질문 시간은 ")
-                .append(questionTime).append("분 이고 발표 순서는").append(presenters)
-                .append(questionTime).append("순 입니다.\n\n");
+        query.append("발표를 시작합니다. 총 ").append(presentationTeamsNum).append("명의 발표자가 발표하고, 한 명당 ")
+                .append(presentationTime).append("분 동안 발표를 진행합니다. 발표 주제는 ")
+                .append(roomTitle).append("이고, 질문 시간은 ")
+                .append(questionTime).append("분이며, 발표 순서는 오른쪽 위의 발표회 정보를 참고해 주세요");
 
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 발표 흐름을 안내하는 역할을 해줘. " +
-                                        "발표 주제, 발표자 순서를 먼저 말하고 그 다음으로" +
-                                        "첫 번째 발표자에게 화면 공유를 켜고, 공유가 완료되면 관리자는 발표 시작 버튼을 눌러달라고 해줘." +
-                                        " 답변은 이모티콘 없이 텍스트로만 해줘."),
+                                "너는 발표 진행을 맡은 사회자 미유야. 너에 대한 간단한 소개, 발표 주제와 발표자 순서를 안내한 뒤, " +
+                                        "'발표자는 화면 공유 버튼을 눌러 주세요. 그리고, 화면 공유가 완료되면 관리자는 발표 시작 버튼을 눌러 주세요. 라고 멘트하고 " +
+                                        "3~4줄 정도로 요약하고 이모티콘 없이 텍스트로만 답변해줘."),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -111,7 +111,7 @@ public class SummaryService {
                 "messages", List.of(
                         Map.of("role", "system", "content",
                                 "너는 발표 진행을 맡은 사회자고 이름은 미유야. 이전 발표자의 발표가 끝나고, 다음과 같이 현재 발표자가 발표를 시작할거야." +
-                                        "이를 안내해줘. 친근하고 활기찬 톤으로 발표자를 응원하고 격려하는 멘트를 포함해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
+                                        "이를 안내해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -610,7 +610,7 @@ public class SummaryService {
                 });
     }
 
-    public Mono<ResponseEntity<Map<String, Object>>> endPresentation(Map<String, Object> request) {
+    public Mono<String> endPresentation(Map<String, Object> request) {
         String presenter = (String) request.get("presenter");
         String transcripts = (String) request.get("transcripts");
 
@@ -641,17 +641,13 @@ public class SummaryService {
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(Map.class)
-                .flatMap(response -> {
+                .map(response -> {
                     List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
                     if (!choices.isEmpty()) {
                         Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                        String finalMessage = (String) message.get("content");
-
-                        return Mono.just(ResponseEntity.ok(Map.of(
-                                "message", finalMessage.trim()
-                        )));
+                        return (String) message.get("content");
                     }
-                    return Mono.error(new RuntimeException("OpenAI 응답 실패"));
+                    return "OPENAI 호출 오류";
                 });
     }
 }
