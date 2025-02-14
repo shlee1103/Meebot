@@ -16,8 +16,10 @@ import { RootState } from "../../stores/store";
 import { ParticipantInfo } from "../hooks/useOpenVidu";
 import LeavingConfirmPopup from "./Popup/LeavingConfirmPopup";
 import { useState } from "react";
+import { Session } from "openvidu-browser";
 
 interface ControlBarProps {
+  session: Session | undefined;
   isScreenShared: boolean;
   isHandRaised: boolean;
   toggleAudio: () => void;
@@ -33,6 +35,7 @@ interface ControlBarProps {
 }
 
 const ControlBar: React.FC<ControlBarProps> = ({
+  session,
   isScreenShared,
   isHandRaised,
   toggleAudio,
@@ -66,7 +69,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const role = useSelector((state: RootState) => state.role.role);
   const isAudioEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const isVideoEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const handleLeaveClick = () => {
     setShowLeaveConfirm(true);
@@ -80,26 +83,26 @@ const ControlBar: React.FC<ControlBarProps> = ({
         return {
           title: "발표회를 나가시겠습니까?",
           text1: "",
-          text2: ""
+          text2: "",
         };
       }
       return {
         title: "발표회를 나가시겠습니까?",
         text1: "지금 퇴장하시면 발표 종료 후 AI가 제공하는",
-        text2: "발표 요약본을 받으실 수 없습니다."
+        text2: "발표 요약본을 받으실 수 없습니다.",
       };
     } else {
       if (isConferenceBefore) {
         return {
           title: "발표회를 취소하시겠습니까?",
           text1: "퇴장 시 대기 중인 모든 참가자가 자동으로 퇴장됩니다.",
-          text2: ""
+          text2: "",
         };
       }
       return {
         title: "발표회를 종료하시겠습니까?",
         text1: "지금 퇴장하시면 발표회가 즉시 종료되며,",
-        text2: "모든 참가자가 자동으로 퇴장됩니다."
+        text2: "모든 참가자가 자동으로 퇴장됩니다.",
       };
     }
   };
@@ -145,6 +148,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
       </div>
 
       <PresentationModal
+        session={session}
         isOpen={isModalOpen}
         presentationTime={presentationTime}
         setPresentationTime={setPresentationTime}

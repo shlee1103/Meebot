@@ -2,8 +2,10 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useEffect, useState } from "react";
 import { PresenterOrderList } from "./PresenterOrderList";
 import { ParticipantInfo } from "../hooks/useOpenVidu";
+import { Session } from "openvidu-browser";
 
 interface PresentationModalProps {
+  session: Session | undefined;
   isOpen: boolean;
   presentationTime: number;
   setPresentationTime: (time: number) => void;
@@ -21,6 +23,7 @@ interface PresentationModalProps {
 }
 
 export const PresentationModal: React.FC<PresentationModalProps> = ({
+  session,
   isOpen,
   presentationTime,
   setPresentationTime,
@@ -37,6 +40,23 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
   onConfirm,
 }) => {
   const [mounted, setMounted] = useState(false);
+
+  const handleCompleteSetting = () => {
+    if (!session) {
+      alert("입력하신 정보가 저장되지 못했습니다.");
+      return;
+    }
+
+    session.signal({
+      data: JSON.stringify({
+        qnaTime: qnaTime,
+        presentationTime: presentationTime,
+        presentersOrder: presentersOrder,
+      }),
+      type: "presentation-setting",
+    });
+    onConfirm();
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -162,7 +182,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
             <button onClick={onCancel} className="px-4 py-2 text-white rounded hover:bg-[#2C3440]">
               취소
             </button>
-            <button onClick={onConfirm} className="px-4 py-2 bg-[#6B4CFF] text-white rounded hover:bg-[#5940CC]">
+            <button onClick={handleCompleteSetting} className="px-4 py-2 bg-[#6B4CFF] text-white rounded hover:bg-[#5940CC]">
               입력완료
             </button>
           </div>
