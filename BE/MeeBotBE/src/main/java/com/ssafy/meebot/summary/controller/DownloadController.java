@@ -32,7 +32,7 @@ public class DownloadController {
 
     private final NotionService notionService;
 
-    private SummaryService summaryService;
+    private final SummaryService summaryService;
 
     public DownloadController(NotionService notionService, SummaryService summaryService) {
         this.notionService = notionService;
