@@ -17,10 +17,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
-<<<<<<< HEAD
-import BackgroundGradients from "../../components/common/BackgroundGradients";
-=======
 import HandsupList from "../components/HandsupList";
+import BackgroundGradients from "../../components/common/BackgroundGradients";
 
 interface QnAMessage {
   sender: string;
@@ -28,7 +26,6 @@ interface QnAMessage {
   timestamp: number;
   order: number;
 }
->>>>>>> 4f00a2b69659f06c1e6dcfb8e8238a8458cf680b
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -310,17 +307,16 @@ const VideoConference: React.FC = () => {
 
       <div className="flex flex-1 min-h-0">
         <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "lg:w-[calc(100%-380px)]" : "lg:w-full"}`}>
-          <div className="flex-none">
+          <div className="flex-none hidden">
             <ParticipantsList subscribers={subscribers} currentSlide={currentSlide} isMenuOpen={isMenuOpen} handlePrevSlide={handlePrevSlide} handleNextSlide={handleNextSlide} />
           </div>
           <div className="flex-1 min-h-0">
             <MainVideo mainStreamManager={mainStreamManager} />
           </div>
-          <div className="flex flex-none justify-between items-center">
+          <div className="flex-none hidden lg:block md:block">
             <MeeU speech={speech} />
             <HandsupList conferenceStatus={conferenceStatus} />
           </div>
-<<<<<<< HEAD
         </div>
         <div className="pb-20">
           <button
@@ -356,6 +352,7 @@ const VideoConference: React.FC = () => {
             <SideMenu
               isMenuOpen={isMenuOpen}
               sessionId={sessionId as string}
+              session={session}
               participants={participants}
               conferenceStatus={conferenceStatus}
               currentPresenter={currentPresenter}
@@ -366,52 +363,6 @@ const VideoConference: React.FC = () => {
               />
           </div>
         </div>
-=======
-
-          {/* 컨트롤 영역 */}
-          <div className="flex items-center p-2 flex-none">
-            {/* 좌측 */}
-            <div className="flex-1">
-              <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
-            </div>
-            {/* 중앙 */}
-            <div className="flex-1 flex justify-center">
-              <ControlBar
-                session={session}
-                isScreenShared={isScreenShared}
-                isHandRaised={isHandRaised}
-                toggleAudio={toggleAudio}
-                toggleVideo={toggleVideo}
-                startScreenShare={startScreenShare}
-                stopScreenShare={stopScreenShare}
-                toggleHand={toggleHand}
-                leaveSession={leaveSession}
-                participants={participants}
-                conferenceStatus={conferenceStatus}
-                amISharing={amISharing}
-                currentPresenter={currentPresenter}
-              />
-            </div>
-            {/* 우측 */}
-            <div className="flex-1 flex justify-end">
-              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={handleStatusChange} />
-            </div>
-          </div>
-        </div>
-        <SideMenu
-          session={session}
-          isMenuOpen={isMenuOpen}
-          sessionId={sessionId as string}
-          participants={participants}
-          onToggle={() => setIsMenuOpen(!isMenuOpen)}
-          conferenceStatus={conferenceStatus}
-          currentPresenter={currentPresenter}
-          currentScript={currentScript}
-          myUserName={myUserName as string}
-          messages={messages}
-          sendMessage={sendMessage}
-        />
->>>>>>> 4f00a2b69659f06c1e6dcfb8e8238a8458cf680b
       </div>
 
       <ControlBar
@@ -438,14 +389,10 @@ const VideoConference: React.FC = () => {
         </div>
       )}
 
-<<<<<<< HEAD
       <FinishPopup
         isOpen={showFinishPopup}
         onClose={() => setShowFinishPopup(false)}
       ></FinishPopup>
-=======
-      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
->>>>>>> 4f00a2b69659f06c1e6dcfb8e8238a8458cf680b
     </div>
   );
 };
