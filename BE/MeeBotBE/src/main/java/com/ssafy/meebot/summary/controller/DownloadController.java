@@ -6,7 +6,11 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.ssafy.meebot.summary.service.NotionService;
+import com.ssafy.meebot.summary.service.SummaryService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 
 @RestController
@@ -26,8 +32,11 @@ public class DownloadController {
 
     private final NotionService notionService;
 
-    public DownloadController(NotionService notionService) {
+    private SummaryService summaryService;
+
+    public DownloadController(NotionService notionService, SummaryService summaryService) {
         this.notionService = notionService;
+        this.summaryService = summaryService;
     }
 
     private static final String NOTION_AUTH_URL = "https://api.notion.com/v1/oauth/authorize";
@@ -45,6 +54,9 @@ public class DownloadController {
 
     @Value("${jwt.secret.key}")
     private String jwtSecretKey;
+
+    @Value("${pdf.storage.path}")
+    private String pdfStoragePath;
 
     private String generateStateToken() {
         String stateValue = UUID.randomUUID().toString();
@@ -134,7 +146,6 @@ public class DownloadController {
     }
 
 
-
     /**
      * Notion Workspace 정보
      */
@@ -151,6 +162,38 @@ public class DownloadController {
         } catch (JWTVerificationException e) {
             System.out.println("JWT Verification Failed: " + e.getMessage());
             return false; // 유효하지 않은 state
+        }
+    }
+
+    @GetMapping("/download/pdf")
+    public ResponseEntity<Resource> downloadPdf(@RequestParam String roomCode) {
+        try {
+            // summaryService를 통해 PDF 링크 조회
+            String pdfFilePath = summaryService.getPdfLinkByRoomCode(roomCode);
+
+            if (pdfFilePath == null || pdfFilePath.isEmpty()) {
+                System.out.println("PDF 다운로드 실패: roomCode {}에 대한 PDF 링크 없음" + roomCode);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            File pdfFile = new File(pdfFilePath);
+
+            if (!pdfFile.exists()) {
+                System.out.println("PDF 파일 없음: {}" + pdfFilePath);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+
+            Path path = pdfFile.toPath();
+            Resource resource = new UrlResource(path.toUri());
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfFile.getName() + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            System.out.println("PDF 다운로드 오류: " + e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }
