@@ -6,16 +6,36 @@ import { CONFERENCE_STATUS, FIXED_MENTS } from "../constants/conferenceConstants
 import { TextToSpeech } from "../../utils/TextToSpeech";
 import webClient from "../apis/webClient";
 
-export const useChatGPT = (session: Session | undefined) => {
+interface PresentationData {
+  presenter: string | null;
+  presentation_order: number;
+  roomCode: string;
+  startTime: string;
+  endTime: string;
+  transcripts: string;
+}
+
+export const useChatGPT = (session: Session | undefined, currentPresentationData: PresentationData | null) => {
   const [error, setError] = useState<string | null>(null);
   const [speech, setSpeech] = useState<string>("");
+  const [currentSentence, setCurrentSentence] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const tts = new TextToSpeech();
 
   const { currentPresenterIndex, presentationTime, qnaTime, presentersOrder } = useSelector((state: RootState) => state.presentation);
 
+  const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const role = useSelector((state: RootState) => state.role.role);
   const isAdmin = role === "admin";
+
+  // Clean up TTS when component unmounts
+  useEffect(() => {
+    return () => {
+      tts.close().catch((error) => {
+        console.error("Error closing TTS:", error);
+      });
+    };
+  }, []);
 
   const broadcastSpeech = async (message: string) => {
     if (!session || !isAdmin) return;
@@ -44,21 +64,32 @@ export const useChatGPT = (session: Session | undefined) => {
     setIsSpeaking(true);
     setSpeech(message);
 
-    await new Promise((resolve) => {
-      tts.onEnd = () => {
-        resolve(null);
+    try {
+      tts.onTextChange = (text: string) => {
+        setCurrentSentence(text);
       };
-      tts.speak(message);
-    });
 
-    setIsSpeaking(false);
-    if (isAdmin) {
-      await broadcastSpeechEnd();
+      tts.onEnd = () => {
+        setIsSpeaking(false);
+        setCurrentSentence("");
+        if (isAdmin) {
+          broadcastSpeechEnd();
+        }
+      };
+
+      await tts.speak(message);
+    } catch (error) {
+      console.error("TTS Error:", error);
+      setError("음성 변환 중 오류가 발생했습니다.");
+      setIsSpeaking(false);
     }
   };
 
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      tts.stop();
+      return;
+    }
 
     const handleSpeechSignal = async (event: any) => {
       if (event.data) {
@@ -76,18 +107,21 @@ export const useChatGPT = (session: Session | undefined) => {
     session.on("signal:meeU-speech", handleSpeechSignal);
     return () => {
       session.off("signal:meeU-speech", handleSpeechSignal);
+      tts.stop();
     };
   }, [session]);
 
   const startConference = async () => {
+    const OrderPresenter = presentersOrder.map((i) => i.name);
+
     try {
       const response = await webClient.post("/api/chatgpt/start-presentation", {
         presentation_teams_num: presentersOrder.length,
         presentation_time: presentationTime,
         question_time: qnaTime,
+        roomTitle: meetingTitle,
         presenter: {
-          presenter: presentersOrder[0],
-          order: 1,
+          presenter: OrderPresenter,
         },
       });
 
@@ -130,6 +164,41 @@ export const useChatGPT = (session: Session | undefined) => {
     }
   };
 
+  useEffect(() => {
+    const handlePresentationDataChange = async () => {
+      if (currentPresentationData) {
+        try {
+          const response = await webClient.post("/api/chatgpt/end-presentation", currentPresentationData);
+          const message = response.data.message;
+          if (isAdmin) {
+            await broadcastSpeech(message);
+          }
+        } catch (err) {
+          console.error("Error:", err);
+          setError("AI 멘트 생성 중 오류가 발생했습니다.");
+        }
+      }
+    };
+
+    handlePresentationDataChange();
+  }, [currentPresentationData]);
+
+  const endConference = async () => {
+    try {
+      const response = await webClient.post("/api/chatgpt/end-conference", {
+        roomTitle: meetingTitle,
+      });
+
+      const message = response.data.message;
+      if (isAdmin) {
+        await broadcastSpeech(message);
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setError("AI 멘트 생성 중 오류가 발생했습니다.");
+    }
+  };
+
   const speakFixedMent = async (ment: string) => {
     if (isAdmin) {
       await broadcastSpeech(ment);
@@ -144,10 +213,6 @@ export const useChatGPT = (session: Session | undefined) => {
 
       case CONFERENCE_STATUS.PRESENTATION_READY:
         await startPresentation();
-        break;
-
-      case CONFERENCE_STATUS.PRESENTATION_ACTIVE:
-        await speakFixedMent(FIXED_MENTS.PRESENTATION_END);
         break;
 
       case CONFERENCE_STATUS.PRESENTATION_COMPLETED:
@@ -169,14 +234,10 @@ export const useChatGPT = (session: Session | undefined) => {
             await speakFixedMent(FIXED_MENTS.QNA_END(currentPresenter, nextPresenter));
           }
         } else {
-          await speakFixedMent(FIXED_MENTS.FINAL_PRESENTATION_COMPLETED(currentPresenter));
+          await endConference();
         }
         break;
       }
-
-      case CONFERENCE_STATUS.CONFERENCE_ENDED:
-        await speakFixedMent(FIXED_MENTS.CONFERENCE_ENDED);
-        break;
 
       default:
         break;
@@ -185,6 +246,7 @@ export const useChatGPT = (session: Session | undefined) => {
 
   return {
     speech,
+    currentSentence,
     error,
     isSpeaking,
     handleConferenceStatusChange,
