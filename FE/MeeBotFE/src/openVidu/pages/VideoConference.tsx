@@ -7,7 +7,7 @@ import { CONFERENCE_STATUS, usePresentationControls } from "../hooks/usePresenta
 import { useNavigate, useParams } from "react-router-dom";
 import { createRoom } from "../../apis/room";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder, addRaisedHand, removeRaisedHand, clearRaisedHands, addMessage, setRole } from "../../stores/store";
+import { RootState, setMeetingTitle, setPresentationTime, setQnATime, updateSpeakersOrder, addRaisedHand, removeRaisedHand, clearRaisedHands, addMessage } from "../../stores/store";
 import ParticipantsList from "../components/ParticipantsList";
 import MainVideo from "../components/MainVideo";
 import ControlBar from "../components/ControlBar/ControlBar";
