@@ -4,7 +4,7 @@ import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognitio
 import { useSelector, useDispatch } from "react-redux";
 import { addMessage, incrementGlobalOrder, resetQnA, RootState, setCurrentPresenterIndex } from "../../stores/store";
 import { interimSummarize, QnARequest, saveQnA } from "../../apis/chatGpt";
-import ChatMEEU from "../../assets/chatMeeU.png"
+import ChatMEEU from "../../assets/chatMeeU.png";
 import { ParticipantInfo } from "./useOpenVidu";
 
 const formatDate = (date: Date) => {
@@ -50,7 +50,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   const globalOrder = useSelector((state: RootState) => state.qna.globalOrder);
   const qnaMessages = useSelector((state: RootState) => state.qna.messages);
 
-
   // JSON 파일 전송
   const sendJSONToServer = async (presenter: string | null, sessionId?: string) => {
     if (!presenter || !sessionId) return;
@@ -90,30 +89,29 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           summary: `[${response.summation.presenter}님의 발표 요약]\n${response.summation.text}`,
           question: `[${response.summation.presenter}님에 대한 질문]\n${response.summation.question}`,
           sender: { name: "MeeU", image: ChatMEEU },
-          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`  // 발표자와 순서 정보 추가
+          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`, // 발표자와 순서 정보 추가
         }),
-        type: 'MEEU_ANNOUNCEMENT'
+        type: "MEEU_ANNOUNCEMENT",
       });
     } catch (error) {
       console.error("Error sending presentation data:", error);
     }
-
   };
 
   // QnA 스크립트 JSON 저장 함수 수정
   const saveQnAJSON = async (sessionId?: string) => {
     if (!sessionId) return;
 
-  // [...qnaMessages]로 새로운 배열을 만들어 정렬
-  const sortedQnAScript = [...qnaMessages]
-    .sort((a, b) => a.order - b.order)
-    .map(msg => `${msg.sender}: ${msg.text}`)
-    .join(' ');
+    // [...qnaMessages]로 새로운 배열을 만들어 정렬
+    const sortedQnAScript = [...qnaMessages]
+      .sort((a, b) => a.order - b.order)
+      .map((msg) => `${msg.sender}: ${msg.text}`)
+      .join(" ");
 
     const qnaRequest: QnARequest = {
       roomCode: sessionId,
       script: sortedQnAScript,
-      presentation_order: currentPresenterIndex + 1
+      presentation_order: currentPresenterIndex + 1,
     };
 
     // 기존 저장 로직 유지...
@@ -133,7 +131,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
     } catch (error) {
       if (error instanceof Error) {
         console.error("QnA 저장 실패:", error.message);
@@ -184,8 +181,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
     // 발표 종료 버튼 눌렀을 때
     if (currentStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
-      await sendJSONToServer(currentPresenter?.name ?? null, session?.sessionId);
-
       session?.signal({
         data: JSON.stringify({
           presenter: null,
@@ -194,6 +189,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
         type: "conference-status",
       });
 
+      await sendJSONToServer(currentPresenter?.name ?? null, session?.sessionId);
       return;
     }
 
@@ -283,7 +279,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           sender: myUserName,
           text: finalTranscript,
           timestamp: Date.now(),
-          order: globalOrder
+          order: globalOrder,
         };
 
         // Redux store에 메시지 추가
@@ -293,7 +289,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
         // 시그널로 공유
         session?.signal({
           data: JSON.stringify(newMessage),
-          type: 'qna-transcript',
+          type: "qna-transcript",
         });
 
         resetTranscript();
@@ -310,15 +306,16 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
   // STT 동작 여부를 제어
   useEffect(() => {
-    if ((conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && isMicEnabled) ||
-      (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && isMicEnabled)) {
+    if ((conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && isMicEnabled) || (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && isMicEnabled)) {
       SpeechRecognition.startListening({
         continuous: true,
         language: "ko-KR",
         interimResults: true,
       });
-    } else if ((conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && !isMicEnabled) ||
-      (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && !isMicEnabled)) {
+    } else if (
+      (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && !isMicEnabled) ||
+      (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && !isMicEnabled)
+    ) {
       SpeechRecognition.stopListening();
     } else {
       SpeechRecognition.stopListening();
