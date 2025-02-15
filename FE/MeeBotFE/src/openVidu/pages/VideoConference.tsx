@@ -300,7 +300,7 @@ const VideoConference: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
-      <BackgroundGradients/>
+      <BackgroundGradients />
 
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
 
@@ -330,9 +330,9 @@ const VideoConference: React.FC = () => {
               cursor-pointer
               shadow-[-4px_0px_12px_-2px_rgba(0,0,0,0.3)]
               hidden lg:flex
-              ${isMenuOpen ? 'right-[380px]' : 'right-0'}`}
+              ${isMenuOpen ? "right-[380px]" : "right-0"}`}
           >
-            <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : ''}`}>
+            <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? "rotate-180" : ""}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -359,7 +359,7 @@ const VideoConference: React.FC = () => {
               myUserName={myUserName as string}
               messages={messages}
               sendMessage={sendMessage}
-              />
+            />
           </div>
         </div>
       </div>
@@ -388,10 +388,7 @@ const VideoConference: React.FC = () => {
         </div>
       )}
 
-      <FinishPopup
-        isOpen={showFinishPopup}
-        onClose={() => setShowFinishPopup(false)}
-      ></FinishPopup>
+      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
     </div>
   );
 };

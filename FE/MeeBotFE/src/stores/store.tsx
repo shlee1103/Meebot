@@ -1,5 +1,7 @@
 import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { persistReducer, persistStore } from "redux-persist";
 import { ParticipantInfo } from "../openVidu/hooks/useOpenVidu";
+import storage from "redux-persist/lib/storage";
 
 // MyUsername Slice 정의
 interface MyUsernameState {
@@ -21,6 +23,11 @@ const myUsernameSlice = createSlice({
 });
 
 export const { setMyUsername } = myUsernameSlice.actions;
+const myUsernameTitlePersistConfig = {
+  key: "myUsername",
+  storage,
+};
+const persistedMyUsernameReducer = persistReducer(myUsernameTitlePersistConfig, myUsernameSlice.reducer);
 
 // meetingTitle Slice 정의
 interface meetingTitleState {
@@ -41,6 +48,11 @@ const meetingTitleSlice = createSlice({
   },
 });
 export const { setMeetingTitle } = meetingTitleSlice.actions;
+const meetingTitlePersistConfig = {
+  key: "meetingTitle",
+  storage,
+};
+const persistedMeetingTitleReducer = persistReducer(meetingTitlePersistConfig, meetingTitleSlice.reducer);
 
 interface UserRoleState {
   role: "admin" | "participant" | null;
@@ -61,6 +73,11 @@ const userRoleSlice = createSlice({
 });
 
 export const { setRole } = userRoleSlice.actions;
+const rolePersistConfig = {
+  key: "role",
+  storage,
+};
+const persistedRoleReducer = persistReducer(rolePersistConfig, userRoleSlice.reducer);
 
 interface PresentationState {
   presentationTime: number;
@@ -117,6 +134,9 @@ const deviceSlice = createSlice({
     toggleCamera: (state) => {
       state.isCameraEnabled = !state.isCameraEnabled;
     },
+    turnOnCamera: (state) => {
+      state.isCameraEnabled = true;
+    },
     toggleMic: (state) => {
       state.isMicEnabled = !state.isMicEnabled;
     },
@@ -128,6 +148,14 @@ const deviceSlice = createSlice({
     },
   },
 });
+
+export const { toggleCamera, turnOnCamera, toggleMic, turnOnMic, turnOffMic } = deviceSlice.actions;
+
+const devicePersistConfig = {
+  key: "device",
+  storage,
+};
+const persistedDeviceReducer = persistReducer(devicePersistConfig, deviceSlice.reducer);
 
 // QnA 관련 인터페이스와 slice 추가
 interface QnAMessage {
@@ -152,11 +180,7 @@ const qnaSlice = createSlice({
   initialState: initialQnAState,
   reducers: {
     addMessage: (state, action: PayloadAction<QnAMessage>) => {
-      const isExists = state.messages.some(msg =>
-        msg.text === action.payload.text &&
-        msg.sender === action.payload.sender &&
-        msg.timestamp === action.payload.timestamp
-      );
+      const isExists = state.messages.some((msg) => msg.text === action.payload.text && msg.sender === action.payload.sender && msg.timestamp === action.payload.timestamp);
 
       if (!isExists) {
         state.messages.push(action.payload);
@@ -172,8 +196,6 @@ const qnaSlice = createSlice({
     },
   },
 });
-
-export const { toggleCamera, toggleMic, turnOnMic, turnOffMic } = deviceSlice.actions;
 
 interface RaisedHandParticipant {
   connectionId: string;
@@ -210,17 +232,24 @@ export const { addMessage, incrementGlobalOrder, resetQnA } = qnaSlice.actions;
 // Redux Store 통합
 export const store = configureStore({
   reducer: {
-    myUsername: myUsernameSlice.reducer,
-    role: userRoleSlice.reducer,
+    myUsername: persistedMyUsernameReducer,
+    meetingTitle: persistedMeetingTitleReducer,
+    role: persistedRoleReducer,
+    device: persistedDeviceReducer,
     presentation: presentationSlice.reducer,
-    device: deviceSlice.reducer,
-    meetingTitle: meetingTitleSlice.reducer,
     qna: qnaSlice.reducer,
     raisedHands: raisedHandsSlice.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE", "persist/REGISTER"],
+      },
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export default store;
+export const persistor = persistStore(store);
