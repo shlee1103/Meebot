@@ -36,12 +36,22 @@ interface QnAMessage {
   order: number;
 }
 
+interface PresentationData {
+  presenter: string | null;
+  presentation_order: number;
+  roomCode: string;
+  startTime: string;
+  endTime: string;
+  transcripts: string;
+}
+
 // 발표 기능 제어 관리
 export const usePresentationControls = (session: Session | undefined, myUserName: string) => {
   const [currentPresenter, setCurrentPresenter] = useState<ParticipantInfo | null>(null);
   const [currentScript, setCurrentScript] = useState<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [conferenceStatus, setConferenceStatus] = useState(CONFERENCE_STATUS.CONFERENCE_WAITING);
+  const [currentPresentationData, setCurrentPresentationData] = useState<PresentationData | null>(null);
   const { transcript, resetTranscript, finalTranscript } = useSpeechRecognition();
   const dispatch = useDispatch();
   const currentPresenterIndex = useSelector((state: RootState) => state.presentation.currentPresenterIndex);
@@ -62,6 +72,8 @@ export const usePresentationControls = (session: Session | undefined, myUserName
       endTime: formatDate(new Date()),
       transcripts: currentScript,
     };
+
+    setCurrentPresentationData(presentationJson);
 
     // 파일명 생성: "presentation_발표자명_타임스탬프.json"
     const fileName = `presentation_${presenter}_${new Date().getTime()}.json`;
@@ -338,5 +350,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     currentScript,
     setCurrentScript,
     currentPresenterIndex,
+    currentPresentationData,
   };
 };
