@@ -12,12 +12,8 @@ interface ParticipantsListProps {
 const ParticipantsList: React.FC<ParticipantsListProps> = ({ subscribers, currentSlide, isMenuOpen, handlePrevSlide, handleNextSlide }) => {
   return (
     <div className="flex items-center w-full my-[1%]">
-      {((isMenuOpen && subscribers.length > 4) || (!isMenuOpen && subscribers.length > 6)) && (
-        <button
-          className="w-[3%] aspect-square flex items-center justify-center bg-white/20 rounded-full text-white"
-          onClick={handlePrevSlide}
-          // disabled={currentSlide === 0}
-        >
+      {((isMenuOpen && subscribers.length > 4) || (!isMenuOpen && subscribers.length > 6)) && currentSlide !== 0 && (
+        <button className="w-[3%] aspect-square flex items-center justify-center bg-white/20 rounded-full text-white" onClick={handlePrevSlide}>
           ◀
         </button>
       )}
@@ -35,12 +31,8 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ subscribers, curren
           </div>
         ))}
       </div>
-      {((isMenuOpen && subscribers.length > 4) || (!isMenuOpen && subscribers.length > 6)) && (
-        <button
-          className="w-[3%] aspect-square flex items-center justify-center bg-white/20 rounded-full text-white"
-          onClick={handleNextSlide}
-          // disabled={currentSlide >= subscribers.length - (isMenuOpen ? 4 : 6)}
-        >
+      {((isMenuOpen && subscribers.length > 4) || (!isMenuOpen && subscribers.length > 6)) && currentSlide < subscribers.length - (isMenuOpen ? 4 : 6) && (
+        <button className="w-[3%] aspect-square flex items-center justify-center bg-white/20 rounded-full text-white" onClick={handleNextSlide}>
           ▶
         </button>
       )}
