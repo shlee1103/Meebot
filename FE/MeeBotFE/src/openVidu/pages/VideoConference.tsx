@@ -55,10 +55,8 @@ const VideoConference: React.FC = () => {
     sendMessage,
   } = useOpenVidu();
 
-  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript } = usePresentationControls(
-    session,
-    myUserName as string
-  );
+  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript, currentPresentationData } =
+    usePresentationControls(session, myUserName as string);
 
   const { isHandRaised, setIsHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
     publisher,
@@ -71,11 +69,23 @@ const VideoConference: React.FC = () => {
 
   const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
-  const { speech, isSpeaking, handleConferenceStatusChange } = useChatGPT(session);
+  const { speech, isSpeaking, handleConferenceStatusChange, currentSentence } = useChatGPT(session, currentPresentationData);
 
   const handleStatusChange = async (status: string) => {
     await changeConferenceStatus(status);
-    await handleConferenceStatusChange(status);
+
+    if (status === CONFERENCE_STATUS.CONFERENCE_WAITING && !hasShownLoading.current) {
+      setIsLoading(true);
+      hasShownLoading.current = true;
+    } else {
+      await handleConferenceStatusChange(status);
+    }
+  };
+
+  // LoadingOverlay 완료 후 실행될 콜백
+  const handleLoadingComplete = async () => {
+    setIsLoading(false);
+    await handleConferenceStatusChange(CONFERENCE_STATUS.CONFERENCE_WAITING);
   };
 
   useEffect(() => {
@@ -90,7 +100,7 @@ const VideoConference: React.FC = () => {
             turnOffAudio();
             setCurrentPresenter(data.presenter);
             setConferenceStatus(data.action);
-            // 로딩화면을 한 번만 보여주기 위한 체크
+
             if (!hasShownLoading.current) {
               setIsLoading(true);
               hasShownLoading.current = true;
@@ -313,7 +323,7 @@ const VideoConference: React.FC = () => {
             <MainVideo mainStreamManager={mainStreamManager} />
           </div>
           <div className="flex-none hidden lg:block md:block">
-            <MeeU speech={speech} />
+            <MeeU speech={speech} currentSentence={currentSentence} />
             <HandsupList conferenceStatus={conferenceStatus} />
           </div>
         </div>
@@ -384,7 +394,7 @@ const VideoConference: React.FC = () => {
 
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] pointer-events-auto">
-          <LoadingOverlay onLoadingComplete={() => setIsLoading(false)} />
+          <LoadingOverlay onLoadingComplete={handleLoadingComplete} />
         </div>
       )}
 
