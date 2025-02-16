@@ -63,12 +63,21 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   const globalOrder = useSelector((state: RootState) => state.qna.globalOrder);
   const qnaMessages = useSelector((state: RootState) => state.qna.messages);
 
-  // 현재 스크립트가 변경될 때마다 누적 스크립트에 추가하는 useEffect
+  // 새로운 스크립트를 누적
   useEffect(() => {
     if (currentScript && currentScript.trim() !== "") {
-      setAccumulatedScript((prev) => prev + currentScript + "\n");
+      setAccumulatedScript((prev) => {
+        // 자연스러운 띄어쓰기를 위한 처리
+        const needsSpace = prev.length > 0 && !prev.endsWith(" ");
+        return prev + (needsSpace ? " " : "") + currentScript;
+      });
     }
   }, [currentScript]);
+
+  // 발표자가 변경될 때 누적 스크립트 초기화
+  useEffect(() => {
+    setAccumulatedScript("");
+  }, [currentPresenter?.name]);
 
   // JSON 파일 전송
   const sendJSONToServer = async (presenter: string | null, sessionId?: string) => {
@@ -410,6 +419,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   }, [conferenceStatus, resetTranscript, currentPresenter, isMicEnabled]);
 
   return {
+    accumulatedScript,
     conferenceStatus,
     setConferenceStatus,
     changeConferenceStatus,
