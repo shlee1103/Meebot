@@ -6,14 +6,17 @@ import PdfIcon from '../../assets/pdf_icon.png';
 import { Mn, P } from '../common/Typography';
 import DeleteConfirmPopup from './Popup/DeleteConfirmPopup';
 import SaveCompletePopup from './Popup/SaveCompletePopup';
-import { deleteStorageData } from '../../apis/storage';
+import { deleteStorageData, savePdf, saveNotion } from '../../apis/storage';
 
 interface StorageItemProps {
-  title: string;
+  roomTitle: string;
+  roomCode: string;
+  content: string;
   date: string;
+  refreshStorageData: () => void;
 }
 
-const StorageListItem: React.FC<StorageItemProps> = ({ title, date }) => {
+const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, content, date, refreshStorageData}) => {
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSaveComplete, setShowSaveComplete] = useState(false);
@@ -31,11 +34,29 @@ const StorageListItem: React.FC<StorageItemProps> = ({ title, date }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleDownloadClick = (type: 'notion' | 'pdf') => {
-    setShowDownloadOptions(false);
+  const handleDownloadClick = async (type: 'notion' | 'pdf') => {
     setSaveType(type);
+    setShowDownloadOptions(false);
     console.log(`Downloading as ${type}`);
-    setShowSaveComplete(true);
+    if (type === 'notion') {
+      try {
+        const data = await saveNotion(roomCode);
+        console.log(data)
+        console.log(content)
+        setShowSaveComplete(true);
+      } catch (err) {
+        console.error('Failed to save to Notion:', err);
+      }
+    } else {
+      try {
+        const data = await savePdf(roomCode);
+        console.log(data)
+        console.log(content)
+        setShowSaveComplete(true);
+      } catch (err) {
+        console.error('Failed to save to Notion:', err);
+      }
+    }
   };
 
   const handleDeleteClick = () => {
@@ -45,7 +66,8 @@ const StorageListItem: React.FC<StorageItemProps> = ({ title, date }) => {
   const handleDeleteConfirm = async () => {
     setShowDeleteConfirm(false);
     try {
-      const data = await deleteStorageData(title);
+      const data = await deleteStorageData(roomCode);
+      refreshStorageData();
       console.log(data);
     } catch (err) {
       console.error('Failed to delete storage item:', err);
@@ -59,7 +81,7 @@ const StorageListItem: React.FC<StorageItemProps> = ({ title, date }) => {
         from-[rgba(255,255,255,0.3)] via-[rgba(204,204,204,0.6)] via-[rgba(145,161,181,0.825)] to-[rgba(89,110,137,0.6)]"
       >
         <div className="flex flex-col justify-center items-start gap-2">
-          <P className="text-white !font-bold">{title}</P>
+          <P className="text-white !font-bold">{roomTitle}</P>
           <Mn className="text-[#E9E9E9] !font-medium">{date}</Mn>
         </div>
         <div className="flex flex-row items-center gap-4">
