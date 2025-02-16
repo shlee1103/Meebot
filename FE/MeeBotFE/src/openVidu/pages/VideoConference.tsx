@@ -274,7 +274,7 @@ const VideoConference: React.FC = () => {
 
         let formattedText = text;
         patterns.forEach((pattern) => {
-          formattedText = formattedText.replace(pattern, "$1\n");
+          formattedText = formattedText.replace(pattern, "$1");
         });
 
         return formattedText.trim();
