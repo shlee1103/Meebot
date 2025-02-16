@@ -242,7 +242,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           type: "conference-status",
         });
       }
-      console.log("qna 종료 처리 완료");
+      // console.log("qna 종료 처리 완료");
     }
 
     // 발표회 종료 버튼을 눌렀을 때
@@ -312,7 +312,11 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     ];
 
     // 완성된 문장인지 확인
-    const hasEndingPattern = patterns.some((pattern) => pattern.test(newText));
+    // const hasEndingPattern = patterns.some((pattern) => pattern.test(newText));
+    const hasEndingPattern = patterns.some((pattern) => {
+      pattern.lastIndex = 0;
+      return pattern.test(newText);
+    });
 
     // 완성된 한글 음절인지 확인
     if (newText && /[가-힣]+/.test(newText) && hasEndingPattern) {
