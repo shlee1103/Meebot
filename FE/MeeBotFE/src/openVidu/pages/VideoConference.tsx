@@ -314,7 +314,7 @@ const VideoConference: React.FC = () => {
 
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 z-10">
         <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "lg:w-[calc(100%-380px)]" : "lg:w-full"}`}>
           <div className="flex-none hidden lg:block md:block">
             <ParticipantsList subscribers={subscribers} currentSlide={currentSlide} isMenuOpen={isMenuOpen} handlePrevSlide={handlePrevSlide} handleNextSlide={handleNextSlide} />
