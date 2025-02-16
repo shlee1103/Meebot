@@ -284,7 +284,6 @@ const VideoConference: React.FC = () => {
       session.on("signal:stt-transcript", (event) => {
         if (event.data) {
           const { text } = JSON.parse(event.data);
-          // 포맷팅된 텍스트로 설정
           const formattedText = formatScript(text);
           setCurrentScript(formattedText);
         }

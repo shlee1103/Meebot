@@ -277,24 +277,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   };
 
   // 새로 인식된 부분만 추출하는 함수
-  // 1)
-  // const getNewlyRecognizedText = (currentTranscript: string): string => {
-  //   const prevText = prevTranscriptRef.current;
-  //   const newText = currentTranscript.slice(prevText.length).trim();
-  //   prevTranscriptRef.current = currentTranscript;
-  //   return newText;
-  // };
-
-  // 2)
-  // const getNewlyFinishedSpeech = (currentFinalTranscript: string): string => {
-  //   const prevFinal = prevFinalTranscriptRef.current;
-  //   const newPart = currentFinalTranscript.slice(prevFinal.length).trim();
-
-  //   prevFinalTranscriptRef.current = currentFinalTranscript;
-  //   return newPart;
-  // };
-
-  // 3)
   const getNewlyRecognizedText = (currentTranscript: string): string => {
     const prevText = prevTranscriptRef.current;
     const newText = currentTranscript.slice(prevText.length).trim();
@@ -326,7 +308,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     ];
 
     // 완성된 문장인지 확인
-    // const hasEndingPattern = patterns.some((pattern) => pattern.test(newText));
     const hasEndingPattern = patterns.some((pattern) => {
       pattern.lastIndex = 0;
       return pattern.test(newText);
@@ -341,43 +322,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   };
 
   // 말하는 내용 전송
-  // const sendCurrentSpeach = (currentText: string) => {
-  //   session?.signal({
-  //     data: JSON.stringify({
-  //       text: currentText,
-  //       presenter: myUserName,
-  //     }),
-  //     type: "stt-transcript",
-  //   });
-  // };
-
-  // 1)
-  // const sendCurrentSpeech = (newText: string) => {
-  //   if (!newText) return;
-
-  //   session?.signal({
-  //     data: JSON.stringify({
-  //       text: newText,
-  //       presenter: myUserName,
-  //     }),
-  //     type: "stt-transcript",
-  //   });
-  // };
-
-  // 2)
-  // const sendCurrentSpeech = (newText: string) => {
-  //   if (!newText) return;
-
-  //   session?.signal({
-  //     data: JSON.stringify({
-  //       text: newText,
-  //       presenter: myUserName,
-  //     }),
-  //     type: "stt-transcript",
-  //   });
-  // };
-
-  // 3)
   const sendCurrentSpeech = (newText: string) => {
     if (!newText) return;
 
@@ -391,45 +335,12 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   };
 
   // 발표 중인 내용을 시그널링 하는 부분
-  // useEffect(() => {
-  //   if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
-  //     const currentText = transcript.trim();
-  //     console.log(transcript);
-
-  //     if (currentText) {
-  //       sendCurrentSpeach(currentText);
-  //     }
-  //   }
-  // }, [transcript, conferenceStatus, currentPresenter]);
-
-  // 1)
-  // useEffect(() => {
-  //   if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
-  //     const newlyRecognized = getNewlyRecognizedText(transcript);
-
-  //     if (newlyRecognized) {
-  //       sendCurrentSpeech(newlyRecognized);
-  //     }
-  //   }
-  // }, [transcript, conferenceStatus, currentPresenter]);
-
-  // 2)
-  // useEffect(() => {
-  //   if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && finalTranscript) {
-  //     // finalTranscript를 사용
-  //     const newSpeech = getNewlyFinishedSpeech(finalTranscript);
-
-  //     if (newSpeech) {
-  //       sendCurrentSpeech(newSpeech);
-  //     }
-  //   }
-  // }, [finalTranscript, conferenceStatus, currentPresenter]); // finalTranscript를 dependency로 변경
-
-  // 3)
   useEffect(() => {
     if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
+      // 지금 새롭게 인식된 내용들이 문장 단위로 끝났는지 판별 + 해당 새롭게 인식된 내용 반환
       const newlyRecognized = getNewlyRecognizedText(transcript);
 
+      // 조건에 따라 시그널링 수행
       if (newlyRecognized) {
         sendCurrentSpeech(newlyRecognized);
       }
@@ -437,12 +348,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   }, [transcript, conferenceStatus, currentPresenter]);
 
   // 발표자 변경 시 이전 transcript 초기화
-  // 1)
-  // useEffect(() => {
-  //   prevTranscriptRef.current = "";
-  // }, [currentPresenter?.name]);
-
-  // 2)
   useEffect(() => {
     prevFinalTranscriptRef.current = "";
   }, [currentPresenter?.name]);
