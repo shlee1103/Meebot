@@ -2,7 +2,7 @@ export class TextToSpeech {
   private audioContext: AudioContext;
   public onEnd: (() => void) | null = null;
   public onTextChange: ((text: string) => void) | null = null;
-  private readonly API_KEY = "여기는 API키 채워주세요";
+  private readonly API_KEY = import.meta.env.VITE_API_KEY;
   private isPlaying: boolean = false;
   private currentSource: AudioBufferSourceNode | null = null;
 
