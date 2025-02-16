@@ -55,10 +55,8 @@ const VideoConference: React.FC = () => {
     sendMessage,
   } = useOpenVidu();
 
-  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript } = usePresentationControls(
-    session,
-    myUserName as string
-  );
+  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript, currentPresentationData } =
+    usePresentationControls(session, myUserName as string);
 
   const { isHandRaised, setIsHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
     publisher,
@@ -71,11 +69,23 @@ const VideoConference: React.FC = () => {
 
   const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
-  const { speech, isSpeaking, handleConferenceStatusChange } = useChatGPT(session);
+  const { speech, isSpeaking, handleConferenceStatusChange, currentSentence } = useChatGPT(session, currentPresentationData);
 
   const handleStatusChange = async (status: string) => {
     await changeConferenceStatus(status);
-    await handleConferenceStatusChange(status);
+
+    if (status === CONFERENCE_STATUS.CONFERENCE_WAITING && !hasShownLoading.current) {
+      setIsLoading(true);
+      hasShownLoading.current = true;
+    } else {
+      await handleConferenceStatusChange(status);
+    }
+  };
+
+  // LoadingOverlay 완료 후 실행될 콜백
+  const handleLoadingComplete = async () => {
+    setIsLoading(false);
+    await handleConferenceStatusChange(CONFERENCE_STATUS.CONFERENCE_WAITING);
   };
 
   useEffect(() => {
@@ -90,7 +100,7 @@ const VideoConference: React.FC = () => {
             turnOffAudio();
             setCurrentPresenter(data.presenter);
             setConferenceStatus(data.action);
-            // 로딩화면을 한 번만 보여주기 위한 체크
+
             if (!hasShownLoading.current) {
               setIsLoading(true);
               hasShownLoading.current = true;
@@ -300,11 +310,11 @@ const VideoConference: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#171f2e]">
-      <BackgroundGradients/>
+      <BackgroundGradients />
 
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 z-10">
         <div className={`flex flex-col transition-all duration-300 ease-in-out pb-20 ${isMenuOpen ? "lg:w-[calc(100%-380px)]" : "lg:w-full"}`}>
           <div className="flex-none hidden lg:block md:block">
             <ParticipantsList subscribers={subscribers} currentSlide={currentSlide} isMenuOpen={isMenuOpen} handlePrevSlide={handlePrevSlide} handleNextSlide={handleNextSlide} />
@@ -313,7 +323,7 @@ const VideoConference: React.FC = () => {
             <MainVideo mainStreamManager={mainStreamManager} />
           </div>
           <div className="flex-none hidden lg:block md:block">
-            <MeeU speech={speech} />
+            <MeeU speech={speech} currentSentence={currentSentence} />
             <HandsupList conferenceStatus={conferenceStatus} />
           </div>
         </div>
@@ -330,9 +340,9 @@ const VideoConference: React.FC = () => {
               cursor-pointer
               shadow-[-4px_0px_12px_-2px_rgba(0,0,0,0.3)]
               hidden lg:flex
-              ${isMenuOpen ? 'right-[380px]' : 'right-0'}`}
+              ${isMenuOpen ? "right-[380px]" : "right-0"}`}
           >
-            <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : ''}`}>
+            <span className={`w-5 h-5 transition-transform duration-300 ease-in-out ${isMenuOpen ? "rotate-180" : ""}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -359,7 +369,7 @@ const VideoConference: React.FC = () => {
               myUserName={myUserName as string}
               messages={messages}
               sendMessage={sendMessage}
-              />
+            />
           </div>
         </div>
       </div>
@@ -384,14 +394,11 @@ const VideoConference: React.FC = () => {
 
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] pointer-events-auto">
-          <LoadingOverlay onLoadingComplete={() => setIsLoading(false)} />
+          <LoadingOverlay onLoadingComplete={handleLoadingComplete} />
         </div>
       )}
 
-      <FinishPopup
-        isOpen={showFinishPopup}
-        onClose={() => setShowFinishPopup(false)}
-      ></FinishPopup>
+      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
     </div>
   );
 };

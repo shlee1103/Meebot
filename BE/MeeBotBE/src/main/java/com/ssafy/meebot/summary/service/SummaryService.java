@@ -898,23 +898,17 @@ public class SummaryService {
         String presenter = (String) request.get("presenter");
         String transcripts = (String) request.get("transcripts");
 
-        String prompt = String.format(
-                "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n" +
-                        "위 발표 내용을 한 줄로 요약하고, 발표 종료 메시지를 작성해 주세요. " +
-                        "메시지는 다음 형식으로 작성해 주세요:\n\n" +
-                        "발표자가 누구였는지 알려주세요.\n" +
-                        "그 다음 발표 내용을 한 줄로 요약한 내용을 포함해 주세요.\n" +
-                        "마지막으로 발표에 대한 긍정적인 소감이나 인상적인 점을 한 문장으로 추가해 주세요.\n\n",
-                "예를 들어:\n" + "\"지금까지 [발표자]님의 발표였습니다. ([요약된 내용]) 발표 중 [긍정적인 소감 혹은 인상적인 점 한 문장]\"",
-                presenter, transcripts
-        );
-
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
-                        Map.of("role", "system", "content",
-                                "너는 전문적인 발표 진행자야. 발표 종료 메시지를 작성해줘"),
-                        Map.of("role", "user", "content", prompt)
+                        Map.of("role", "system", "content", "너는 발표 진행을 맡은 사회자야." +
+                                        "한 사람의 발표가 끝났어. 지금까지 누구의 발표였는지에 대한 멘트 이후, " +
+                                        "발표 내용 한 줄 요약, 마지막으로 발표에 대한 소감을 한 문장으로 추가해 줘." +
+                                        "3줄로 요약해서 하나의 문장으로 작성해줘"),
+                        Map.of("role", "user", "content", String.format(
+                                "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n",
+                                        presenter, transcripts
+                        ))
                 ),
                 "temperature", 0.7
         );
