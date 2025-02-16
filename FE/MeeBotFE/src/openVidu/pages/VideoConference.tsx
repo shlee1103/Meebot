@@ -55,7 +55,7 @@ const VideoConference: React.FC = () => {
     sendMessage,
   } = useOpenVidu();
 
-  const { conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, currentScript, setCurrentScript, currentPresentationData } =
+  const { accumulatedScript, conferenceStatus, setConferenceStatus, changeConferenceStatus, currentPresenter, setCurrentPresenter, resetPresenter, setCurrentScript, currentPresentationData } =
     usePresentationControls(session, myUserName as string);
 
   const { isHandRaised, setIsHandRaised, toggleAudio, turnOffAudio, turnOnAudio, toggleVideo, toggleHand, startScreenShare, stopScreenShare } = useStreamControls(
@@ -452,7 +452,7 @@ const VideoConference: React.FC = () => {
               participants={participants}
               conferenceStatus={conferenceStatus}
               currentPresenter={currentPresenter}
-              currentScript={currentScript}
+              accumulatedScript={accumulatedScript}
               myUserName={myUserName as string}
               messages={messages}
               sendMessage={sendMessage}

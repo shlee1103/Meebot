@@ -11,7 +11,7 @@ interface SideMenuProps {
   participants: ParticipantInfo[];
   conferenceStatus: string;
   currentPresenter: ParticipantInfo | null;
-  currentScript: string;
+  accumulatedScript: string;
   myUserName: string;
   messages: {
     sender: { name: string; image: string };
@@ -32,7 +32,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
   isMenuOpen,
   participants: participantsList,
   conferenceStatus,
-  currentScript,
+  accumulatedScript,
   currentPresenter,
   myUserName,
   messages,
@@ -62,22 +62,18 @@ const SideMenu: React.FC<SideMenuProps> = ({
               onClick={() => setActiveTab("participants")}
               className={`w-full h-12 rounded-xl flex items-center justify-center
                 transition-all duration-300 ease-in-out
-                ${activeTab === "participants" 
-                  ? "bg-[#6B4CFF] text-white shadow-md scale-[1.02]" 
-                  : "bg-[#1f2937] text-gray-400 hover:bg-[#374151]"}`}
+                ${activeTab === "participants" ? "bg-[#6B4CFF] text-white shadow-md scale-[1.02]" : "bg-[#1f2937] text-gray-400 hover:bg-[#374151]"}`}
             >
-              <svg
-                className="w-6 h-6 transition-transform duration-300 ease-in-out"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm18 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM12 12c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
+              <svg className="w-6 h-6 transition-transform duration-300 ease-in-out" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm18 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM12 12c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z" />
               </svg>
             </button>
-            <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 
+            <div
+              className="absolute -top-7 left-1/2 transform -translate-x-1/2 
               px-2 py-1 bg-[#374151] text-white text-xs rounded-md
               opacity-0 group-hover:opacity-100 transition-opacity duration-200
-              whitespace-nowrap pointer-events-none font-pretendard">
+              whitespace-nowrap pointer-events-none font-pretendard"
+            >
               참여자
             </div>
           </div>
@@ -87,22 +83,18 @@ const SideMenu: React.FC<SideMenuProps> = ({
               onClick={() => setActiveTab("chat")}
               className={`w-full h-12 rounded-xl flex items-center justify-center
                 transition-all duration-300 ease-in-out
-                ${activeTab === "chat" 
-                  ? "bg-[#6B4CFF] text-white shadow-md scale-[1.02]" 
-                  : "bg-[#1f2937] text-gray-400 hover:bg-[#374151]"}`}
+                ${activeTab === "chat" ? "bg-[#6B4CFF] text-white shadow-md scale-[1.02]" : "bg-[#1f2937] text-gray-400 hover:bg-[#374151]"}`}
             >
-              <svg
-                className="w-6 h-6 transition-transform duration-300 ease-in-out"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+              <svg className="w-6 h-6 transition-transform duration-300 ease-in-out" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
               </svg>
             </button>
-            <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 
+            <div
+              className="absolute -top-7 left-1/2 transform -translate-x-1/2 
               px-2 py-1 bg-[#374151] text-white text-xs rounded-md
               opacity-0 group-hover:opacity-100 transition-opacity duration-200
-              whitespace-nowrap pointer-events-none font-pretendard">
+              whitespace-nowrap pointer-events-none font-pretendard"
+            >
               채팅
             </div>
           </div>
@@ -112,22 +104,18 @@ const SideMenu: React.FC<SideMenuProps> = ({
               onClick={() => setActiveTab("script")}
               className={`w-full h-12 rounded-xl flex items-center justify-center
                 transition-all duration-300 ease-in-out
-                ${activeTab === "script" 
-                  ? "bg-[#6B4CFF] text-white shadow-md scale-[1.02]" 
-                  : "bg-[#1f2937] text-gray-400 hover:bg-[#374151]"}`}
+                ${activeTab === "script" ? "bg-[#6B4CFF] text-white shadow-md scale-[1.02]" : "bg-[#1f2937] text-gray-400 hover:bg-[#374151]"}`}
             >
-              <svg
-                className="w-6 h-6 transition-transform duration-300 ease-in-out"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-2-12H7v2h10V7zm0 4H7v2h10v-2zm-3 4H7v2h7v-2z"/>
+              <svg className="w-6 h-6 transition-transform duration-300 ease-in-out" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-2-12H7v2h10V7zm0 4H7v2h10v-2zm-3 4H7v2h7v-2z" />
               </svg>
             </button>
-            <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 
+            <div
+              className="absolute -top-7 left-1/2 transform -translate-x-1/2 
               px-2 py-1 bg-[#374151] text-white text-xs rounded-md
               opacity-0 group-hover:opacity-100 transition-opacity duration-200
-              whitespace-nowrap pointer-events-none font-pretendard">
+              whitespace-nowrap pointer-events-none font-pretendard"
+            >
               스크립트
             </div>
           </div>
@@ -138,7 +126,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
           activeTab={activeTab}
           participantsList={participantsList}
           conferenceStatus={conferenceStatus}
-          currentScript={currentScript}
+          accumulatedScript={accumulatedScript}
           currentPresenter={currentPresenter}
           myUserName={myUserName}
           messages={messages}

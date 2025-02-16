@@ -10,7 +10,7 @@ interface SideMenuContentProps {
   participantsList: ParticipantInfo[];
   conferenceStatus: string;
   currentPresenter: ParticipantInfo | null;
-  currentScript: string;
+  accumulatedScript: string;
   myUserName: string;
   messages: {
     sender: { name: string; image: string };
@@ -23,13 +23,13 @@ interface SideMenuContentProps {
   sendMessage: (message: string) => void;
 }
 
-const SideMenuContent: React.FC<SideMenuContentProps> = ({ activeTab, participantsList, currentScript, conferenceStatus, currentPresenter, myUserName, messages, sendMessage }) => {
+const SideMenuContent: React.FC<SideMenuContentProps> = ({ activeTab, participantsList, accumulatedScript, conferenceStatus, currentPresenter, myUserName, messages, sendMessage }) => {
   // console.log("참가 목록 :", participantsList);
   return (
     <div className="h-[calc(100%-7rem)] overflow-y-auto px-5">
       {activeTab === "participants" && <Participant participantsList={participantsList} />}
       {activeTab === "chat" && <Chat myUserName={myUserName} messages={messages} sendMessage={sendMessage} />}
-      {activeTab === "script" && <Script currentScript={currentScript} conferenceStatus={conferenceStatus} currentPresenter={currentPresenter} />}
+      {activeTab === "script" && <Script conferenceStatus={conferenceStatus} currentPresenter={currentPresenter} accumulatedScript={accumulatedScript} />}
     </div>
   );
 };
