@@ -53,6 +53,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   const [startTime, setStartTime] = useState<string>("");
   const [conferenceStatus, setConferenceStatus] = useState(CONFERENCE_STATUS.CONFERENCE_WAITING);
   const [currentPresentationData, setCurrentPresentationData] = useState<PresentationData | null>(null);
+  const [accumulatedScript, setAccumulatedScript] = useState<string>("");
   const prevFinalTranscriptRef = useRef<string>("");
   const { transcript, resetTranscript, finalTranscript } = useSpeechRecognition();
   const dispatch = useDispatch();
@@ -61,6 +62,13 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   const isMicEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const globalOrder = useSelector((state: RootState) => state.qna.globalOrder);
   const qnaMessages = useSelector((state: RootState) => state.qna.messages);
+
+  // 현재 스크립트가 변경될 때마다 누적 스크립트에 추가하는 useEffect
+  useEffect(() => {
+    if (currentScript && currentScript.trim() !== "") {
+      setAccumulatedScript((prev) => prev + currentScript + "\n");
+    }
+  }, [currentScript]);
 
   // JSON 파일 전송
   const sendJSONToServer = async (presenter: string | null, sessionId?: string) => {
@@ -72,7 +80,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
       roomCode: sessionId,
       startTime: startTime,
       endTime: formatDate(new Date()),
-      transcripts: currentScript,
+      transcripts: accumulatedScript,
     };
 
     setCurrentPresentationData(presentationJson);
@@ -110,6 +118,9 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     } catch (error) {
       console.error("Error sending presentation data:", error);
     }
+
+    // 누적 스크립트 초기화
+    setAccumulatedScript("");
   };
 
   // QnA 스크립트 JSON 저장 함수 수정
@@ -166,6 +177,9 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
   // # 발표회 상태에 따라 수행되는 signal
   const changeConferenceStatus = async (currentStatus: string) => {
+    if (currentStatus === CONFERENCE_STATUS.PRESENTATION_READY) {
+      setAccumulatedScript(""); // 스크립트 초기화
+    }
     if (currentStatus === CONFERENCE_STATUS.CONFERENCE_WAITING) {
       setCurrentPresenterIndex(0);
       session?.signal({
