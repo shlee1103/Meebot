@@ -59,9 +59,9 @@ public class DownloadController {
     }
 
     @GetMapping("/notion/login")
-    public ResponseEntity<Void> getNotionLoginUrl(@RequestParam String roomCode) {
-        String stateWithRoomCode = generateStateToken() + "|" + (roomCode);  // JWT 기반 state 생성 + roomCode
-        String encodedState = URLEncoder.encode(stateWithRoomCode, StandardCharsets.UTF_8); // 인코딩
+    public ResponseEntity<Map<String, String>> getNotionLoginUrl(@RequestParam("room_code") String roomCode) {
+        String stateWithRoomCode = generateStateToken() + "|" + (roomCode);
+        String encodedState = URLEncoder.encode(stateWithRoomCode, StandardCharsets.UTF_8);
         String encodedRedirectUri = baseUri + "/api/auth/notion/callback";
         String notionAuthUrl = NOTION_AUTH_URL
                 + "?client_id=" + clientId
@@ -73,9 +73,10 @@ public class DownloadController {
 
         System.out.println("Redirecting to Notion Auth URL: " + notionAuthUrl);
 
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(notionAuthUrl))
-                .build();
+        Map<String, String> response = new HashMap<>();
+        response.put("login_url", notionAuthUrl);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/auth/notion/callback", produces = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8")
