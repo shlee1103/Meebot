@@ -1,44 +1,40 @@
+import { useState, useEffect } from "react";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
 import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
-import { useState, useEffect } from 'react';
 
 interface ScriptProps {
-  conferenceStatus: string
-  currentScript: string
-  currentPresenter: ParticipantInfo | null
+  conferenceStatus: string;
+  currentScript: string;
+  currentPresenter: ParticipantInfo | null;
 }
 
 const Script: React.FC<ScriptProps> = ({ conferenceStatus, currentScript, currentPresenter }) => {
-  const [savedScript, setSavedScript] = useState<string>('');
+  const [accumulatedScript, setAccumulatedScript] = useState<string>("");
 
   const shouldShowScript =
-    conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE ||
-    conferenceStatus === CONFERENCE_STATUS.PRESENTATION_COMPLETED ||
-    conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE; // 발표 시작 ~ 질의응답 종료
+    conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE || conferenceStatus === CONFERENCE_STATUS.PRESENTATION_COMPLETED || conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE;
 
-  // currentScript가 의미있는 값일 때 저장
+  // 새로운 스크립트를 누적
   useEffect(() => {
-    if (currentScript && currentScript.trim() !== '') {
-      setSavedScript(currentScript);
+    if (currentScript && currentScript.trim() !== "") {
+      setAccumulatedScript((prev) => {
+        // 자연스러운 띄어쓰기를 위한 처리
+        const needsSpace = prev.length > 0 && !prev.endsWith(" ");
+        return prev + (needsSpace ? " " : "") + currentScript;
+      });
     }
   }, [currentScript]);
 
-  // 발표자가 변경될 때 저장된 스크립트 초기화
+  // 발표자가 변경될 때 누적 스크립트 초기화
   useEffect(() => {
-    setSavedScript('');
-  }, [currentPresenter?.name]); // connectionId로 발표자 변경 감지
+    setAccumulatedScript("");
+  }, [currentPresenter?.name]);
 
-  // 실제 표시할 스크립트 (현재 스크립트가 없으면 저장된 스크립트 사용)
-  const displayScript = currentScript || savedScript;
-
-  // 실시간 스크립트 표시
   return (
     <>
-      {(shouldShowScript && currentPresenter) && (
+      {shouldShowScript && currentPresenter && (
         <div className="p-4 overflow-y-auto h-full">
-          <div className="p-3 rounded-lg bg-[#E9E8F3] bg-opacity-30 text-[#FFFFFF] text-sm whitespace-pre-wrap">
-            {displayScript}
-          </div>
+          <div className="p-3 rounded-lg bg-[#E9E8F3] bg-opacity-30 text-[#FFFFFF] text-sm whitespace-pre-wrap">{accumulatedScript}</div>
         </div>
       )}
     </>

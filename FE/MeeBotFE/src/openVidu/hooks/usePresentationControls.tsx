@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Session } from "openvidu-browser";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
 import { useSelector, useDispatch } from "react-redux";
@@ -49,10 +49,12 @@ interface PresentationData {
 export const usePresentationControls = (session: Session | undefined, myUserName: string) => {
   const [currentPresenter, setCurrentPresenter] = useState<ParticipantInfo | null>(null);
   const [currentScript, setCurrentScript] = useState<string>("");
+  // const prevTranscriptRef = useRef<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [conferenceStatus, setConferenceStatus] = useState(CONFERENCE_STATUS.CONFERENCE_WAITING);
   const [currentPresentationData, setCurrentPresentationData] = useState<PresentationData | null>(null);
-  const { transcript, resetTranscript, finalTranscript } = useSpeechRecognition();
+  const prevFinalTranscriptRef = useRef<string>("");
+  const { resetTranscript, finalTranscript } = useSpeechRecognition();
   const dispatch = useDispatch();
   const currentPresenterIndex = useSelector((state: RootState) => state.presentation.currentPresenterIndex);
   const presentersOrder = useSelector((state: RootState) => state.presentation.presentersOrder);
@@ -260,11 +262,54 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     setCurrentPresenter(null);
   };
 
+  // 새로 인식된 부분만 추출하는 함수
+  // 1)
+  // const getNewlyRecognizedText = (currentTranscript: string): string => {
+  //   const prevText = prevTranscriptRef.current;
+  //   const newText = currentTranscript.slice(prevText.length).trim();
+  //   prevTranscriptRef.current = currentTranscript;
+  //   return newText;
+  // };
+
+  // 2)
+  const getNewlyFinishedSpeech = (currentFinalTranscript: string): string => {
+    const prevFinal = prevFinalTranscriptRef.current;
+    const newPart = currentFinalTranscript.slice(prevFinal.length).trim();
+    prevFinalTranscriptRef.current = currentFinalTranscript;
+    return newPart;
+  };
+
   // 말하는 내용 전송
-  const sendCurrentSpeach = (currentText: string) => {
+  // const sendCurrentSpeach = (currentText: string) => {
+  //   session?.signal({
+  //     data: JSON.stringify({
+  //       text: currentText,
+  //       presenter: myUserName,
+  //     }),
+  //     type: "stt-transcript",
+  //   });
+  // };
+
+  // 1)
+  // const sendCurrentSpeech = (newText: string) => {
+  //   if (!newText) return;
+
+  //   session?.signal({
+  //     data: JSON.stringify({
+  //       text: newText,
+  //       presenter: myUserName,
+  //     }),
+  //     type: "stt-transcript",
+  //   });
+  // };
+
+  // 2)
+  const sendCurrentSpeech = (newText: string) => {
+    if (!newText) return;
+
     session?.signal({
       data: JSON.stringify({
-        text: currentText,
+        text: newText,
         presenter: myUserName,
       }),
       type: "stt-transcript",
@@ -272,16 +317,50 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   };
 
   // 발표 중인 내용을 시그널링 하는 부분
-  useEffect(() => {
-    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
-      const currentText = transcript.trim();
-      console.log(transcript);
+  // useEffect(() => {
+  //   if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
+  //     const currentText = transcript.trim();
+  //     console.log(transcript);
 
-      if (currentText) {
-        sendCurrentSpeach(currentText);
+  //     if (currentText) {
+  //       sendCurrentSpeach(currentText);
+  //     }
+  //   }
+  // }, [transcript, conferenceStatus, currentPresenter]);
+
+  // 1)
+  // useEffect(() => {
+  //   if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
+  //     const newlyRecognized = getNewlyRecognizedText(transcript);
+
+  //     if (newlyRecognized) {
+  //       sendCurrentSpeech(newlyRecognized);
+  //     }
+  //   }
+  // }, [transcript, conferenceStatus, currentPresenter]);
+
+  // 2)
+  useEffect(() => {
+    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && finalTranscript) {
+      // finalTranscript를 사용
+      const newSpeech = getNewlyFinishedSpeech(finalTranscript);
+
+      if (newSpeech) {
+        sendCurrentSpeech(newSpeech);
       }
     }
-  }, [transcript, conferenceStatus, currentPresenter]);
+  }, [finalTranscript, conferenceStatus, currentPresenter]); // finalTranscript를 dependency로 변경
+
+  // 발표자 변경 시 이전 transcript 초기화
+  // 1)
+  // useEffect(() => {
+  //   prevTranscriptRef.current = "";
+  // }, [currentPresenter?.name]);
+
+  // 2)
+  useEffect(() => {
+    prevFinalTranscriptRef.current = "";
+  }, [currentPresenter?.name]);
 
   // 질의응답 중 발화 내용 추적을 위한 useEffect 수정
   useEffect(() => {
@@ -331,7 +410,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
       SpeechRecognition.stopListening();
     } else {
       SpeechRecognition.stopListening();
-      sendCurrentSpeach("");
+      // sendCurrentSpeach("");
       resetTranscript();
     }
 
