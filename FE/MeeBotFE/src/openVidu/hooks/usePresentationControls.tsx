@@ -49,12 +49,12 @@ interface PresentationData {
 export const usePresentationControls = (session: Session | undefined, myUserName: string) => {
   const [currentPresenter, setCurrentPresenter] = useState<ParticipantInfo | null>(null);
   const [currentScript, setCurrentScript] = useState<string>("");
-  // const prevTranscriptRef = useRef<string>("");
+  const prevTranscriptRef = useRef<string>("");
   const [startTime, setStartTime] = useState<string>("");
   const [conferenceStatus, setConferenceStatus] = useState(CONFERENCE_STATUS.CONFERENCE_WAITING);
   const [currentPresentationData, setCurrentPresentationData] = useState<PresentationData | null>(null);
   const prevFinalTranscriptRef = useRef<string>("");
-  const { resetTranscript, finalTranscript } = useSpeechRecognition();
+  const { transcript, resetTranscript, finalTranscript } = useSpeechRecognition();
   const dispatch = useDispatch();
   const currentPresenterIndex = useSelector((state: RootState) => state.presentation.currentPresenterIndex);
   const presentersOrder = useSelector((state: RootState) => state.presentation.presentersOrder);
@@ -272,11 +272,54 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   // };
 
   // 2)
-  const getNewlyFinishedSpeech = (currentFinalTranscript: string): string => {
-    const prevFinal = prevFinalTranscriptRef.current;
-    const newPart = currentFinalTranscript.slice(prevFinal.length).trim();
-    prevFinalTranscriptRef.current = currentFinalTranscript;
-    return newPart;
+  // const getNewlyFinishedSpeech = (currentFinalTranscript: string): string => {
+  //   const prevFinal = prevFinalTranscriptRef.current;
+  //   const newPart = currentFinalTranscript.slice(prevFinal.length).trim();
+
+  //   prevFinalTranscriptRef.current = currentFinalTranscript;
+  //   return newPart;
+  // };
+
+  // 3)
+  const getNewlyRecognizedText = (currentTranscript: string): string => {
+    const prevText = prevTranscriptRef.current;
+    const newText = currentTranscript.slice(prevText.length).trim();
+
+    const patterns = [
+      // 1. 문장 부호로 끝나는 경우
+      /([^.!?]+[.!?]+)\s*/g, // 기본 문장 부호
+
+      // 2. 존댓말 종결어미
+      /([^습니다]+(습니다|습니까))\s*/g, // ~습니다, ~습니까
+      /([^세요]+(세요|시죠|게요))\s*/g, // ~세요, ~시죠, ~게요
+      /([^합니다]+(합니다|할게요))\s*/g, // ~합니다, ~할게요
+
+      // 3. 발표 상황의 '~다' 종결어미
+      /([^겠]+(겠습니다|하겠습니다))\s*/g, // "발표하겠습니다", "말씀드리겠습니다"
+      /([^니다]+(입니다|였습니다))\s*/g, // "결과입니다", "내용이었습니다"
+      /([^다]+(드리겠습니다|드렸습니다))\s*/g, // "설명드리겠습니다", "말씀드렸습니다"
+      /([^다]+(됩니다|되겠습니다))\s*/g, // "마무리됩니다", "진행되겠습니다"
+      /([^다]+(보겠습니다|봤습니다))\s*/g, // "살펴보겠습니다", "확인해봤습니다"
+      /([^다]+(시작하겠습니다|마치겠습니다))\s*/g, // "시작하겠습니다", "마치겠습니다"
+      /([^니다]+(있습니다|없습니다))\s*/g, // "존재합니다", "필요없습니다"
+      /([^니다]+(나타냅니다|보여줍니다))\s*/g, // "나타냅니다", "보여줍니다"
+
+      // 4. 의문형 종결어미
+      /([^나요]+(나요|까요|려고요|ㄹ까요))\s*/g, // ~나요, ~까요, ~려고요, ~ㄹ까요
+
+      // 5. 기타 종결어미
+      /([^요]+(요|죠|네요))\s*/g, // ~요, ~죠, ~네요
+    ];
+
+    // 완성된 문장인지 확인
+    const hasEndingPattern = patterns.some((pattern) => pattern.test(newText));
+
+    // 완성된 한글 음절인지 확인
+    if (newText && /[가-힣]+/.test(newText) && hasEndingPattern) {
+      prevTranscriptRef.current = currentTranscript;
+      return newText;
+    }
+    return "";
   };
 
   // 말하는 내용 전송
@@ -304,6 +347,19 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   // };
 
   // 2)
+  // const sendCurrentSpeech = (newText: string) => {
+  //   if (!newText) return;
+
+  //   session?.signal({
+  //     data: JSON.stringify({
+  //       text: newText,
+  //       presenter: myUserName,
+  //     }),
+  //     type: "stt-transcript",
+  //   });
+  // };
+
+  // 3)
   const sendCurrentSpeech = (newText: string) => {
     if (!newText) return;
 
@@ -340,16 +396,27 @@ export const usePresentationControls = (session: Session | undefined, myUserName
   // }, [transcript, conferenceStatus, currentPresenter]);
 
   // 2)
-  useEffect(() => {
-    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && finalTranscript) {
-      // finalTranscript를 사용
-      const newSpeech = getNewlyFinishedSpeech(finalTranscript);
+  // useEffect(() => {
+  //   if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && finalTranscript) {
+  //     // finalTranscript를 사용
+  //     const newSpeech = getNewlyFinishedSpeech(finalTranscript);
 
-      if (newSpeech) {
-        sendCurrentSpeech(newSpeech);
+  //     if (newSpeech) {
+  //       sendCurrentSpeech(newSpeech);
+  //     }
+  //   }
+  // }, [finalTranscript, conferenceStatus, currentPresenter]); // finalTranscript를 dependency로 변경
+
+  // 3)
+  useEffect(() => {
+    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE && currentPresenter?.name === myUserName && transcript) {
+      const newlyRecognized = getNewlyRecognizedText(transcript);
+
+      if (newlyRecognized) {
+        sendCurrentSpeech(newlyRecognized);
       }
     }
-  }, [finalTranscript, conferenceStatus, currentPresenter]); // finalTranscript를 dependency로 변경
+  }, [transcript, conferenceStatus, currentPresenter]);
 
   // 발표자 변경 시 이전 transcript 초기화
   // 1)
