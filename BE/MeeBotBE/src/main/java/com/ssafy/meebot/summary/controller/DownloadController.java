@@ -167,20 +167,17 @@ public class DownloadController {
     }
 
     @GetMapping("/download/pdf")
-    public ResponseEntity<Resource> downloadPdf(@RequestParam String roomCode) {
+    public ResponseEntity<Resource> downloadPdf(@RequestParam("room_code") String roomCode) {
         try {
-            // summaryService를 통해 PDF 링크 조회
             String pdfFilePath = summaryService.getPdfLinkByRoomCode(roomCode);
 
             if (pdfFilePath == null || pdfFilePath.isEmpty()) {
-                System.out.println("PDF 다운로드 실패: roomCode {}에 대한 PDF 링크 없음" + roomCode);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
             File pdfFile = new File(pdfFilePath);
 
             if (!pdfFile.exists()) {
-                System.out.println("PDF 파일 없음: {}" + pdfFilePath);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
@@ -193,7 +190,6 @@ public class DownloadController {
                     .body(resource);
 
         } catch (Exception e) {
-            System.out.println("PDF 다운로드 오류: " + e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
