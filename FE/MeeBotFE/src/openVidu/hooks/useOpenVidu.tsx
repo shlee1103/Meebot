@@ -82,6 +82,12 @@ export const useOpenVidu = () => {
     });
 
     session.on("streamDestroyed", (event) => {
+      // ! 나가는 사용자가 관리자라면 session을 종료하고, 메인페이지로 이동
+      const destroyedUserInfo = JSON.parse(event.stream.connection.data);
+      if (destroyedUserInfo.clientData.role === "admin") {
+        leaveSession();
+      }
+
       if (event.stream.typeOfVideo === "SCREEN") {
         // subscribers 배열에서 화면 공유 스트림 제거
         setSubscribers((prevSubscribers) => prevSubscribers.filter((sub) => sub.stream.streamId !== event.stream.streamId));
@@ -338,7 +344,6 @@ export const useOpenVidu = () => {
     navigate("/");
   }, [session]);
 
-  // ! participant state 세팅
   useEffect(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);
