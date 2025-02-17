@@ -207,6 +207,23 @@ const raisedHandsSlice = createSlice({
 export const { addRaisedHand, removeRaisedHand, clearRaisedHands } = raisedHandsSlice.actions;
 export const { addMessage, incrementGlobalOrder, resetQnA } = qnaSlice.actions;
 
+interface meetingSettingState {
+  meetingSettingOpenModal: boolean;
+}
+
+const meetingSettingSlice = createSlice({
+  name: "meetingSettingOpenModal",
+  initialState: {
+    meetingSettingOpenModal: false,
+  },
+  reducers: {
+    setMeetingSettingOpenModal: (state, action: PayloadAction<boolean>) => {
+      state.meetingSettingOpenModal = action.payload;
+    },
+  },
+});
+export const { setMeetingSettingOpenModal } = meetingSettingSlice.actions;
+
 // Redux Store 통합
 export const store = configureStore({
   reducer: {
@@ -217,10 +234,22 @@ export const store = configureStore({
     meetingTitle: meetingTitleSlice.reducer,
     qna: qnaSlice.reducer,
     raisedHands: raisedHandsSlice.reducer,
+    meetingSetting: meetingSettingSlice.reducer,
   },
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+export interface RootState {
+  myUsername: MyUsernameState;
+  role: UserRoleState;
+  presentation: PresentationState;
+  device: DeviceState;
+  meetingTitle: meetingTitleState;
+  qna: QnAState;
+  raisedHands: RaisedHandsState;
+  meetingSetting: meetingSettingState;
+}
+
 export type AppDispatch = typeof store.dispatch;
 
 export default store;
+
