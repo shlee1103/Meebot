@@ -259,7 +259,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           type: "conference-status",
         });
       }
-      // console.log("qna 종료 처리 완료");
     }
 
     // 발표회 종료 버튼을 눌렀을 때
