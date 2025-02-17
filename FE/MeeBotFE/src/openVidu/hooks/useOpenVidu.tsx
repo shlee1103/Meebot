@@ -172,12 +172,6 @@ export const useOpenVidu = () => {
       const userEmail = localStorage.getItem("email");
       
       await mySession.connect(tokenData, { clientData: { name: myUserName, email: userEmail || "", image: userProfileImage, role: userRole } });
-      // console.log("세션 연결 정보:", {
-      //   name: myUserName,
-      //   image: userProfileImage,
-      //   role: userRole,
-        email: userEmail,,
-      // });
 
       const myPublisher = await OV.current.initPublisherAsync(undefined, {
         audioSource: undefined,
@@ -242,15 +236,6 @@ export const useOpenVidu = () => {
 
   const sendMessage = async (message: string) => {
     if (!session) return;
-
-    // console.log("전송하는 메시지 정보:", {
-    //   text: message,
-    //   sender: {
-    //     name: myUserName,
-    //     image: localStorage.getItem("profile") || ChatUnknown,
-    //     role: userRole,
-    //   },
-    // });
 
     try {
       await session.signal({

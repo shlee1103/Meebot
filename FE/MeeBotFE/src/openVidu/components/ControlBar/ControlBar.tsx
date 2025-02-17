@@ -227,7 +227,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
               )}
               {
                 presentersOrder.length > 0 && (
-                  <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} participants={participants} />
+                  <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
                 )
               }
             </div>

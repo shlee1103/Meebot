@@ -1,19 +1,16 @@
 import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
 import { useState, useEffect } from "react";
-import { ParticipantInfo } from "../../hooks/useOpenVidu";
 
 interface ConferenceStatusButtonProps {
   conferenceStatus: string;
   changeConferenceStatus: (status: string) => void;
   className?: string;
-  participants: ParticipantInfo[];
 }
 
 const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
   conferenceStatus,
   changeConferenceStatus,
   className = '',
-  participants
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -182,15 +179,6 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
 
   const config = getButtonConfig();
 
-  const clickConferenceStateButton = () => {
-    console.log('현재 상태 : ', conferenceStatus);
-    if (conferenceStatus === CONFERENCE_STATUS.QNA_COMPLETED) {
-      participants.map(participant => participant.email).forEach(email => console.log(email));
-      console.log('참여자 리스트 : ', participants);
-    }
-    changeConferenceStatus(conferenceStatus)
-  }
-  
   return (
     <div className="relative group">
       {showTooltip && (
@@ -236,9 +224,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
         animate-pulse-slow`}></div>
 
       <button
-        onClick={() => {
-          clickConferenceStateButton()
-        }}
+        onClick={() => changeConferenceStatus(conferenceStatus)}
         className={`relative px-4 py-2.5 rounded-xl text-white text-md font-medium
           transition-all duration-300 ease-in-out
           border backdrop-blur-sm

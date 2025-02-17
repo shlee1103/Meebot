@@ -269,7 +269,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
     // 발표회 종료 버튼을 눌렀을 때
     if (currentStatus === CONFERENCE_STATUS.QNA_COMPLETED) {
-      console.log("발표회 종료 처리 완료");
       session?.signal({
         data: JSON.stringify({
           presenter: null,
