@@ -36,7 +36,7 @@ export const useOpenVidu = () => {
   }[]>([]);
 
   const myUserName = useSelector((state: RootState) => state.myUsername.myUsername);
-  const userRole = useSelector((state: RootState) => state.role.role);  // Get user role from Redux
+  const userRole = useSelector((state: RootState) => state.role.role);
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const dispatch = useDispatch();
 

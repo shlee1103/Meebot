@@ -2,7 +2,7 @@ import { usePresentationSetting } from "../../hooks/usePresentationSetting";
 import { PresentationModal } from "../VideoConferenceSetting/PresentationModal";
 import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState, setMeetingSettingOpenModal } from "../../../stores/store";
+import { RootState, setMeetingSettingOpenModal, resetStore } from "../../../stores/store";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
 import LeavingConfirmPopup from "../Popup/LeavingConfirmPopup";
 import { useState } from "react";
@@ -142,6 +142,11 @@ const ControlBar: React.FC<ControlBarProps> = ({
     dispatch(setMeetingSettingOpenModal(!meetingSettingOpenModal));
   };
 
+  const handleLeaveSession = () => {
+    dispatch(resetStore());
+    leaveSession();
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0">
       <div className="flex items-center justify-between px-4">
@@ -224,7 +229,11 @@ const ControlBar: React.FC<ControlBarProps> = ({
                 </svg>
                 발표회 설정
               </button>
-              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
+              {
+                presentersOrder.length > 0 && (
+                  <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
+                )
+              }
             </div>
           )}
         </div>
@@ -250,7 +259,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
       <LeavingConfirmPopup
         isOpen={showLeaveConfirm}
         onCancel={() => setShowLeaveConfirm(false)}
-        onConfirm={leaveSession}
+        onConfirm={handleLeaveSession}
         popupTitle={popupContent.title}
         popupText1={popupContent.text1}
         popupText2={popupContent.text2}

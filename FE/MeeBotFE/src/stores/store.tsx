@@ -224,17 +224,70 @@ const meetingSettingSlice = createSlice({
 });
 export const { setMeetingSettingOpenModal } = meetingSettingSlice.actions;
 
-// Redux Store 통합
+// Reset Action 추가
+const resetStoreAction = createSlice({
+  name: "resetStore",
+  initialState: {},
+  reducers: {
+    resetStore: () => {
+      return undefined; // 이렇게 하면 모든 reducer가 자신의 initialState로 초기화됩니다
+    },
+  },
+});
+
+export const { resetStore } = resetStoreAction.actions;
+
+// Store 설정 수정
 export const store = configureStore({
   reducer: {
-    myUsername: myUsernameSlice.reducer,
-    role: userRoleSlice.reducer,
-    presentation: presentationSlice.reducer,
-    device: deviceSlice.reducer,
-    meetingTitle: meetingTitleSlice.reducer,
-    qna: qnaSlice.reducer,
-    raisedHands: raisedHandsSlice.reducer,
-    meetingSetting: meetingSettingSlice.reducer,
+    myUsername: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialMyUsernameState;
+      }
+      return myUsernameSlice.reducer(state, action);
+    },
+    role: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialUserRoleState;
+      }
+      return userRoleSlice.reducer(state, action);
+    },
+    presentation: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialPresentationState;
+      }
+      return presentationSlice.reducer(state, action);
+    },
+    device: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialDeviceState;
+      }
+      return deviceSlice.reducer(state, action);
+    },
+    meetingTitle: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialMeetingTitleState;
+      }
+      return meetingTitleSlice.reducer(state, action);
+    },
+    qna: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialQnAState;
+      }
+      return qnaSlice.reducer(state, action);
+    },
+    raisedHands: (state, action) => {
+      if (action.type === resetStore.type) {
+        return initialRaisedHandsState;
+      }
+      return raisedHandsSlice.reducer(state, action);
+    },
+    meetingSetting: (state, action) => {
+      if (action.type === resetStore.type) {
+        return { meetingSettingOpenModal: false };
+      }
+      return meetingSettingSlice.reducer(state, action);
+    },
   },
 });
 
