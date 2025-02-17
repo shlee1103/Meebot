@@ -101,6 +101,13 @@ const ControlBar: React.FC<ControlBarProps> = ({
   };
 
   const handleLeaveClick = () => {
+    // 발표회가 이미 종료된 상태라면 바로 나가기
+    if (conferenceStatus === CONFERENCE_STATUS.CONFERENCE_ENDED) {
+      leaveSession();
+      return;
+    }
+
+    // 그 외의 경우는 팝업 표시
     setShowLeaveConfirm(true);
   };
 
