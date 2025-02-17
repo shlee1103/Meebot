@@ -485,7 +485,7 @@ const VideoConference: React.FC = () => {
         </div>
       )}
 
-      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
+      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)} leaveSession={leaveSession}></FinishPopup>
     </div>
   );
 };

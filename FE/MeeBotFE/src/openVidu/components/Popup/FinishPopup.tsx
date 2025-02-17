@@ -7,13 +7,15 @@ import { useNavigate } from "react-router-dom";
 interface FinishPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  leaveSession: () => void;
 }
 
-const FinishPopup: React.FC<FinishPopupProps> = ({ isOpen, onClose }) => {
+const FinishPopup: React.FC<FinishPopupProps> = ({ isOpen, onClose, leaveSession }) => {
   const { accessToken } = useAuth();
   const navigate = useNavigate();
 
   const handleMoveButton = () => {
+    leaveSession();
     onClose();
     const email = localStorage.getItem("email");
     if (email) {
