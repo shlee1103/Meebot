@@ -43,10 +43,15 @@ const HandButton: React.FC<HandButtonProps> = ({
     return null;
   }
 
+  const shouldAnimate = conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE && 
+    currentPresenter && 
+    currentPresenter.name !== myUsername && 
+    !isHandActive;
+
   return (
     <StyledWrapper>
       <button
-        className={`arrow-button-cont ${isArrowActive ? 'active' : ''}`}
+        className={`arrow-button-cont ${isArrowActive ? 'active' : ''} ${shouldAnimate ? 'animate-attention' : ''}`}
         onClick={onArrowClick}
         disabled={disabled}
       >
@@ -134,6 +139,37 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
         svg {
           opacity: 0.5;  // SVG 아이콘 투명도 추가
         }
+      }
+    }
+
+    &.animate-attention {
+      animation: attention 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+      
+      &:hover {
+        animation: none;
+      }
+
+      &::after {
+        content: '질문이 있으신가요?';
+        position: absolute;
+        white-space: nowrap;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(26, 235, 184, 0.1);
+        color: #1AEBB8;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        font-family: 'Pretendard', sans-serif;
+      }
+
+      &:hover::after {
+        opacity: 1;
       }
     }
   }
@@ -325,6 +361,22 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
 
   .hands-list {
     animation: slideIn 0.2s ease-out;
+  }
+
+  /* 새로운 애니메이션 스타일 추가 */
+  @keyframes attention {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(26, 235, 184, 0.4);
+    }
+    70% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px rgba(26, 235, 184, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(26, 235, 184, 0);
+    }
   }
 `;
 
