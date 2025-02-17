@@ -13,6 +13,7 @@ export interface ParticipantInfo {
   image: string;
   isAudioActive: boolean;
   isVideoActive: boolean;
+  role: string;
 }
 
 export const useOpenVidu = () => {
@@ -339,6 +340,7 @@ export const useOpenVidu = () => {
         email: clientData.email,
         isAudioActive,
         isVideoActive,
+        role: clientData.role,
       };
     };
 
