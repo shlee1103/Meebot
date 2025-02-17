@@ -80,10 +80,12 @@ export const useOpenVidu = () => {
     });
 
     session.on("streamDestroyed", (event) => {
-      // ! 나가는 사용자가 관리자라면 session을 종료하고, 메인페이지로 이동
       const destroyedUserInfo = JSON.parse(event.stream.connection.data);
+
+      // 나가는 사용자가 관리자라면 session을 종료하고, 메인페이지로 이동
       if (destroyedUserInfo.clientData.role === "admin") {
         leaveSession();
+        return;
       }
 
       if (event.stream.typeOfVideo === "SCREEN") {
