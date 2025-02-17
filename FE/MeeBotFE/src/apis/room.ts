@@ -38,3 +38,13 @@ export const checkSessionId = async (sessionId: string): Promise<boolean> => {
   const response = await apiClient.get(`/api/sessions/check/${sessionId}`);
   return response.data;
 }
+
+// 발표회 참여자 정보 저장
+export const saveParticipants = async (roomCode: string, participants: string[]): Promise<void> => {
+  const response = await apiClient.post(`/api/participants/${roomCode}`, participants, {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+  return response.data
+}
