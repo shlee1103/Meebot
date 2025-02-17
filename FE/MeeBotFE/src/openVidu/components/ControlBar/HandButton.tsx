@@ -1,5 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useSelector } from "react-redux";
+import { RootState } from "../../../stores/store";
+import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
 
 interface HandButtonProps {
   onHandClick: () => void;
@@ -8,6 +11,7 @@ interface HandButtonProps {
   isArrowActive?: boolean;
   disabled?: boolean;
   children: React.ReactNode;
+  conferenceStatus: string;
 }
 
 const HandButton: React.FC<HandButtonProps> = ({
@@ -16,8 +20,29 @@ const HandButton: React.FC<HandButtonProps> = ({
   isHandActive = false,
   isArrowActive = false,
   disabled = false,
-  children
+  children,
+  conferenceStatus
 }) => {
+  const raisedHands = useSelector((state: RootState) => state.raisedHands.raisedHands);
+  const presentersOrder = useSelector((state: RootState) => state.presentation.presentersOrder);
+  const currentPresenterIndex = useSelector((state: RootState) => state.presentation.currentPresenterIndex);
+
+  const currentPresenter = presentersOrder[currentPresenterIndex];
+  const myUsername = useSelector((state: RootState) => state.myUsername.myUsername);
+
+  // const ITEM_HEIGHT = 24;
+  // const MAX_VISIBLE_ITEMS = 5;
+  // const MAX_HEIGHT = ITEM_HEIGHT * MAX_VISIBLE_ITEMS + 20;
+
+  // // 발표자를 제외한 손든 참가자 목록 필터링  
+  // const filteredRaisedHands = raisedHands.filter(
+  //   participant => participant.userName !== currentPresenter.name );
+
+  // QnA 모드가 아닐 때는 목록 표시하지 않음
+  if (conferenceStatus !== CONFERENCE_STATUS.QNA_ACTIVE) {
+    return null;
+  }
+
   return (
     <StyledWrapper>
       <button
@@ -32,10 +57,34 @@ const HandButton: React.FC<HandButtonProps> = ({
             e.stopPropagation();
             onHandClick();
           }}
-          disabled={disabled}
+          disabled={disabled || (currentPresenter && currentPresenter.name === myUsername)}
         >
           {children}
         </button>
+
+        {isArrowActive && (
+          <div className="hands-list">
+            <div className="hands-list-header">
+              <h3>질문자 목록</h3>
+              <span>{raisedHands.length}명</span>
+            </div>
+
+            {raisedHands.length === 0 ? (
+              <p className="no-hands">아직 질문자가 없습니다</p>
+            ) : (
+              <div className="hands-list-content">
+                {raisedHands.map((participant) => (
+                  <div key={participant.connectionId} className="participant-item">
+                    <div className="participant-info">
+                      <span className="status-dot" />
+                      <span className="participant-name">{participant.userName}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </button>
     </StyledWrapper>
   );
@@ -60,7 +109,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
       background: #2A3347;
     }
 
-    &.active {
+    &.active:not(:disabled) {
       background: #2A3347;
 
       .arrow-icon {
@@ -70,8 +119,22 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     }
 
     &:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
+      cursor: default;  // not-allowed 대신 default로 변경
+      background: #1a1f2e;
+      pointer-events: none;  // 호버 효과 완전히 제거
+      filter: grayscale(30%) brightness(70%);  // 전체적으로 회색조와 어두운 효과 추가
+
+      .arrow-icon {
+        background: #9CA3AF;
+      }
+
+      .control-button {
+        background: #1a1f2e;
+        
+        svg {
+          opacity: 0.5;  // SVG 아이콘 투명도 추가
+        }
+      }
     }
   }
   .arrow-icon {
@@ -127,6 +190,79 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     height: 24px;
     filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7500%) hue-rotate(173deg) brightness(117%) contrast(117%);
   }
+
+  .hands-list {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 8px;
+    background: #1a2235;
+    border-radius: 8px;
+    padding: 12px;
+    width: 240px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .hands-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    
+    h3 {
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    span {
+      color: #9CA3AF;
+      font-size: 12px;
+    }
+  }
+
+  .no-hands {
+    color: #9CA3AF;
+    font-size: 12px;
+  }
+
+  .hands-list-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .participant-item {
+    padding: 4px 8px;
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(75, 85, 99, 0.3);
+    }
+  }
+
+  .participant-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: #3B82F6;
+    border-radius: 50%;
+  }
+
+  .participant-name {
+    color: white;
+    font-size: 12px;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 

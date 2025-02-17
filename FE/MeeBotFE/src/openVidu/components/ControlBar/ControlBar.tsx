@@ -173,6 +173,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
               onArrowClick={toggleHandList}
               isHandActive={isHandRaised}
               isArrowActive={isOpenHandList}
+              conferenceStatus={conferenceStatus}
             >
               <HandRaisedIcon />
             </HandButton>
