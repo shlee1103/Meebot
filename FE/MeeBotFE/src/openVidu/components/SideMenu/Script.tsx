@@ -19,8 +19,8 @@ const Script: React.FC<ScriptProps> = ({ conferenceStatus, accumulatedScript, cu
       {shouldShowScript && currentPresenter && (
         <div className="flex flex-col pb-6 h-full font-pretendard">
           {/* 발표자 정보 */}
-          <div className="flex items-center gap-3 p-3 mb-4 bg-white/15 rounded-xl 
-                         backdrop-blur-sm">
+          <div className="flex items-center gap-3 p-3 mb-3 bg-white/15 rounded-xl 
+            backdrop-blur-sm">
             <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-white/30">
               <img 
                 src={currentPresenter.image} 
@@ -33,7 +33,7 @@ const Script: React.FC<ScriptProps> = ({ conferenceStatus, accumulatedScript, cu
                 {currentPresenter.name}
               </div>
               <div className="px-2.5 py-1 text-[12px] bg-white/20 text-white 
-                            rounded-full w-fit font-medium">
+                rounded-full w-fit font-medium">
                 발표자
               </div>
             </div>
@@ -44,7 +44,7 @@ const Script: React.FC<ScriptProps> = ({ conferenceStatus, accumulatedScript, cu
             <div className="p-6 rounded-2xl bg-white/15 backdrop-blur-sm">
               {accumulatedScript ? (
                 <p className="text-[15px] text-white font-medium leading-[2.2] 
-                             tracking-wide whitespace-pre-wrap break-keep">
+                  tracking-wide whitespace-pre-wrap break-keep">
                   {accumulatedScript}
                 </p>
               ) : (
