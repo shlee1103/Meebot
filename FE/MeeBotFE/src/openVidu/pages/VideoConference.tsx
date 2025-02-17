@@ -147,8 +147,8 @@ const VideoConference: React.FC = () => {
 
           // 관리자가 발표회 종료 버튼 눌렀을 때
           if (data.action === CONFERENCE_STATUS.CONFERENCE_ENDED) {
-            if(sessionId){
-              await finalSummarize({roomCode : sessionId}); // 최종 요약 API 호출 함수
+            if (sessionId) {
+              await finalSummarize({ roomCode: sessionId }); // 최종 요약 API 호출 함수
             }
             dispatch(clearRaisedHands());
             setIsHandRaised(false);
@@ -489,7 +489,7 @@ const VideoConference: React.FC = () => {
         </div>
       )}
 
-      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)}></FinishPopup>
+      <FinishPopup isOpen={showFinishPopup} onClose={() => setShowFinishPopup(false)} leaveSession={leaveSession}></FinishPopup>
     </div>
   );
 };
