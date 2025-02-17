@@ -122,7 +122,7 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
             )}
           </div>
           {/* 정보창 */}
-          <div className="absolute top-full p-4 bg-[#171F2E] w-full rounded-b">
+          <div className="absolute top-full p-4 bg-[#171F2E] w-full rounded-b z-10">
             {presentersOrder.length === 0 ? (
               <div className="p-6 text-center">
                 {role === "admin" ? (
