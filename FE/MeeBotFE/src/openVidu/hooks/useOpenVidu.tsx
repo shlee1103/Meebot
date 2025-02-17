@@ -347,26 +347,6 @@ export const useOpenVidu = () => {
     setParticipants(allParticipants);
   }, [subscribers, publisher]);
 
-// useEffect(() => {
-//   const getParticipantInfo = (streamManager: StreamManager) => {
-//     const { clientData } = JSON.parse(streamManager.stream.connection.data);
-//     const isAudioActive = streamManager.stream.audioActive;
-//     const isVideoActive = streamManager.stream.videoActive;
-
-//     return {
-//       name: clientData.name,
-//       image: clientData.image,
-//       email: clientData.email,
-//       isAudioActive,
-//       isVideoActive,
-//     };
-//   };
-
-//   const allParticipants = publisher ? [getParticipantInfo(publisher), ...subscribers.map((sub) => getParticipantInfo(sub))] : subscribers.map((sub) => getParticipantInfo(sub));
-
-//   setParticipants(allParticipants);
-// }, [subscribers, publisher]);
-
   useEffect(() => {
     updateParticipantState();
   }, [updateParticipantState]);
