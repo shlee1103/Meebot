@@ -21,16 +21,18 @@ export const deleteStorageData = async (roomCode: string): Promise<string> => {
 
 // 보관함 데이터 노션으로 다운
 export const saveNotion = async (roomCode: string): Promise<string> => {
-  const response = await apiClient.get(`/api/download/login`, {
-    data: { room_code: roomCode },
+  const response = await apiClient.get(`/api/notion/login`, {
+    params: { room_code: roomCode },
   });
-  return response.data;
+
+  return response.data.login_url;
 };
 
 // 보관함 데이터 pdf로 다운
 export const savePdf = async (roomCode: string): Promise<string> => {
   const response = await apiClient.get(`/api/download/pdf`, {
-    data: { room_code: roomCode },
+    params: { room_code: roomCode },
+    responseType: 'blob'
   });
   return response.data;
 }

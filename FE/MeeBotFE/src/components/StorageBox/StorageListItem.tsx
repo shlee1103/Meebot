@@ -41,8 +41,9 @@ const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, cont
     if (type === 'notion') {
       try {
         const data = await saveNotion(roomCode);
-        console.log(data)
-        console.log(content)
+
+        window.open(data, '_blank');
+
         setShowSaveComplete(true);
       } catch (err) {
         console.error('Failed to save to Notion:', err);
@@ -50,8 +51,20 @@ const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, cont
     } else {
       try {
         const data = await savePdf(roomCode);
-        console.log(data)
-        console.log(content)
+
+        // 다운로드 링크로 변환
+        const url = window.URL.createObjectURL(new Blob([data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `meeting_summary_${roomCode}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+
+        // 다운로드 후 정리
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        console.log(content);
+
         setShowSaveComplete(true);
       } catch (err) {
         console.error('Failed to save to Notion:', err);
