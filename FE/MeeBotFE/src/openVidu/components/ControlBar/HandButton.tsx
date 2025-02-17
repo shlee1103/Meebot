@@ -130,6 +130,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
         
         svg {
           opacity: 0.5;
+        }
       }
     }
 

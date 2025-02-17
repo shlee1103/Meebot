@@ -229,10 +229,6 @@ const raisedHandsSlice = createSlice({
 export const { addRaisedHand, removeRaisedHand, clearRaisedHands } = raisedHandsSlice.actions;
 export const { addMessage, incrementGlobalOrder, resetQnA } = qnaSlice.actions;
 
-interface meetingSettingState {
-  meetingSettingOpenModal: boolean;
-}
-
 const meetingSettingSlice = createSlice({
   name: "meetingSettingOpenModal",
   initialState: {
@@ -259,57 +255,17 @@ const resetStoreAction = createSlice({
 
 export const { resetStore } = resetStoreAction.actions;
 
-// Store 설정 수정
+// Redux Store 통합
 export const store = configureStore({
   reducer: {
-    myUsername: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialMyUsernameState;
-      }
-      return myUsernameSlice.reducer(state, action);
-    },
-    role: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialUserRoleState;
-      }
-      return userRoleSlice.reducer(state, action);
-    },
-    presentation: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialPresentationState;
-      }
-      return presentationSlice.reducer(state, action);
-    },
-    device: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialDeviceState;
-      }
-      return deviceSlice.reducer(state, action);
-    },
-    meetingTitle: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialMeetingTitleState;
-      }
-      return meetingTitleSlice.reducer(state, action);
-    },
-    qna: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialQnAState;
-      }
-      return qnaSlice.reducer(state, action);
-    },
-    raisedHands: (state, action) => {
-      if (action.type === resetStore.type) {
-        return initialRaisedHandsState;
-      }
-      return raisedHandsSlice.reducer(state, action);
-    },
-    meetingSetting: (state, action) => {
-      if (action.type === resetStore.type) {
-        return { meetingSettingOpenModal: false };
-      }
-      return meetingSettingSlice.reducer(state, action);
-    },
+    myUsername: persistedMyUsernameReducer,
+    meetingTitle: persistedMeetingTitleReducer,
+    role: persistedRoleReducer,
+    device: persistedDeviceReducer,
+    presentation: presentationSlice.reducer,
+    qna: qnaSlice.reducer,
+    raisedHands: raisedHandsSlice.reducer,
+    meetingSettingOpenModal: meetingSettingSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -319,19 +275,8 @@ export const store = configureStore({
     }),
 });
 
-export interface RootState {
-  myUsername: MyUsernameState;
-  role: UserRoleState;
-  presentation: PresentationState;
-  device: DeviceState;
-  meetingTitle: meetingTitleState;
-  qna: QnAState;
-  raisedHands: RaisedHandsState;
-  meetingSetting: meetingSettingState;
-}
-
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export default store;
-
 export const persistor = persistStore(store);

@@ -70,7 +70,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const [isOpenHandList, setIsOpenHandList] = useState(false);
 
   const dispatch = useDispatch();
-  const meetingSettingOpenModal = useSelector((state: RootState) => state.meetingSetting.meetingSettingOpenModal);
+  const meetingSettingOpenModal = useSelector((state: RootState) => state.meetingSettingOpenModal.meetingSettingOpenModal);
 
   const ScreenShareIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-5 h-5">
