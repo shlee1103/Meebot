@@ -20,7 +20,7 @@ const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, cont
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSaveComplete, setShowSaveComplete] = useState(false);
-  const [saveType, setSaveType] = useState<'notion' | 'pdf'>('notion');
+  const [saveType, setSaveType] = useState<"notion" | "pdf">("notion");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,8 +30,8 @@ const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, cont
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleDownloadClick = async (type: 'notion' | 'pdf') => {
@@ -70,13 +70,14 @@ const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, cont
       refreshStorageData();
       console.log(data);
     } catch (err) {
-      console.error('Failed to delete storage item:', err);
+      console.error("Failed to delete storage item:", err);
     }
   };
 
   return (
     <>
-      <div className="
+      <div
+        className="
         relative flex flex-row flex-wrap justify-between items-center py-4 px-6 w-full rounded-[15px] bg-gradient-to-r 
         from-[rgba(255,255,255,0.3)] via-[rgba(204,204,204,0.6)] via-[rgba(145,161,181,0.825)] to-[rgba(89,110,137,0.6)]"
       >
@@ -90,59 +91,28 @@ const StorageListItem: React.FC<StorageItemProps> = ({ roomTitle, roomCode, cont
               className="flex justify-center items-center cursor-pointer p-2 hover:scale-110 transition-all duration-200 rounded-full hover:bg-white/10"
               onClick={() => setShowDownloadOptions(!showDownloadOptions)}
             >
-              <img
-                src={DownloadIcon}
-                alt="download"
-                className="w-[25px] h-[29px]"
-              />
+              <img src={DownloadIcon} alt="download" className="w-[25px] h-[29px]" />
             </div>
             {showDownloadOptions && (
               <div className="absolute right-0 mt-2 w-44 bg-[#1C2135] rounded-lg shadow-lg border border-[#464E62] overflow-hidden z-[1]">
-                <div
-                  className="px-5 py-3 hover:bg-[#2C3440] cursor-pointer transition-colors flex items-center gap-3 border-b border-[#464E62] group"
-                  onClick={() => handleDownloadClick('notion')}
-                >
-                  <img
-                    src={NotionIcon}
-                    alt="Notion"
-                    className="w-5 h-5 group-hover:animate-bounce"
-                  />
+                <div className="px-5 py-3 hover:bg-[#2C3440] cursor-pointer transition-colors flex items-center gap-3 border-b border-[#464E62] group" onClick={() => handleDownloadClick("notion")}>
+                  <img src={NotionIcon} alt="Notion" className="w-5 h-5 group-hover:animate-bounce" />
                   <span className="text-white font-pretendard text-sm whitespace-nowrap">Notion으로 저장</span>
                 </div>
-                <div
-                  className="px-5 py-3 hover:bg-[#2C3440] cursor-pointer transition-colors flex items-center gap-3 group"
-                  onClick={() => handleDownloadClick('pdf')}
-                >
-                  <img
-                    src={PdfIcon}
-                    alt="PDF"
-                    className="w-5 h-5 group-hover:animate-bounce"
-                  />
+                <div className="px-5 py-3 hover:bg-[#2C3440] cursor-pointer transition-colors flex items-center gap-3 group" onClick={() => handleDownloadClick("pdf")}>
+                  <img src={PdfIcon} alt="PDF" className="w-5 h-5 group-hover:animate-bounce" />
                   <span className="text-white font-pretendard text-sm whitespace-nowrap">PDF로 저장</span>
                 </div>
               </div>
             )}
           </div>
-          <div className="flex justify-center items-center cursor-pointer p-2 hover:scale-110 transition-all duration-200 rounded-full hover:bg-white/10"
-            onClick={handleDeleteClick}>
-            <img
-              src={TrashIcon}
-              alt="trash"
-              className="w-[25px] h-[25px]"
-            />
+          <div className="flex justify-center items-center cursor-pointer p-2 hover:scale-110 transition-all duration-200 rounded-full hover:bg-white/10" onClick={handleDeleteClick}>
+            <img src={TrashIcon} alt="trash" className="w-[25px] h-[25px]" />
           </div>
         </div>
       </div>
-      <DeleteConfirmPopup
-        isOpen={showDeleteConfirm}
-        onCancel={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteConfirm}
-      />
-      <SaveCompletePopup
-        isOpen={showSaveComplete}
-        onClose={() => setShowSaveComplete(false)}
-        type={saveType}
-      />
+      <DeleteConfirmPopup isOpen={showDeleteConfirm} onCancel={() => setShowDeleteConfirm(false)} onConfirm={handleDeleteConfirm} />
+      <SaveCompletePopup isOpen={showSaveComplete} onClose={() => setShowSaveComplete(false)} type={saveType} />
     </>
   );
 };

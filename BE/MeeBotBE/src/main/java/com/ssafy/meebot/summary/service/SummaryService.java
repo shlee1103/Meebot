@@ -94,8 +94,8 @@ public class SummaryService {
                 "messages", List.of(
                         Map.of("role", "system", "content",
                                 "너는 발표 진행을 맡은 사회자 미유야. 너에 대한 간단한 소개, 발표 주제와 발표자 순서를 안내한 뒤, " +
-                                        "'발표자는 화면 공유 버튼을 눌러 주세요. 그리고, 화면 공유가 완료되면 관리자는 발표 시작 버튼을 눌러 주세요. 라고 멘트하고 " +
-                                        "3~4줄 정도로 요약하고 이모티콘 없이 텍스트로만 답변해줘."),
+                                        "'발표자는 화면 공유 버튼을 눌러 주세요. 그리고, 화면 공유가 완료되면 관리자는 발표 시작 버튼을 눌러 주세요. 라고 멘트해줘. " +
+                                        "3줄로 요약하고 이모티콘 없이 텍스트로만 답변해줘. 끝에 감사합니다 같은 멘트는 하지마."),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -129,8 +129,9 @@ public class SummaryService {
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 이전 발표자의 발표가 끝나고, 다음과 같이 현재 발표자가 발표를 시작할거야." +
-                                        "이를 안내해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
+                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 현재 발표자가 발표를 시작할거야." +
+                                        "발표자가 이제 발표를 시작한다는 것을 안내해줘. 답변은 이모티콘 없이 텍스트로만 해줘." +
+                                        "예를 들어, 이번 발표자는 [현재 발표자] 입니다. [멘트]"),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -268,7 +269,7 @@ public class SummaryService {
 
             // JSON 문자열을 JsonNode로 변환
             JsonNode rootNode = objectMapper.readTree(content);
-            String summaryContent = rootNode.get("summary").asText();
+            String summaryContent = rootNode.get("text").asText();
 
             // 발표 순서와 동일한 질문 찾기
             int presentationOrder = summary.getPresentationOrder();
@@ -872,7 +873,8 @@ public class SummaryService {
                         Map.of("role", "system", "content",
                                 "너는 발표 진행을 맡은 사회자고 이름은 미유야. " +
                                         "발표회가 모두 끝났어. 발표회를 마무리하는 감동적이고 마음을 울릴만한 멘트를 해줘. " +
-                                        "발표자들을 응원하고 격려하는 내용을 포함해줘. 안녕하세요는 빼주면 좋겠어. 3~4줄 정도로 말해줘."),
+                                        "발표자들을 응원하고 격려하는 내용을 포함해줘. 안녕하세요는 빼주면 좋겠어. 3~4줄 정도로 말해줘." +
+                                        "마지막으로 지금까지 사회자 미유였습니다. 감사합니다. 멘트를 해줘."),
                         Map.of("role", "user", "content",
                                 String.format("'%s' 발표회를 마무리하는 멘트를 해줘.", roomTitle))
                 ),
@@ -898,23 +900,18 @@ public class SummaryService {
         String presenter = (String) request.get("presenter");
         String transcripts = (String) request.get("transcripts");
 
-        String prompt = String.format(
-                "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n" +
-                        "위 발표 내용을 한 줄로 요약하고, 발표 종료 메시지를 작성해 주세요. " +
-                        "메시지는 다음 형식으로 작성해 주세요:\n\n" +
-                        "발표자가 누구였는지 알려주세요.\n" +
-                        "그 다음 발표 내용을 한 줄로 요약한 내용을 포함해 주세요.\n" +
-                        "마지막으로 발표에 대한 긍정적인 소감이나 인상적인 점을 한 문장으로 추가해 주세요.\n\n",
-                "예를 들어:\n" + "\"지금까지 [발표자]님의 발표였습니다. ([요약된 내용]) 발표 중 [긍정적인 소감 혹은 인상적인 점 한 문장]\"",
-                presenter, transcripts
-        );
-
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
-                        Map.of("role", "system", "content",
-                                "너는 전문적인 발표 진행자야. 발표 종료 메시지를 작성해줘"),
-                        Map.of("role", "user", "content", prompt)
+                        Map.of("role", "system", "content", "너는 발표 진행을 맡은 사회자야." +
+                                        "한 사람의 발표가 끝났어. 지금까지 누구의 발표였는지에 대한 멘트 이후, " +
+                                        "발표 내용 한 줄 요약, 마지막으로 발표에 대한 소감을 한 문장으로 추가해 줘." +
+                                        "3줄로 요약해서 하나의 문장으로 작성해줘" +
+                                        "그리고 마지막으로 관리자는 질의응답을 시작하기 위해 질의응답 시작 버튼을 눌러주세요. 라고 안내해줘"),
+                        Map.of("role", "user", "content", String.format(
+                                "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n",
+                                        presenter, transcripts
+                        ))
                 ),
                 "temperature", 0.7
         );

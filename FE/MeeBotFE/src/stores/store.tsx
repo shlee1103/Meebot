@@ -229,6 +229,32 @@ const raisedHandsSlice = createSlice({
 export const { addRaisedHand, removeRaisedHand, clearRaisedHands } = raisedHandsSlice.actions;
 export const { addMessage, incrementGlobalOrder, resetQnA } = qnaSlice.actions;
 
+const meetingSettingSlice = createSlice({
+  name: "meetingSettingOpenModal",
+  initialState: {
+    meetingSettingOpenModal: false,
+  },
+  reducers: {
+    setMeetingSettingOpenModal: (state, action: PayloadAction<boolean>) => {
+      state.meetingSettingOpenModal = action.payload;
+    },
+  },
+});
+export const { setMeetingSettingOpenModal } = meetingSettingSlice.actions;
+
+// Reset Action 추가
+const resetStoreAction = createSlice({
+  name: "resetStore",
+  initialState: {},
+  reducers: {
+    resetStore: () => {
+      return undefined; // 이렇게 하면 모든 reducer가 자신의 initialState로 초기화됩니다
+    },
+  },
+});
+
+export const { resetStore } = resetStoreAction.actions;
+
 // Redux Store 통합
 export const store = configureStore({
   reducer: {
@@ -239,6 +265,7 @@ export const store = configureStore({
     presentation: presentationSlice.reducer,
     qna: qnaSlice.reducer,
     raisedHands: raisedHandsSlice.reducer,
+    meetingSettingOpenModal: meetingSettingSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

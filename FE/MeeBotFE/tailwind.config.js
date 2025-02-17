@@ -122,6 +122,34 @@ module.exports = {
             animationTimingFunction: "cubic-bezier(0, 0, 0.2, 1)",
           },
         },
+        'fade-in-up': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(20px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        },
+        'fade-in': {
+          '0%': {
+            opacity: '0'
+          },
+          '100%': {
+            opacity: '1'
+          }
+        },
+        'slide-in-left': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateX(-20px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateX(0)'
+          }
+        }
       },
       animation: {
         gradient: "gradient 8s linear infinite",
@@ -131,12 +159,15 @@ module.exports = {
         "slide-out-left": "slideOutLeft 0.5s ease-in-out forwards",
         "slide-in-right": "slideInRight 0.5s ease-in-out forwards",
         sdb: "sdb 1.5s infinite",
-        floating: "floating 2s ease-in-out infinite",
-        blink: "blink 1s ease-in-out infinite",
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "tooltip-bounce": "tooltip-bounce 3s cubic-bezier(.25,0,.75,1)",
-        modalFadeIn: "modalFadeIn 0.3s ease-out forwards",
-        "bounce-slow": "bounce 3s ease-in-out infinite",
+        floating: 'floating 2s ease-in-out infinite',
+        blink: 'blink 1s ease-in-out infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'tooltip-bounce': 'tooltip-bounce 3s cubic-bezier(.25,0,.75,1)',
+        modalFadeIn: 'modalFadeIn 0.3s ease-out forwards',
+        'bounce-slow': 'bounce 3s ease-in-out infinite',
+        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+        'fade-in': 'fade-in 0.5s ease-out forwards',
+        'slide-in-left': 'slide-in-left 0.5s ease-out forwards'
       },
       fontSize: {
         // Desktop (lg)
@@ -374,6 +405,20 @@ module.exports = {
         "-full": "-100%",
       },
     },
+    utilities: {
+      '.animation-delay-200': {
+        'animation-delay': '200ms',
+      },
+      '.animation-delay-400': {
+        'animation-delay': '400ms',
+      },
+      '.animation-delay-600': {
+        'animation-delay': '600ms',
+      },
+      '.animation-delay-800': {
+        'animation-delay': '800ms',
+      },
+    }
   },
   plugins: [
     function ({ addUtilities }) {

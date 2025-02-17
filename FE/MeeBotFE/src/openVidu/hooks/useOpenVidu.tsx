@@ -25,18 +25,20 @@ export const useOpenVidu = () => {
   const [screenSharingUser, setScreenSharingUser] = useState<string | undefined>(undefined);
   const [originalPublisher, setOriginalPublisher] = useState<Publisher | undefined>(undefined);
   const [connectionUser, setConnectionUser] = useState<Connection[]>([]);
-  const [messages, setMessages] = useState<{
-    sender: { name: string, image: string, role?: string };
-    text?: string;
-    summary?: string;
-    question?: string;
-    time: string;
-    eventType?: string;
-    timestamp?: number;
-  }[]>([]);
+  const [messages, setMessages] = useState<
+    {
+      sender: { name: string; image: string; role?: string };
+      text?: string;
+      summary?: string;
+      question?: string;
+      time: string;
+      eventType?: string;
+      timestamp?: number;
+    }[]
+  >([]);
 
   const myUserName = useSelector((state: RootState) => state.myUsername.myUsername);
-  const userRole = useSelector((state: RootState) => state.role.role);  // Get user role from Redux
+  const userRole = useSelector((state: RootState) => state.role.role);
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const dispatch = useDispatch();
 
@@ -67,8 +69,6 @@ export const useOpenVidu = () => {
 
     session.on("streamCreated", (event) => {
       const connectionData = JSON.parse(event.stream.connection.data);
-      console.log("스트림 생성 이벤트:", event);
-      console.log("연결 데이터:", connectionData);
 
       if (event.stream.typeOfVideo === "SCREEN") {
         const screenSubscriber = session.subscribe(event.stream, undefined);
@@ -80,6 +80,13 @@ export const useOpenVidu = () => {
     });
 
     session.on("streamDestroyed", (event) => {
+      const destroyedUserInfo = JSON.parse(event.stream.connection.data);
+
+      if (destroyedUserInfo.clientData.role === "admin") {
+        leaveSession();
+        return;
+      }
+
       if (event.stream.typeOfVideo === "SCREEN") {
         // subscribers 배열에서 화면 공유 스트림 제거
         setSubscribers((prevSubscribers) => prevSubscribers.filter((sub) => sub.stream.streamId !== event.stream.streamId));
@@ -101,7 +108,7 @@ export const useOpenVidu = () => {
 
     // connectionCreated 코드 추가(o)
     mySession.on("connectionCreated", (event) => {
-      console.log("Connection Created:", event.connection);
+      // console.log("Connection Created:", event.connection);
       const connection = event.connection;
       setConnectionUser((prev) => [...prev, connection]);
     });
@@ -124,13 +131,13 @@ export const useOpenVidu = () => {
           sender: {
             name: connectionData.name || "Unknown",
             image: connectionData.image || ChatUnknown,
-            role: connectionData.role || userRole
+            role: connectionData.role || userRole,
           },
           text: messageData.text,
           time: now,
         };
 
-        console.log('최종 메시지 객체:', newMessage);
+        // console.log('최종 메시지 객체:', newMessage);
 
         return [...prevMessages, newMessage];
       });
@@ -141,22 +148,24 @@ export const useOpenVidu = () => {
       const messageData = JSON.parse(event.data || "{}");
 
       setMessages((prevMessages) => {
-        const lastMeeuMessage = [...prevMessages].reverse().find(msg => msg.sender.name === "MeeU");
-        console.log(lastMeeuMessage?.eventType);
+        const lastMeeuMessage = [...prevMessages].reverse().find((msg) => msg.sender.name === "MeeU");
+        // console.log(lastMeeuMessage?.eventType);
 
         if (lastMeeuMessage && lastMeeuMessage.eventType === messageData.eventType) {
           return prevMessages;
         }
 
         // PRESENTATION_SUMMARY_AND_QUESTION 타입만
-        return [...prevMessages, {
-          sender: { name: "MeeU", image: ChatMEEU },
-          summary: messageData.summary,
-          question: messageData.question,
-          time: now,
-          eventType: messageData.eventType
-        }];
-
+        return [
+          ...prevMessages,
+          {
+            sender: { name: "MeeU", image: ChatMEEU },
+            summary: messageData.summary,
+            question: messageData.question,
+            time: now,
+            eventType: messageData.eventType,
+          },
+        ];
       });
     });
 
@@ -165,11 +174,11 @@ export const useOpenVidu = () => {
       const tokenData = await getToken(sessionId);
       const userProfileImage = localStorage.getItem("profile");
       await mySession.connect(tokenData, { clientData: { name: myUserName, image: userProfileImage, role: userRole } });
-      console.log('세션 연결 정보:', {
-        name: myUserName,
-        image: userProfileImage,
-        role: userRole
-      });
+      // console.log("세션 연결 정보:", {
+      //   name: myUserName,
+      //   image: userProfileImage,
+      //   role: userRole,
+      // });
       const myPublisher = await OV.current.initPublisherAsync(undefined, {
         audioSource: undefined,
         videoSource: undefined,
@@ -234,16 +243,16 @@ export const useOpenVidu = () => {
   const sendMessage = async (message: string) => {
     if (!session) return;
 
-    console.log('전송하는 메시지 정보:', {
-      text: message,
-      sender: {
-        name: myUserName,
-        image: localStorage.getItem("profile") || ChatUnknown,
-        role: userRole
-      }
-    });
+    // console.log("전송하는 메시지 정보:", {
+    //   text: message,
+    //   sender: {
+    //     name: myUserName,
+    //     image: localStorage.getItem("profile") || ChatUnknown,
+    //     role: userRole,
+    //   },
+    // });
 
-    console.log(localStorage.getItem('profile'))
+    console.log(localStorage.getItem("profile"));
     try {
       await session.signal({
         data: JSON.stringify({
@@ -251,8 +260,8 @@ export const useOpenVidu = () => {
           sender: {
             name: myUserName,
             image: localStorage.getItem("profile") || ChatUnknown,
-            role: userRole
-          }
+            role: userRole,
+          },
         }),
         type: "chat",
       });
@@ -330,11 +339,10 @@ export const useOpenVidu = () => {
     setPublisher(undefined);
     setScreenShareStream(undefined);
     setScreenSharingUser(undefined);
-    
-    navigate('/')
+
+    navigate("/");
   }, [session]);
 
-  // ! participant state 세팅
   useEffect(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);

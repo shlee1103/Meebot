@@ -44,6 +44,11 @@ export interface QnARequest {
     presentation_order: number;
 }
 
+export interface FinalSummarizeRequest {
+    roomCode: string;
+}
+
+
 // 발표회 시작 API 호출 함수
 export const startPresentation = async (
     request: StartPresentationRequest
@@ -107,4 +112,13 @@ export const saveQnA = async (
         const errorMessage = error.response?.data?.message || '알 수 없는 오류가 발생했습니다.';
         throw new Error(errorMessage);
     }
+};
+
+// 최종 요약 API 호출 함수
+export const finalSummarize = async (request: FinalSummarizeRequest): Promise<void> => {
+    await apiClient.post('/api/chatgpt/final-summarize', request, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
 };

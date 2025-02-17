@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const navigate = useNavigate()
 
   return (
-    <header className={`flex justify-between items-center py-10 px-6 md:px-12 lg:px-24 absolute top-0 w-full ${className}`} id="header">
+    <header className={`flex justify-between items-center py-10 px-6 md:px-12 lg:px-24 absolute top-0 w-full z-50 ${className}`} id="header">
       <a href="#" onClick={(e) => {
         e.preventDefault()
         navigate('/')

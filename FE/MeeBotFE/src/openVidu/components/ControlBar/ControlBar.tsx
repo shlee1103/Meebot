@@ -1,16 +1,16 @@
 import { usePresentationSetting } from "../../hooks/usePresentationSetting";
 import { PresentationModal } from "../VideoConferenceSetting/PresentationModal";
 import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, setMeetingSettingOpenModal, resetStore } from "../../../stores/store";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
 import LeavingConfirmPopup from "../Popup/LeavingConfirmPopup";
 import { useState } from "react";
 import { Session } from "openvidu-browser";
 import ConferenceStatusButton from "./ConferenceStatusButton";
 import Timer from "./Timer";
-import MicToggle from './MicToggle';
-import VideoToggle from './VideoToggle';
+import MicToggle from "./MicToggle";
+import VideoToggle from "./VideoToggle";
 import ControlButton from "./ControlButton";
 import HandButton from "./HandButton";
 
@@ -50,7 +50,6 @@ const ControlBar: React.FC<ControlBarProps> = ({
   changeConferenceStatus,
 }) => {
   const {
-    isModalOpen,
     presentationTime,
     setPresentationTime,
     qnaTime,
@@ -60,8 +59,6 @@ const ControlBar: React.FC<ControlBarProps> = ({
     handleSpeakerSelect,
     handleSpeakerRemove,
     handleDragEnd,
-    cancelModal,
-    toggleModal,
     randomizeSpeakersOrder,
   } = usePresentationSetting();
 
@@ -69,8 +66,11 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const role = useSelector((state: RootState) => state.role.role);
   const isAudioEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const isVideoEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [isOpenHandList, setIsOpenHandList] = useState(false);
+
+  const dispatch = useDispatch();
+  const meetingSettingOpenModal = useSelector((state: RootState) => state.meetingSettingOpenModal.meetingSettingOpenModal);
 
   const ScreenShareIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-5 h-5">
@@ -101,6 +101,13 @@ const ControlBar: React.FC<ControlBarProps> = ({
   };
 
   const handleLeaveClick = () => {
+    // 발표회가 이미 종료된 상태라면 바로 나가기
+    if (conferenceStatus === CONFERENCE_STATUS.CONFERENCE_ENDED) {
+      leaveSession();
+      return;
+    }
+
+    // 그 외의 경우는 팝업 표시
     setShowLeaveConfirm(true);
   };
 
@@ -112,60 +119,61 @@ const ControlBar: React.FC<ControlBarProps> = ({
         return {
           title: "발표회를 나가시겠습니까?",
           text1: "",
-          text2: ""
+          text2: "",
         };
       }
       return {
         title: "발표회를 나가시겠습니까?",
         text1: "지금 퇴장하시면 발표 종료 후 AI가 제공하는",
-        text2: "발표 요약본을 받으실 수 없습니다."
+        text2: "발표 요약본을 받으실 수 없습니다.",
       };
     } else {
       if (isConferenceBefore) {
         return {
           title: "발표회를 취소하시겠습니까?",
           text1: "퇴장 시 대기 중인 모든 참가자가 자동으로 퇴장됩니다.",
-          text2: ""
+          text2: "",
         };
       }
       return {
         title: "발표회를 종료하시겠습니까?",
         text1: "지금 퇴장하시면 발표회가 즉시 종료되며,",
-        text2: "모든 참가자가 자동으로 퇴장됩니다."
+        text2: "모든 참가자가 자동으로 퇴장됩니다.",
       };
     }
   };
 
   const popupContent = getPopupContent();
 
+  const toggleModal = () => {
+    dispatch(setMeetingSettingOpenModal(!meetingSettingOpenModal));
+  };
+
+  const handleLeaveSession = () => {
+    dispatch(resetStore());
+    leaveSession();
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0">
+    <div className="fixed bottom-0 left-0 right-0 z-10">
       <div className="flex items-center justify-between px-4">
         <div className="flex w-[350px]">
           <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
         </div>
-        
+
         <div className="flex-1 flex items-center justify-center gap-7 py-4">
           <MicToggle
             isEnabled={isAudioEnabled}
             onToggle={toggleAudio}
             disabled={
-              (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_READY ||
-                conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) &&
+              (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_READY || conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) &&
               role === "participant" &&
               currentPresenter?.name !== myUsername
             }
           />
-          <VideoToggle
-            isEnabled={isVideoEnabled}
-            onToggle={toggleVideo}
-          />
+          <VideoToggle isEnabled={isVideoEnabled} onToggle={toggleVideo} />
           <div className="flex items-center gap-4">
-            <ControlButton
-              onClick={amISharing ? stopScreenShare : startScreenShare}
-              isActive={amISharing}
-              disabled={isScreenShared && !amISharing}
-            >
+            <ControlButton onClick={amISharing ? stopScreenShare : startScreenShare} isActive={amISharing} disabled={isScreenShared && !amISharing}>
               {amISharing ? <ScreenShareIcon /> : <ScreenShareOffIcon />}
             </ControlButton>
             <HandButton
@@ -173,15 +181,11 @@ const ControlBar: React.FC<ControlBarProps> = ({
               onArrowClick={toggleHandList}
               isHandActive={isHandRaised}
               isArrowActive={isOpenHandList}
+              conferenceStatus={conferenceStatus}
             >
               <HandRaisedIcon />
             </HandButton>
-            <ControlButton
-              onClick={handleLeaveClick}
-              isActive={false}
-              backgroundColor="#FA3C3C"
-              hoverColor="#FF7272"
-            >
+            <ControlButton onClick={handleLeaveClick} isActive={false} backgroundColor="#FA3C3C" hoverColor="#FF7272">
               <LeaveIcon />
             </ControlButton>
           </div>
@@ -190,36 +194,42 @@ const ControlBar: React.FC<ControlBarProps> = ({
         <div className="flex w-[350px] justify-end">
           {role === "admin" && (
             <div className="hidden lg:flex flex-row items-center gap-4">
-              <button
-                onClick={toggleModal}
-                className="px-4 py-3 rounded-xl bg-[#1f2937] hover:bg-[#374151] 
-                  text-white text-md font-medium transition-all duration-300 
-                  border border-[#374151] hover:border-[#4B5563]
-                  flex items-center gap-2 shadow-lg hover:shadow-xl font-pretendard"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {conferenceStatus === CONFERENCE_STATUS.CONFERENCE_WAITING && (
+                <button
+                  onClick={toggleModal}
+                  className="px-4 py-3 rounded-xl bg-[#1f2937] hover:bg-[#374151] 
+                    text-white text-md font-medium transition-all duration-300 
+                    border border-[#374151] hover:border-[#4B5563]
+                    flex items-center gap-2 shadow-lg hover:shadow-xl font-pretendard"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                발표회 설정
-              </button>
-              <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  발표회 설정
+                </button>
+              )}
+              {
+                presentersOrder.length > 0 && (
+                  <ConferenceStatusButton conferenceStatus={conferenceStatus} changeConferenceStatus={changeConferenceStatus} />
+                )
+              }
             </div>
           )}
         </div>
@@ -227,7 +237,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
 
       <PresentationModal
         session={session}
-        isOpen={isModalOpen}
+        isOpen={meetingSettingOpenModal}
         presentationTime={presentationTime}
         setPresentationTime={setPresentationTime}
         qnaTime={qnaTime}
@@ -238,14 +248,14 @@ const ControlBar: React.FC<ControlBarProps> = ({
         onSpeakerSelect={handleSpeakerSelect}
         onSpeakerRemove={handleSpeakerRemove}
         onDragEnd={handleDragEnd}
-        onCancel={cancelModal}
-        onConfirm={toggleModal}
+        onCancel={() => dispatch(setMeetingSettingOpenModal(false))}
+        onConfirm={() => dispatch(setMeetingSettingOpenModal(false))}
         onRandomize={randomizeSpeakersOrder}
       />
       <LeavingConfirmPopup
         isOpen={showLeaveConfirm}
         onCancel={() => setShowLeaveConfirm(false)}
-        onConfirm={leaveSession}
+        onConfirm={handleLeaveSession}
         popupTitle={popupContent.title}
         popupText1={popupContent.text1}
         popupText2={popupContent.text2}
