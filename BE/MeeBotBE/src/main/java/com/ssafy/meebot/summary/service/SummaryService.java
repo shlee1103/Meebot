@@ -402,12 +402,19 @@ public class SummaryService {
                                         "    \"object\": \"block\",\n" +
                                         "    \"type\": \"paragraph\",\n" +
                                         "    \"paragraph\": {\n" +
-                                        "        \"rich_text\": [{\n" +
-                                        "            \"type\": \"text\",\n" +
-                                        "            \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [presenter 이름]\" }\n\n" +
-                                        "        }]\n" +
+                                        "        \"rich_text\": [\n" +
+                                        "            {\n" +
+                                        "                \"type\": \"text\",\n" +
+                                        "                \"text\": { \"content\": \"\\n\\n \uD83D\uDC68\u200D\uD83D\uDCBB \" }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"type\": \"text\",\n" +
+                                        "                \"text\": { \"content\": \"[presenter 이름]\" },\n" +
+                                        "            }\n" +
+                                        "        ]\n" +
                                         "    }\n" +
-                                        "}\n" +
+                                        "}\n"
+                                        +
                                         "\n" +
                                         "2. 발표 내용 요약:\n" +
                                         "{\n" +
@@ -416,7 +423,7 @@ public class SummaryService {
                                         "    \"callout\": {\n" +
                                         "        \"rich_text\": [{\n" +
                                         "            \"type\": \"text\",\n" +
-                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content]\" }\n\n" +
+                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content를 문장단위로 적절히 분리하여 줄바꿈하고, 숫자로 순서를 부여하여 표시]\" }\n\n" +
                                         "        }],\n" +
                                         "        \"icon\": { \"emoji\": \"✨\" }\n" +
                                         "    }\n" +
@@ -442,6 +449,7 @@ public class SummaryService {
                 ),
                 "temperature", 0.5
         );
+
 
         generatePdfHtml(jsonPayload, roomCode)
                 .subscribe(
@@ -904,13 +912,13 @@ public class SummaryService {
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content", "너는 발표 진행을 맡은 사회자야." +
-                                        "한 사람의 발표가 끝났어. 지금까지 누구의 발표였는지에 대한 멘트 이후, " +
-                                        "발표 내용 한 줄 요약, 마지막으로 발표에 대한 소감을 한 문장으로 추가해 줘." +
-                                        "3줄로 요약해서 하나의 문장으로 작성해줘" +
-                                        "그리고 마지막으로 관리자는 질의응답을 시작하기 위해 질의응답 시작 버튼을 눌러주세요. 라고 안내해줘"),
+                                "한 사람의 발표가 끝났어. 지금까지 누구의 발표였는지에 대한 멘트 이후, " +
+                                "발표 내용 한 줄 요약, 마지막으로 발표에 대한 소감을 한 문장으로 추가해 줘." +
+                                "3줄로 요약해서 하나의 문장으로 작성해줘" +
+                                "그리고 마지막으로 관리자는 질의응답을 시작하기 위해 질의응답 시작 버튼을 눌러주세요. 라고 안내해줘"),
                         Map.of("role", "user", "content", String.format(
                                 "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n",
-                                        presenter, transcripts
+                                presenter, transcripts
                         ))
                 ),
                 "temperature", 0.7
