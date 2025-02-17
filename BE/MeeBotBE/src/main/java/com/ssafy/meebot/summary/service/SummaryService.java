@@ -244,7 +244,7 @@ public class SummaryService {
 
             // JSON 문자열을 JsonNode로 변환
             JsonNode rootNode = objectMapper.readTree(content);
-            String summaryContent = rootNode.get("summary").asText();
+            String summaryContent = rootNode.get("text").asText();
 
             // 발표 순서와 동일한 질문 찾기
             int presentationOrder = summary.getPresentationOrder();
