@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/BE.iml" filepath="$PROJECT_DIR$/.idea/BE.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/MeeBotBE.main.iml" filepath="$PROJECT_DIR$/.idea/modules/MeeBotBE.main.iml" />
     </modules>
   </component>
 </project>

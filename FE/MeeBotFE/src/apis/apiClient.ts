@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: `https://meebot.site/`,
+  baseURL: `http://localhost:5000`,
 });
 
 // API 요청 시 모든 요청 헤더에 access token 포함

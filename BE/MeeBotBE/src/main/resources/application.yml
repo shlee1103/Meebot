@@ -1,13 +1,63 @@
 server:
   port: 5000
 
+# OpenVidu
+openvidu:
+  url: https://meebot.site:4443
+  secret: meebot34
+
+# Database (?? DB ??)
 spring:
-  profiles:
-    active: dev
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/meebot?useSSL=false&serverTimezone=Asia/Seoul
+    username: root
+    password: thdgml1103@
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
-        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# OAuth
+google:
+  client:
+    id: 681333333739-akpm0orfogm7e3svkavvkvvt1pe6vqrg.apps.googleusercontent.com
+    pw: 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
+
+# JWT
+jwt:
+  secret:
+    key: 2oETpULfoJT7u7fzKoFR02zdc5SQM2eeVAtYL46RzCTkt1LLGCidSBs9eBpa+44nabp1dCZHn2B3I8HGr+rtqw==
+
+# Clova
+clova:
+  api:
+    api-key: nv-e0b6620be8e143bbbf27c9195ab71d9emzGV
+    request-id: e9a1c12eea9947f88b9a833771b4bc0e
+
+# OpenAI
+openai:
+  api:
+    key: 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
+  model: gpt-4o-mini
+
+
+# Base URL
+app:
+  base:
+    url: http://localhost:5173
+
+notion:
+  client:
+    id: 183d872b-594c-8095-ab8a-0037685096d6
+    secret: secret_7ehfGXHaYUHiCQ4FshTon7HjjfEEKY0lS85W4DYqS1f
+  base:
+    uri: http://localhost:5000
+
+pdf:
+  storage:
+    path: C:\Users\SSAFY\D104\pdfs
+  logo:
+    path: classpath:logo/MeeBot_Logo.png
+  font:
+    path: classpath:fonts/malgun.ttf
