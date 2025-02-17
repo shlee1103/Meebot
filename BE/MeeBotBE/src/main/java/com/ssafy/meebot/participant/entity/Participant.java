@@ -25,6 +25,7 @@ public class Participant {
     private String userEmail;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "deleted", nullable = false)
+    @Column(name = "deleted", nullable = false, columnDefinition = "enum('ACTIVE','DELETED') default 'ACTIVE'")
+    @Builder.Default
     private StorageStatus deleted = StorageStatus.ACTIVE;
 }
