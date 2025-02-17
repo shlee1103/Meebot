@@ -117,8 +117,8 @@ export const usePresentationControls = (session: Session | undefined, myUserName
       // 요약 및 질문 시그널 보내기
       session?.signal({
         data: JSON.stringify({
-          summary: `[${response.summation.presenter}님의 발표 요약]\n${response.summation.text}`,
-          question: `[${response.summation.presenter}님에 대한 질문]\n${response.summation.question}`,
+          summary: `[${currentPresenter?.name}님의 발표 요약]\n${response.summation.text}`,
+          question: `[${currentPresenter?.name}님에 대한 질문]\n${response.summation.question}`,
           sender: { name: "MeeU", image: ChatMEEU },
           eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`, // 발표자와 순서 정보 추가
         }),
