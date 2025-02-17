@@ -379,7 +379,7 @@ public class SummaryService {
                                         "    \"paragraph\": {\n" +
                                         "        \"rich_text\": [{\n" +
                                         "            \"type\": \"text\",\n" +
-                                        "            \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [presenter 이름]\" }\n\n" +
+                                        "            \"text\": { \"content\": \"\\n\\n \uD83D\uDC68\u200D\uD83D\uDCBB [presenter 이름]\" }\n\n" +
                                         "        }]\n" +
                                         "    }\n" +
                                         "}\n" +
