@@ -9,6 +9,7 @@ import ChatUnknown from "../../assets/user_icon.svg";
 
 export interface ParticipantInfo {
   name: string;
+  email?: string;
   image: string;
   isAudioActive: boolean;
   isVideoActive: boolean;
@@ -106,9 +107,7 @@ export const useOpenVidu = () => {
     OV.current = new OpenVidu();
     const mySession = OV.current.initSession();
 
-    // connectionCreated 코드 추가(o)
     mySession.on("connectionCreated", (event) => {
-      // console.log("Connection Created:", event.connection);
       const connection = event.connection;
       setConnectionUser((prev) => [...prev, connection]);
     });
@@ -137,8 +136,6 @@ export const useOpenVidu = () => {
           time: now,
         };
 
-        // console.log('최종 메시지 객체:', newMessage);
-
         return [...prevMessages, newMessage];
       });
     });
@@ -148,8 +145,7 @@ export const useOpenVidu = () => {
       const messageData = JSON.parse(event.data || "{}");
 
       setMessages((prevMessages) => {
-        const lastMeeuMessage = [...prevMessages].reverse().find((msg) => msg.sender.name === "MeeU");
-        // console.log(lastMeeuMessage?.eventType);
+        const lastMeeuMessage = [...prevMessages].reverse().find(msg => msg.sender.name === "MeeU");
 
         if (lastMeeuMessage && lastMeeuMessage.eventType === messageData.eventType) {
           return prevMessages;
@@ -173,12 +169,16 @@ export const useOpenVidu = () => {
       setSession(mySession);
       const tokenData = await getToken(sessionId);
       const userProfileImage = localStorage.getItem("profile");
-      await mySession.connect(tokenData, { clientData: { name: myUserName, image: userProfileImage, role: userRole } });
+      const userEmail = localStorage.getItem("email");
+      
+      await mySession.connect(tokenData, { clientData: { name: myUserName, email: userEmail || "", image: userProfileImage, role: userRole } });
       // console.log("세션 연결 정보:", {
       //   name: myUserName,
       //   image: userProfileImage,
       //   role: userRole,
+        email: userEmail,,
       // });
+
       const myPublisher = await OV.current.initPublisherAsync(undefined, {
         audioSource: undefined,
         videoSource: undefined,
@@ -252,7 +252,6 @@ export const useOpenVidu = () => {
     //   },
     // });
 
-    console.log(localStorage.getItem("profile"));
     try {
       await session.signal({
         data: JSON.stringify({
@@ -352,6 +351,7 @@ export const useOpenVidu = () => {
       return {
         name: clientData.name,
         image: clientData.image,
+        email: clientData.email,
         isAudioActive,
         isVideoActive,
       };

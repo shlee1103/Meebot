@@ -1,16 +1,19 @@
 import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
 import { useState, useEffect } from "react";
+import { ParticipantInfo } from "../../hooks/useOpenVidu";
 
 interface ConferenceStatusButtonProps {
   conferenceStatus: string;
   changeConferenceStatus: (status: string) => void;
   className?: string;
+  participants: ParticipantInfo[];
 }
 
 const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
   conferenceStatus,
   changeConferenceStatus,
-  className = ''
+  className = '',
+  participants
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -50,7 +53,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return "발표회를 종료하기 위해 클릭해주세요";
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
-        return "발표회를 시작하기 위해 클릭해주세요";
+        return "발표회를 시작하기 위해 클릭해주세요";                             
       default:
         return "";
     }
@@ -61,7 +64,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return {
-          ring: 'ring-[#6B4CFF]/30',
+          ring: 'ring-[#6B4CFF]/30', 
           border: 'border-[#6B4CFF]/20',
           shadow: 'shadow-[0_0_20px_rgba(107,76,255,0.2)]',
           iconColor: 'text-[#6B4CFF]'
@@ -179,6 +182,15 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
 
   const config = getButtonConfig();
 
+  const clickConferenceStateButton = () => {
+    console.log('현재 상태 : ', conferenceStatus);
+    if (conferenceStatus === CONFERENCE_STATUS.QNA_COMPLETED) {
+      participants.map(participant => participant.email).forEach(email => console.log(email));
+      console.log('참여자 리스트 : ', participants);
+    }
+    changeConferenceStatus(conferenceStatus)
+  }
+  
   return (
     <div className="relative group">
       {showTooltip && (
@@ -224,7 +236,9 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
         animate-pulse-slow`}></div>
 
       <button
-        onClick={() => changeConferenceStatus(conferenceStatus)}
+        onClick={() => {
+          clickConferenceStateButton()
+        }}
         className={`relative px-4 py-2.5 rounded-xl text-white text-md font-medium
           transition-all duration-300 ease-in-out
           border backdrop-blur-sm
