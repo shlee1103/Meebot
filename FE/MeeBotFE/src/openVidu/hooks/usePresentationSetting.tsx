@@ -6,7 +6,6 @@ import { ParticipantInfo } from "./useOpenVidu";
 
 export const usePresentationSetting = () => {
   const { presentationTime, qnaTime, presentersOrder } = useSelector((state: RootState) => state.presentation);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSpeakers, setSelectedSpeakers] = useState<ParticipantInfo[]>([]);
 
   const dispatch = useDispatch();
@@ -42,18 +41,12 @@ export const usePresentationSetting = () => {
     dispatch(updateSpeakersOrder(newOrder));
   };
 
-  const cancelModal = () => {
+  const resetSelectedSpeakers = () => {
     setSelectedSpeakers([]);
     dispatch(updateSpeakersOrder([]));
-    setIsModalOpen(false);
-  };
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
+  }
 
   return {
-    isModalOpen,
     presentationTime,
     setPresentationTime: (time: number) => dispatch(setPresentationTime(time)),
     qnaTime,
@@ -64,7 +57,6 @@ export const usePresentationSetting = () => {
     handleSpeakerRemove,
     handleDragEnd,
     randomizeSpeakersOrder,
-    cancelModal,
-    toggleModal,
+    resetSelectedSpeakers,
   };
 };

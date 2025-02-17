@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateRoomTitle } from "../../../apis/room";
-import { RootState, setMeetingTitle } from "../../../stores/store";
+import { RootState, setMeetingTitle, setMeetingSettingOpenModal } from "../../../stores/store";
 import { Session } from "openvidu-browser";
 import { Sm, Mn } from "../../../components/common/Typography";
 import information from "../../assets/images/information.png";
@@ -75,6 +75,11 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
     }
   };
 
+  const handleOpenMeetingSettingModal = () => {
+    setIsOpen(false);
+    dispatch(setMeetingSettingOpenModal(true));
+  };
+
   return (
     <div ref={titleRef} className="relative w-full max-w-none rounded font-pretendard text-lg font-semibold">
       {!isOpen ? (
@@ -137,9 +142,7 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
                       <span className="text-[#8B8B8B] text-xs font-pretendard">아래 버튼을 클릭하여 발표회를 설정해주세요</span>
                     </div>
                     <button
-                      onClick={() => {
-                        /* 발표회 설정 모달 열기 */
-                      }}
+                      onClick={handleOpenMeetingSettingModal}
                       className="relative px-6 py-2 bg-[#6B4CFF] text-white rounded-lg hover:bg-[#5940CC] transition-all duration-200 transform hover:scale-105 flex items-center space-x-2 group"
                     >
                       <div className="absolute -inset-0.5 bg-[#6B4CFF] opacity-40 rounded-lg blur-[2px] animate-pulse"></div>

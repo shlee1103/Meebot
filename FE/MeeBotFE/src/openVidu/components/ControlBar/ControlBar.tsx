@@ -1,8 +1,8 @@
 import { usePresentationSetting } from "../../hooks/usePresentationSetting";
 import { PresentationModal } from "../VideoConferenceSetting/PresentationModal";
 import { CONFERENCE_STATUS } from "../../hooks/usePresentationControls";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../stores/store";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, setMeetingSettingOpenModal } from "../../../stores/store";
 import { ParticipantInfo } from "../../hooks/useOpenVidu";
 import LeavingConfirmPopup from "../Popup/LeavingConfirmPopup";
 import { useState } from "react";
@@ -50,7 +50,6 @@ const ControlBar: React.FC<ControlBarProps> = ({
   changeConferenceStatus,
 }) => {
   const {
-    isModalOpen,
     presentationTime,
     setPresentationTime,
     qnaTime,
@@ -60,8 +59,6 @@ const ControlBar: React.FC<ControlBarProps> = ({
     handleSpeakerSelect,
     handleSpeakerRemove,
     handleDragEnd,
-    cancelModal,
-    toggleModal,
     randomizeSpeakersOrder,
   } = usePresentationSetting();
 
@@ -71,6 +68,9 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const isVideoEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [isOpenHandList, setIsOpenHandList] = useState(false);
+
+  const dispatch = useDispatch();
+  const meetingSettingOpenModal = useSelector((state: RootState) => state.meetingSetting.meetingSettingOpenModal);
 
   const ScreenShareIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="w-5 h-5">
@@ -137,6 +137,10 @@ const ControlBar: React.FC<ControlBarProps> = ({
   };
 
   const popupContent = getPopupContent();
+
+  const toggleModal = () => {
+    dispatch(setMeetingSettingOpenModal(!meetingSettingOpenModal));
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0">
@@ -228,7 +232,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
 
       <PresentationModal
         session={session}
-        isOpen={isModalOpen}
+        isOpen={meetingSettingOpenModal}
         presentationTime={presentationTime}
         setPresentationTime={setPresentationTime}
         qnaTime={qnaTime}
@@ -239,8 +243,8 @@ const ControlBar: React.FC<ControlBarProps> = ({
         onSpeakerSelect={handleSpeakerSelect}
         onSpeakerRemove={handleSpeakerRemove}
         onDragEnd={handleDragEnd}
-        onCancel={cancelModal}
-        onConfirm={toggleModal}
+        onCancel={() => dispatch(setMeetingSettingOpenModal(false))}
+        onConfirm={() => dispatch(setMeetingSettingOpenModal(false))}
         onRandomize={randomizeSpeakersOrder}
       />
       <LeavingConfirmPopup
