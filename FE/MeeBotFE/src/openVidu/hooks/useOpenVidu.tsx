@@ -334,7 +334,6 @@ export const useOpenVidu = () => {
     navigate('/')
   }, [session]);
 
-  // ! participant state 세팅
   useEffect(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);

@@ -90,7 +90,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           summary: `[${response.summation.presenter}님의 발표 요약]\n${response.summation.text}`,
           question: `[${response.summation.presenter}님에 대한 질문]\n${response.summation.question}`,
           sender: { name: "MeeU", image: ChatMEEU },
-          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`  // 발표자와 순서 정보 추가
+          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`
         }),
         type: 'MEEU_ANNOUNCEMENT'
       });

@@ -30,14 +30,6 @@ const HandButton: React.FC<HandButtonProps> = ({
   const currentPresenter = presentersOrder[currentPresenterIndex];
   const myUsername = useSelector((state: RootState) => state.myUsername.myUsername);
 
-  // const ITEM_HEIGHT = 24;
-  // const MAX_VISIBLE_ITEMS = 5;
-  // const MAX_HEIGHT = ITEM_HEIGHT * MAX_VISIBLE_ITEMS + 20;
-
-  // // 발표자를 제외한 손든 참가자 목록 필터링  
-  // const filteredRaisedHands = raisedHands.filter(
-  //   participant => participant.userName !== currentPresenter.name );
-
   // QnA 모드가 아닐 때는 목록 표시하지 않음
   if (conferenceStatus !== CONFERENCE_STATUS.QNA_ACTIVE) {
     return null;
@@ -124,10 +116,10 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     }
 
     &:disabled {
-      cursor: default;  // not-allowed 대신 default로 변경
+      cursor: default;
       background: #1a1f2e;
-      pointer-events: none;  // 호버 효과 완전히 제거
-      filter: grayscale(30%) brightness(70%);  // 전체적으로 회색조와 어두운 효과 추가
+      pointer-events: none;
+      filter: grayscale(30%) brightness(70%);
 
       .arrow-icon {
         background: #9CA3AF;
@@ -137,8 +129,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
         background: #1a1f2e;
         
         svg {
-          opacity: 0.5;  // SVG 아이콘 투명도 추가
-        }
+          opacity: 0.5;
       }
     }
 
@@ -241,7 +232,6 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     max-height: 300px;
     overflow-y: auto;
 
-    /* 스크롤바 스타일링 */
     &::-webkit-scrollbar {
       width: 8px;
     }
@@ -319,7 +309,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
   .status-dot {
     width: 8px;
     height: 8px;
-    background: #1AEBB8;  // 프로젝트의 강조색으로 변경
+    background: #1AEBB8;
     border-radius: 50%;
     position: relative;
 
@@ -328,7 +318,7 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
       position: absolute;
       width: 12px;
       height: 12px;
-      background: rgba(26, 235, 184, 0.2);  // 강조색의 연한 버전
+      background: rgba(26, 235, 184, 0.2);
       border-radius: 50%;
       top: 50%;
       left: 50%;
