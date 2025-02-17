@@ -170,7 +170,7 @@ export const useOpenVidu = () => {
       const tokenData = await getToken(sessionId);
       const userProfileImage = localStorage.getItem("profile");
       const userEmail = localStorage.getItem("email");
-      
+
       await mySession.connect(tokenData, { clientData: { name: myUserName, email: userEmail || "", image: userProfileImage, role: userRole } });
 
       const myPublisher = await OV.current.initPublisherAsync(undefined, {
@@ -327,7 +327,7 @@ export const useOpenVidu = () => {
     navigate("/");
   }, [session]);
 
-  useEffect(() => {
+  const updateParticipantState = useCallback(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);
       const isAudioActive = streamManager.stream.audioActive;
@@ -347,25 +347,65 @@ export const useOpenVidu = () => {
     setParticipants(allParticipants);
   }, [subscribers, publisher]);
 
-  return {
-    mySessionId,
-    setMySessionId,
-    myUserName,
-    session,
-    mainStreamManager,
-    setMainStreamManager,
-    publisher,
-    subscribers,
-    joinSession,
-    leaveSession,
-    participants,
-    startScreenShare,
-    stopScreenShare,
-    isScreenShared: !!screenShareStream,
-    amISharing: screenSharingUser === myUserName,
-    connectionUser,
-    setConnectionUser,
-    messages,
-    sendMessage,
-  };
+// useEffect(() => {
+//   const getParticipantInfo = (streamManager: StreamManager) => {
+//     const { clientData } = JSON.parse(streamManager.stream.connection.data);
+//     const isAudioActive = streamManager.stream.audioActive;
+//     const isVideoActive = streamManager.stream.videoActive;
+
+//     return {
+//       name: clientData.name,
+//       image: clientData.image,
+//       email: clientData.email,
+//       isAudioActive,
+//       isVideoActive,
+//     };
+//   };
+
+//   const allParticipants = publisher ? [getParticipantInfo(publisher), ...subscribers.map((sub) => getParticipantInfo(sub))] : subscribers.map((sub) => getParticipantInfo(sub));
+
+//   setParticipants(allParticipants);
+// }, [subscribers, publisher]);
+
+  useEffect(() => {
+    updateParticipantState();
+  }, [updateParticipantState]);
+
+  useEffect(() => {
+    if (session) {
+      session.on('streamPropertyChanged', (event: any) => {
+        if (event.changedProperty === 'audioActive' || 
+            event.changedProperty === 'videoActive') {
+          updateParticipantState();
+        }
+      });
+
+      return () => {
+        session.off('streamPropertyChanged');
+      };
+    }
+  }, [session, updateParticipantState]);
+
+return {
+  mySessionId,
+  setMySessionId,
+  myUserName,
+  session,
+  mainStreamManager,
+  setMainStreamManager,
+  publisher,
+  subscribers,
+  joinSession,
+  leaveSession,
+  participants,
+  startScreenShare,
+  stopScreenShare,
+  isScreenShared: !!screenShareStream,
+  amISharing: screenSharingUser === myUserName,
+  connectionUser,
+  setConnectionUser,
+  messages,
+  sendMessage,
+  updateParticipantState,
+};
 };
