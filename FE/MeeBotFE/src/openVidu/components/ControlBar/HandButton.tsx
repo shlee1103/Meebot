@@ -195,74 +195,136 @@ const StyledWrapper = styled.div<{ backgroundColor?: string; hoverColor?: string
     position: absolute;
     bottom: 100%;
     right: 0;
-    margin-bottom: 8px;
-    background: #1a2235;
-    border-radius: 8px;
-    padding: 12px;
-    width: 240px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    max-height: 200px;
+    margin-bottom: 12px;
+    background: #1A2235;
+    border: 1px solid #2A3347;
+    border-radius: 12px;
+    padding: 16px;
+    width: 280px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
+    max-height: 300px;
     overflow-y: auto;
+
+    /* 스크롤바 스타일링 */
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #1A2235;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #2A3347;
+      border-radius: 4px;
+      
+      &:hover {
+        background: #374151;
+      }
+    }
   }
 
   .hands-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2A3347;
     
     h3 {
-      color: white;
-      font-size: 14px;
-      font-weight: 500;
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Pretendard', sans-serif;
     }
     
     span {
+      background: #2A3347;
       color: #9CA3AF;
-      font-size: 12px;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-family: 'Pretendard', sans-serif;
     }
   }
 
   .no-hands {
     color: #9CA3AF;
-    font-size: 12px;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+    font-family: 'Pretendard', sans-serif;
   }
 
   .hands-list-content {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
   }
 
   .participant-item {
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
     
     &:hover {
-      background: rgba(75, 85, 99, 0.3);
+      background: #232D45;
     }
   }
 
   .participant-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
 
   .status-dot {
-    width: 6px;
-    height: 6px;
-    background: #3B82F6;
+    width: 8px;
+    height: 8px;
+    background: #1AEBB8;  // 프로젝트의 강조색으로 변경
     border-radius: 50%;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: rgba(26, 235, 184, 0.2);  // 강조색의 연한 버전
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
   }
 
   .participant-name {
-    color: white;
-    font-size: 12px;
-    max-width: 160px;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-family: 'Pretendard', sans-serif;
+  }
+
+  /* 애니메이션 효과 */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hands-list {
+    animation: slideIn 0.2s ease-out;
   }
 `;
 
