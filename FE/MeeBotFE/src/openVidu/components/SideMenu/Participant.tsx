@@ -12,7 +12,7 @@ const Participant: React.FC<ParticipantProps> = ({ participantsList }) => {
   const myUserName = useSelector((state: RootState) => state.myUsername.myUsername);
 
   return (
-    <div className="flex flex-col gap-3 py-4 font-pretendard">
+    <div className="flex flex-col gap-3 pb-6 font-pretendard">
       {participantsList.map((participant, i) => {
         const isMe = participant.name === myUserName;
         const isAdmin = participant.role === 'admin';
