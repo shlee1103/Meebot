@@ -11,7 +11,6 @@ export const CONFERENCE_STATUS = {
 } as const;
 
 export const FIXED_MENTS = {
-  PRESENTATION_END: "발표가 종료되었습니다. 발표 요약은 채팅창에 표시될 예정입니다.",
   QNA_START: "질문이 있으신분들은 손들기 버튼을 통해 질문해 주시길 바랍니다.",
   QNA_END: (currnentPresenter: string, nextPresenter: string) => `이상으로  ${currnentPresenter}님의 발표를 마치겠습니다. 다음 발표는 ${nextPresenter}님의 차례입니다. 화면 공유 해주시길 바랍니다.`,
   FINAL_PRESENTATION_COMPLETED: (currnentPresenter: string) => `이상으로 ${currnentPresenter}님의 발표를 마치겠습니다. `,

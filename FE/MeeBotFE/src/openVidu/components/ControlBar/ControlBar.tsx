@@ -9,8 +9,8 @@ import { useState } from "react";
 import { Session } from "openvidu-browser";
 import ConferenceStatusButton from "./ConferenceStatusButton";
 import Timer from "./Timer";
-import MicToggle from './MicToggle';
-import VideoToggle from './VideoToggle';
+import MicToggle from "./MicToggle";
+import VideoToggle from "./VideoToggle";
 import ControlButton from "./ControlButton";
 import HandButton from "./HandButton";
 
@@ -66,7 +66,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   const role = useSelector((state: RootState) => state.role.role);
   const isAudioEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const isVideoEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [isOpenHandList, setIsOpenHandList] = useState(false);
 
   const dispatch = useDispatch();
@@ -112,26 +112,26 @@ const ControlBar: React.FC<ControlBarProps> = ({
         return {
           title: "발표회를 나가시겠습니까?",
           text1: "",
-          text2: ""
+          text2: "",
         };
       }
       return {
         title: "발표회를 나가시겠습니까?",
         text1: "지금 퇴장하시면 발표 종료 후 AI가 제공하는",
-        text2: "발표 요약본을 받으실 수 없습니다."
+        text2: "발표 요약본을 받으실 수 없습니다.",
       };
     } else {
       if (isConferenceBefore) {
         return {
           title: "발표회를 취소하시겠습니까?",
           text1: "퇴장 시 대기 중인 모든 참가자가 자동으로 퇴장됩니다.",
-          text2: ""
+          text2: "",
         };
       }
       return {
         title: "발표회를 종료하시겠습니까?",
         text1: "지금 퇴장하시면 발표회가 즉시 종료되며,",
-        text2: "모든 참가자가 자동으로 퇴장됩니다."
+        text2: "모든 참가자가 자동으로 퇴장됩니다.",
       };
     }
   };
@@ -148,33 +148,25 @@ const ControlBar: React.FC<ControlBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0">
+    <div className="fixed bottom-0 left-0 right-0 z-10">
       <div className="flex items-center justify-between px-4">
         <div className="flex w-[350px]">
           <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
         </div>
-        
+
         <div className="flex-1 flex items-center justify-center gap-7 py-4">
           <MicToggle
             isEnabled={isAudioEnabled}
             onToggle={toggleAudio}
             disabled={
-              (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_READY ||
-                conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) &&
+              (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_READY || conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) &&
               role === "participant" &&
               currentPresenter?.name !== myUsername
             }
           />
-          <VideoToggle
-            isEnabled={isVideoEnabled}
-            onToggle={toggleVideo}
-          />
+          <VideoToggle isEnabled={isVideoEnabled} onToggle={toggleVideo} />
           <div className="flex items-center gap-4">
-            <ControlButton
-              onClick={amISharing ? stopScreenShare : startScreenShare}
-              isActive={amISharing}
-              disabled={isScreenShared && !amISharing}
-            >
+            <ControlButton onClick={amISharing ? stopScreenShare : startScreenShare} isActive={amISharing} disabled={isScreenShared && !amISharing}>
               {amISharing ? <ScreenShareIcon /> : <ScreenShareOffIcon />}
             </ControlButton>
             <HandButton
@@ -186,12 +178,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
             >
               <HandRaisedIcon />
             </HandButton>
-            <ControlButton
-              onClick={handleLeaveClick}
-              isActive={false}
-              backgroundColor="#FA3C3C"
-              hoverColor="#FF7272"
-            >
+            <ControlButton onClick={handleLeaveClick} isActive={false} backgroundColor="#FA3C3C" hoverColor="#FF7272">
               <LeaveIcon />
             </ControlButton>
           </div>

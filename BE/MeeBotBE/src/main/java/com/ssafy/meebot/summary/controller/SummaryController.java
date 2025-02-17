@@ -1,5 +1,6 @@
 package com.ssafy.meebot.summary.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ssafy.meebot.summary.service.SummaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class SummaryController {
 
 
     @PostMapping("/final-summarize")
-    public Mono<ResponseEntity<Map<String, Object>>> finalSummarize(@RequestBody Map<String, Object> request) {
+    public Mono<ResponseEntity<Map<String, Object>>> finalSummarize(@RequestBody Map<String, Object> request) throws JsonProcessingException {
         return summaryService.finalSummarize(request);
     }
 
@@ -52,7 +53,7 @@ public class SummaryController {
     }
     @PostMapping("/end-presentation")
     public Mono<Map<String, String>> endPresentation(@RequestBody Map<String, Object> request) {
-        return summaryService.generateEndingMessage(request)
+        return summaryService.endPresentation(request)
                 .map(response -> Map.of("message", response));
     }
 

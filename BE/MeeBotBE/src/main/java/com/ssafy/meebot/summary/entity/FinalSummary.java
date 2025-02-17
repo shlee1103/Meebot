@@ -17,6 +17,9 @@ public class FinalSummary {
     @JoinColumn(name = "room_code", unique = true)
     private Room room;
 
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;
+    @Column(name = "pdf_link")
+    private String pdfLink;
+
+    @Column(name = "notion_content", columnDefinition = "TEXT")
+    private String notionContent;
 }
