@@ -120,16 +120,13 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           summary: `[${currentPresenter?.name}님의 발표 요약]\n${response.summation.text}`,
           question: `[${currentPresenter?.name}님에 대한 질문]\n${response.summation.question}`,
           sender: { name: "MeeU", image: ChatMEEU },
-          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`
+          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`,
         }),
         type: "MEEU_ANNOUNCEMENT",
       });
     } catch (error) {
       console.error("Error sending presentation data:", error);
     }
-
-    // 누적 스크립트 초기화
-    setAccumulatedScript("");
   };
 
   // QnA 스크립트 JSON 저장 함수 수정
@@ -186,9 +183,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
   // # 발표회 상태에 따라 수행되는 signal
   const changeConferenceStatus = async (currentStatus: string) => {
-    if (currentStatus === CONFERENCE_STATUS.PRESENTATION_READY) {
-      setAccumulatedScript(""); // 스크립트 초기화
-    }
     if (currentStatus === CONFERENCE_STATUS.CONFERENCE_WAITING) {
       setCurrentPresenterIndex(0);
       session?.signal({
