@@ -69,8 +69,6 @@ export const useOpenVidu = () => {
 
     session.on("streamCreated", (event) => {
       const connectionData = JSON.parse(event.stream.connection.data);
-      // console.log("스트림 생성 이벤트:", event);
-      // console.log("연결 데이터:", connectionData);
 
       if (event.stream.typeOfVideo === "SCREEN") {
         const screenSubscriber = session.subscribe(event.stream, undefined);
