@@ -6,6 +6,7 @@ import { H3, Lg, Mn, P, Sm } from "../../../components/common/Typography";
 import { RootState } from "../../../stores/store";
 import { useSelector } from "react-redux";
 import { Session } from "openvidu-browser";
+import { usePresentationSetting } from "../../hooks/usePresentationSetting";
 
 interface PresentationModalProps {
   session: Session | undefined;
@@ -42,6 +43,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
   onCancel,
   onConfirm,
 }) => {
+  const { resetSelectedSpeakers } = usePresentationSetting();
   const [mounted, setMounted] = useState(false);
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [isQnaDropdownOpen, setIsQnaDropdownOpen] = useState(false);
@@ -65,6 +67,11 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
     });
 
     onConfirm();
+  };
+
+  const handleCancel = () => {
+    resetSelectedSpeakers();
+    onCancel();
   };
 
   useEffect(() => {
@@ -367,7 +374,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
         >
           <div className="flex justify-end gap-3">
             <button
-              onClick={onCancel}
+              onClick={handleCancel}
               className="px-5 py-2.5 text-gray-300 rounded-lg hover:bg-[#2A3347]/50
                 transition-all duration-300 ease-in-out font-medium"
             >
@@ -387,3 +394,5 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
     </div>
   );
 };
+
+export default PresentationModal;
