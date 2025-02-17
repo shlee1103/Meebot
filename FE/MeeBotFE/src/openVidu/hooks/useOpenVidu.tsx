@@ -38,7 +38,7 @@ export const useOpenVidu = () => {
   >([]);
 
   const myUserName = useSelector((state: RootState) => state.myUsername.myUsername);
-  const userRole = useSelector((state: RootState) => state.role.role); // Get user role from Redux
+  const userRole = useSelector((state: RootState) => state.role.role);
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const dispatch = useDispatch();
 
@@ -69,8 +69,6 @@ export const useOpenVidu = () => {
 
     session.on("streamCreated", (event) => {
       const connectionData = JSON.parse(event.stream.connection.data);
-      // console.log("스트림 생성 이벤트:", event);
-      // console.log("연결 데이터:", connectionData);
 
       if (event.stream.typeOfVideo === "SCREEN") {
         const screenSubscriber = session.subscribe(event.stream, undefined);
@@ -82,6 +80,13 @@ export const useOpenVidu = () => {
     });
 
     session.on("streamDestroyed", (event) => {
+      const destroyedUserInfo = JSON.parse(event.stream.connection.data);
+
+      if (destroyedUserInfo.clientData.role === "admin") {
+        leaveSession();
+        return;
+      }
+
       if (event.stream.typeOfVideo === "SCREEN") {
         // subscribers 배열에서 화면 공유 스트림 제거
         setSubscribers((prevSubscribers) => prevSubscribers.filter((sub) => sub.stream.streamId !== event.stream.streamId));
@@ -338,7 +343,6 @@ export const useOpenVidu = () => {
     navigate("/");
   }, [session]);
 
-  // ! participant state 세팅
   useEffect(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);
