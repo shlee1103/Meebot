@@ -315,6 +315,7 @@ public class SummaryService {
                         Map.of("role", "system", "content",
                                 "당신은 발표 진행 사회자입니다. 발표회 종료 후 요약을 JSON 형식으로 작성합니다.\n" +
                                         "반드시 아래 형식의 JSON을 정확하게 생성하세요:\n" +
+                                        "각 presenter마다 발표자 이름, 발표 요약, 질의응답 블록이 순서대로 반복되어야 합니다.\\n" +
                                         "\n" +
                                         "{\n" +
                                         "    \"notion_rich_text\": {\n" +
