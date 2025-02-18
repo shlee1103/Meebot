@@ -94,22 +94,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
     setCurrentPresentationData(presentationJson);
 
-    // 파일명 생성: "presentation_발표자명_타임스탬프.json"
-    const fileName = `presentation_${presenter}_${new Date().getTime()}.json`;
-    // JSON 데이터 생성
-    const json = JSON.stringify(presentationJson, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    // 다운로드 링크 생성 및 실행
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    // 다운로드 트리거 및 정리
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-
     // 백엔드로 요약 요청 보내기
     try {
       const response = await interimSummarize(presentationJson);
@@ -149,19 +133,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     try {
       const message = await saveQnA(qnaRequest);
       console.log("QnA 저장 성공:", message);
-
-      // 로컬 파일 저장
-      const fileName = `qna_session_${sessionId}_${currentPresenterIndex + 1}.json`;
-      const json = JSON.stringify(qnaRequest, null, 2);
-      const blob = new Blob([json], { type: "application/json" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
     } catch (error) {
       if (error instanceof Error) {
         console.error("QnA 저장 실패:", error.message);
