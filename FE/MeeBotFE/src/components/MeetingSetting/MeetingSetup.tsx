@@ -32,7 +32,7 @@ const MeetingSetup: React.FC<MeetingSetupProps> = ({ className }) => {
   };
 
   return (
-    <div className={`flex flex-col mx-6 md:mx-12 lg:mx-[200px] gap-6 md:gap-8 ${className} justify-center`}>
+    <div className={`flex flex-col mx-6 md:mx-12 lg:mx-[200px] gap-6 md:gap-8 ${className} justify-center mb-20`}>
       <div className="flex flex-col gap-3 w-full">
         <Lg className="text-white font-bold">카메라와 오디오를 설정해주세요.</Lg>
         <Sm className="text-white">회의 중에도 설정이 가능합니다.</Sm>

@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import StorageListItem from './StorageListItem';
-import { getStorageData } from '../../apis/storage';
+import { StorageItem, getStorageData } from '../../apis/storage';
 import { P } from '../common/Typography';
-interface StorageItem {
-  roomCode: string;
-  content: string;
-  createdAt: string;
-}
 
 interface StorageListProps {
   className?: string;
@@ -17,19 +12,19 @@ const StorageList: React.FC<StorageListProps> = ({ className = '' }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchStorageData = async () => {
-      try {
-        const data = await getStorageData();
-        setStorageItems(data);
-      } catch (err) {
-        setError('보관함 데이터를 불러오는데 실패했습니다.');
-        console.error('Failed to fetch storage data:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchStorageData = async () => {
+    try {
+      const data = await getStorageData();
+      setStorageItems(data);
+    } catch (err) {
+      setError('보관함 데이터를 불러오는데 실패했습니다.');
+      console.error('Failed to fetch storage data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchStorageData();
   }, []);
 
@@ -61,8 +56,11 @@ const StorageList: React.FC<StorageListProps> = ({ className = '' }) => {
                 className="relative"
               >
                 <StorageListItem
-                  title={item.roomCode}
+                  roomTitle={item.roomTitle}
+                  roomCode={item.roomCode}
+                  content={item.content}
                   date={formatDate(item.createdAt)}
+                  refreshStorageData={fetchStorageData}
                 />
               </div>
             );

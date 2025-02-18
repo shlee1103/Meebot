@@ -3,6 +3,7 @@ package com.ssafy.meebot.summary.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lowagie.text.pdf.BaseFont;
 import com.ssafy.meebot.summary.repository.FinalSummarizeRepository;
 import com.ssafy.meebot.summary.entity.Answer;
 import com.ssafy.meebot.summary.entity.FinalSummary;
@@ -17,13 +18,22 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+import org.xhtmlrenderer.pdf.ITextTextRenderer;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +49,15 @@ public class SummaryService {
 
     @Value("${openai.model}")
     private String model;
+
+    @Value("${pdf.storage.path}")
+    private String pdfLocation;
+
+    @Value("${pdf.logo.path}")
+    private String logoPath;
+
+    @Value("${pdf.font.path}")
+    private String fontPath;
 
     private final String gptModel = "gpt-3.5-turbo";
 
@@ -61,17 +80,22 @@ public class SummaryService {
         Integer presentationTeamsNum = (Integer) request.get("presentation_teams_num");
         Integer presentationTime = (Integer) request.get("presentation_time");
         Integer questionTime = (Integer) request.get("question_time");
+        String roomTitle = (String) request.get("roomTitle");
+        List<String> presenters = (List<String>) request.get("presenters");
 
         StringBuilder query = new StringBuilder();
-        query.append("발표를 시작합니다. 총 ").append(presentationTeamsNum).append("개의 팀이 발표하고 한 팀당 ")
-                .append(presentationTime).append("분 동안 발표를 진행합니다. 질문 시간은 ").append(questionTime).append("분 입니다.\n\n");
+        query.append("발표를 시작합니다. 총 ").append(presentationTeamsNum).append("명의 발표자가 발표하고, 한 명당 ")
+                .append(presentationTime).append("분 동안 발표를 진행합니다. 발표 주제는 ")
+                .append(roomTitle).append("이고, 질문 시간은 ")
+                .append(questionTime).append("분이며, 발표 순서는 오른쪽 위의 발표회 정보를 참고해 주세요");
 
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 발표 흐름을 안내하는 역할을 해줘. " +
-                                        "친근하고 활기찬 톤으로 발표자를 응원하고 격려하는 멘트를 포함해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
+                                "너는 발표 진행을 맡은 사회자 미유야. 너에 대한 간단한 소개, 발표 주제와 발표자 순서를 안내한 뒤, " +
+                                        "'발표자는 화면 공유 버튼을 눌러 주세요. 그리고, 화면 공유가 완료되면 관리자는 발표 시작 버튼을 눌러 주세요. 라고 멘트해줘. " +
+                                        "3줄로 요약하고 이모티콘 없이 텍스트로만 답변해줘. 끝에 감사합니다 같은 멘트는 하지마."),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -105,8 +129,9 @@ public class SummaryService {
                 "model", model,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 이전 발표자의 발표가 끝나고, 다음과 같이 현재 발표자가 발표를 시작할거야. 화면 공유를 시작해 달라는 말과 함께" +
-                                        "이를 안내해줘. 친근하고 활기찬 톤으로 발표자를 응원하고 격려하는 멘트를 포함해줘. 답변은 이모티콘 없이 텍스트로만 해줘."),
+                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. 현재 발표자가 발표를 시작할거야." +
+                                        "발표자가 이제 발표를 시작한다는 것을 안내해줘. 답변은 이모티콘 없이 텍스트로만 해줘." +
+                                        "예를 들어, 이번 발표자는 [현재 발표자] 입니다. [멘트]"),
                         Map.of("role", "user", "content", query.toString())
                 ),
                 "temperature", 0.5
@@ -391,7 +416,7 @@ public class SummaryService {
                                         "    \"callout\": {\n" +
                                         "        \"rich_text\": [{\n" +
                                         "            \"type\": \"text\",\n" +
-                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content]\" }\n\n" +
+                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content를 문장단위로 적절히 분리하여 줄바꿈하고, 숫자로 순서를 부여하여 표시]\" }\n\n" +
                                         "        }],\n" +
                                         "        \"icon\": { \"emoji\": \"✨\" }\n" +
                                         "    }\n" +
@@ -418,6 +443,13 @@ public class SummaryService {
                 ),
                 "temperature", 0.5
         );
+
+
+        generatePdfHtml(jsonPayload, roomCode)
+                .subscribe(
+                        result -> log.info("PDF generated successfully: {}", result),
+                        error -> log.error("Failed to generate PDF", error)
+                );
 
         return webClient.post()
                 .uri("/v1/chat/completions")
@@ -464,6 +496,240 @@ public class SummaryService {
                                     "message", "GPT 응답을 처리할 수 없습니다."
                             ));
                 });
+    }
+
+    /**
+     * PDF 생성용
+     */
+    private Mono<String> generatePdfHtml(String jsonPayload, String roomCode) {
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role", "system", "content", """
+
+                                당신은 XHTML 생성기입니다. 주어진 JSON 데이터를 기반으로 발표회 요약본을 XHTML 형식으로 생성해주세요.
+                                                            응답은 반드시 단일 줄의 JSON 문자열이어야 합니다.
+                                                            모든 줄바꿈은 리터럴 "\n"으로 대체되어야 합니다.
+                                                            다음과 같은 형식으로 xhtml을 생성해주세요.         
+                                                    
+                                                            {
+                                                                "xhtml": "<?xml version="1.0" encoding="UTF-8"?>
+                                                                       <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+                                                                       <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
+                                                                       <head>
+                                                                           <meta charset="UTF-8" />
+                                                                           <title>[room_title]</title>
+                                                                           <style type="text/css">
+                                                                               @font-face {
+                                                                                   font-family: 'Malgun Gothic';
+                                                                                   src: url('./fonts/malgun.ttf');
+                                                                               }
+                                                                               @font-face {
+                                                                                   font-family: 'Noto Color Emoji';
+                                                                                   src: url('./fonts/NotoColorEmoji-Regular.ttf');
+                                                                               }
+                                                                               body {\s
+                                                                                   font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+                                                                                   margin: 40px;\s
+                                                                               }
+                                                                               .date, .presenters {
+                                                                                   border-left: 4px solid #444;
+                                                                                   padding-left: 10px;
+                                                                                   margin-bottom: 10px;\s
+                                                                                   display: flex;
+                                                                                   align-items: center;
+                                                                               }
+                                                                               hr {
+                                                                                   height: 1px;
+                                                                                   border: none;
+                                                                                   background-color: #D5D5D5;
+                                                                               }
+                                                                               h1 { text-align: center; font-size: 24px; margin-bottom: 20px; }
+                                                                               .date { margin-bottom: 10px; }
+                                                                               .presenters { margin-bottom: 20px; }
+                                                                               .presenter-section { margin-bottom: 30px; }
+                                                                               .presenter-name { font-size: 18px; margin-bottom: 15px; }
+                                                                               .content-box {
+                                                                                   background-color: #f9f9f9;
+                                                                                   border: 1px solid #e1e1e1;
+                                                                                   border-radius: 8px;
+                                                                                   padding: 15px;
+                                                                                   margin: 10px 0;
+                                                                               }
+                                                                               .qa-box {
+                                                                                   background-color: #f5f5f5;
+                                                                                   border: 1px solid #e1e1e1;
+                                                                                   border-radius: 8px;
+                                                                                   padding: 15px;
+                                                                                   margin: 10px 0;
+                                                                               }
+                                                                               .qa-item { margin-bottom: 10px; }
+                                                                               .copyright {
+                                                                                   margin-top: 50px;
+                                                                                   text-align: center;
+                                                                                   font-size: 14px;
+                                                                                   color: #666;
+                                                                               }
+                                                                               .copyright strong {
+                                                                                   font-weight: bold;
+                                                                                   color: #333;
+                                                                               }
+                                                                               .logo {
+                                                                                   display: block;
+                                                                                   margin: 10px auto;
+                                                                                   width: 150px;
+                                                                               }
+                                                                           </style>
+                                                                       </head>
+                                                                       <body>
+                                                                           <h1>[room_title 값]</h1>
+                                                                           <br />
+                                                                          \s
+                                                                           <div class="date">
+                                                                               [date를 'YYYY년 MM월 DD일' 형식으로 변환]
+                                                                           </div>
+                                                                           <div class="presenters">
+                                                                               [모든 presenter를 쉼표로 구분하여 나열]
+                                                                           </div>
+                                                                       
+                                                                           <br /><br />
+                                                                       
+                                                                           <!-- 각 발표자 정보 반복 -->
+                                                                           [각 presenter에 대해 다음 구조 반복]
+                                                                           <div class="presenter-section">
+                                                                               <h3 class="presenter-name">
+                                                                                   발표자 : [presenter 이름]
+                                                                               </h3>
+                                                                               <div class="content-box">
+                                                                                   <strong>발표 요약</strong><br />
+                                                                                   <hr />
+                                                                                   [presenter의 content를 문장을 기준으로 적절히 잘라 1,2,3,... 번호를 매겨 표시, 각 번호별 줄바꿈 필수]
+                                                                               </div>
+                                                                       
+                                                                               <br />
+                                                                               [questions가 있는 경우에만]
+                                                                               <div class="qa-box">
+                                                                                   <strong>질의응답</strong><br />
+                                                                                   <hr />
+                                                                                   [각 question과 answer를 다음 형식으로]
+                                                                                   <div class="qa-item">
+                                                                                       Q: [question]<br />
+                                                                                       A: [answer]
+                                                                                   </div>
+                                                                               </div>
+                                                                              \s
+                                                                               <br /><br /><br />
+                                                                           </div>
+                                                                       
+                                                                            <hr />
+                                                                           <div class="copyright">
+                                                                               <strong>@Meebot</strong> 해당 요약본에 대한 저작권은 <strong>Meebot</strong>에 있습니다.
+                                                                           </div>
+                                                                       <br />
+                                                                           <img src="[logo_path]" class="logo" alt="Meebot Logo" />
+                                                                            </body>
+                                                                       </html>
+                                                                       "
+                                                            }
+                                                            
+                                                            추가 지침:
+                                                            1. 날짜는 'YYYY년 MM월 DD일' 형식으로 변환하세요.
+                                                            2. 발표자 목록은 쉼표로 구분하여 나열하세요.
+                                                            3. 각 발표자의 섹션은 위의 구조를 정확히 따르되, 질문이 없는 경우 qa-box는 생성하지 않습니다.
+                                                            4. 모든 텍스트는 적절한 HTML 이스케이프 처리를 해야 합니다.
+                                                            5. room_title은 가운데 정렬하세요.
+                                                            6. content-box와 qa-box의 배경을 흰색으로 설정하세요.
+                                                        """),
+                        Map.of("role", "user", "content", jsonPayload)
+                ),
+                "temperature", 0.2
+        );
+
+        return webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .flatMap(response -> {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> messageMap = (Map<String, Object>) choices.get(0).get("message");
+                        String assistantContent = (String) messageMap.get("content");
+
+                        try {
+                            assistantContent = assistantContent.trim().replaceAll("\\R", "");
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            JsonNode rootNode = objectMapper.readTree(assistantContent);
+                            String xhtmlContent = rootNode.get("xhtml").asText()
+                                    .replace("\\n", "\n")
+                                    .replace("\\\"", "\"");
+
+                            String fileName = roomCode + ".pdf";
+                            String filePath = pdfLocation + File.separator + fileName;
+
+                            File directory = new File(pdfLocation);
+                            if (!directory.exists()) {
+                                directory.mkdirs();
+                            }
+
+                            // MeeBot 로고의 실제 파일 경로 가져오기
+                            String resolvedLogoPath = getLogoPath();
+                            xhtmlContent = xhtmlContent.replace("[logo_path]", resolvedLogoPath);
+
+                            // PDF 렌더러 설정
+                            ITextRenderer renderer = new ITextRenderer();
+                            renderer.getSharedContext().setTextRenderer(new ITextTextRenderer());
+
+                            // 폰트 로드
+                            String pretendardFontPath = getFontPath();
+                            renderer.getFontResolver().addFont(
+                                    pretendardFontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED
+                            );
+
+
+                            // PDF 생성
+                            renderer.setDocumentFromString(xhtmlContent);
+                            renderer.layout();
+
+                            try (FileOutputStream os = new FileOutputStream(filePath)) {
+                                renderer.createPDF(os);
+                            }
+
+                            log.info("PDF 저장 경로: {}", filePath);
+
+                            // 생성된 PDF 링크를 데이터베이스에 저장
+                            return savePdfLinkToDatabase(roomCode, filePath)
+                                    .thenReturn(filePath);
+
+                        } catch (Exception e) {
+                            log.error("PDF 생성 실패 상세: ", e);
+                            return Mono.error(new RuntimeException("PDF 생성 실패: " + e.getMessage(), e));
+                        }
+                    }
+                    return Mono.error(new RuntimeException("잘못된 GPT 응답"));
+                });
+    }
+
+
+    public String getLogoPath() throws IOException {
+        if (logoPath.startsWith("classpath:")) {
+            // classpath 경로인 경우, 실제 파일 경로로 변환
+            ClassPathResource resource = new ClassPathResource(logoPath.substring(10)); // "classpath:" 제거
+            return "file:///" + resource.getFile().getAbsolutePath().replace("\\", "/");
+        } else {
+            // 절대 경로인 경우 그대로 반환 (EC2 환경)
+            return "file:///" + logoPath.replace("\\", "/");
+        }
+    }
+
+    public String getFontPath() throws IOException {
+        if (fontPath.startsWith("classpath:")) {
+            // classpath 경로라면 실제 파일 경로로 변환
+            return new ClassPathResource(fontPath.substring(10)).getFile().getAbsolutePath();
+        } else {
+            // 절대 경로인 경우 그대로 반환
+            return fontPath;
+        }
     }
 
     @Transactional
@@ -575,4 +841,96 @@ public class SummaryService {
         });
     }
 
+    private Mono<Void> savePdfLinkToDatabase(String roomCode, String pdfPath) {
+        return Mono.fromCallable(() -> {
+            Optional<FinalSummary> summaryOptional = Optional.ofNullable(finalSummarizeRepository.findByRoom_RoomCode(roomCode));
+            if (summaryOptional.isPresent()) {
+                FinalSummary summary = summaryOptional.get();
+                summary.setPdfLink(pdfPath);
+                finalSummarizeRepository.save(summary);
+                log.info("PDF 링크 저장 완료: {}", pdfPath);
+            } else {
+                log.warn("PDF 저장 실패: roomCode {}에 해당하는 데이터가 없음", roomCode);
+            }
+            return null;
+        }).subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    public String getPdfLinkByRoomCode(String roomCode) {
+        FinalSummary summary = finalSummarizeRepository.findByRoom_RoomCode(roomCode);
+
+        if (summary == null) {
+            throw new IllegalArgumentException("해당 roomCode에 대한 PDF 링크가 존재하지 않습니다: " + roomCode);
+        }
+
+        return summary.getPdfLink();
+    }
+
+    public Mono<String> generateEndingMessage(Map<String, Object> request) {
+        String roomTitle = (String) request.get("roomTitle");
+
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role", "system", "content",
+                                "너는 발표 진행을 맡은 사회자고 이름은 미유야. " +
+                                        "발표회가 모두 끝났어. 발표회를 마무리하는 감동적이고 마음을 울릴만한 멘트를 해줘. " +
+                                        "발표자들을 응원하고 격려하는 내용을 포함해줘. 안녕하세요는 빼주면 좋겠어. 3~4줄 정도로 말해줘." +
+                                        "마지막으로 지금까지 사회자 미유였습니다. 감사합니다. 멘트를 해줘."),
+                        Map.of("role", "user", "content",
+                                String.format("'%s' 발표회를 마무리하는 멘트를 해줘.", roomTitle))
+                ),
+                "temperature", 0.7
+        );
+
+        return webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                        return (String) message.get("content");
+                    }
+                    return "발표회를 마무리합니다. 모든 발표자분들 수고하셨습니다.";
+                });
+    }
+
+    public Mono<String> endPresentation(Map<String, Object> request) {
+        String presenter = (String) request.get("presenter");
+        String transcripts = (String) request.get("transcripts");
+
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role", "system", "content", "너는 발표 진행을 맡은 사회자야." +
+                                "한 사람의 발표가 끝났어. 지금까지 누구의 발표였는지에 대한 멘트 이후, " +
+                                "발표 내용 한 줄 요약, 마지막으로 발표에 대한 소감을 한 문장으로 추가해 줘." +
+                                "3줄로 요약해서 하나의 문장으로 작성해줘" +
+                                "그리고 마지막으로 관리자는 질의응답을 시작하기 위해 질의응답 시작 버튼을 눌러주세요. 라고 안내해줘"),
+                        Map.of("role", "user", "content", String.format(
+                                "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n",
+                                presenter, transcripts
+                        ))
+                ),
+                "temperature", 0.7
+        );
+
+        // OpenAI API 호출
+        return webClient.post()
+                .uri("/v1/chat/completions")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(response -> {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                        return (String) message.get("content");
+                    }
+                    return "OPENAI 호출 오류";
+                });
+    }
 }

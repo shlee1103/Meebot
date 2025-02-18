@@ -20,11 +20,13 @@ interface UseTimerReturn {
   isLastMinute: boolean;
   resetTimer: () => void;
   isRunning: boolean;
+  isOvertime: boolean;
 }
 
 interface TimerSignalData {
   currentSeconds: number;
   isLastMinute: boolean;
+  isRunning: boolean;
   timerType: "presentation" | "qna";
   presentationTime: number;
   qnaTime: number;
@@ -37,13 +39,12 @@ interface NotificationData {
 
 export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps): UseTimerReturn => {
   const dispatch = useDispatch();
-
   const { presentationTime, qnaTime } = useSelector((state: RootState) => state.presentation);
-
   const [seconds, setSeconds] = useState(presentationTime * 60);
   const [isLastMinute, setIsLastMinute] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [lastMinuteNotified, setLastMinuteNotified] = useState(false);
+  const [isOvertime, setIsOvertime] = useState(false);
 
   // 1분 전 알림 메시지 생성
   const getLastMinuteMessage = () => {
@@ -54,6 +55,17 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
       return "질의응답 종료까지 1분 남았습니다!";
     }
     return "1분 남았습니다!";
+  };
+
+  // 발표종료 시 알림 메시지 생성
+  const getEndTimeMessage = () => {
+    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
+      return "주어진 발표 시간이 종료되었습니다! 발표자는 발표를 마무리해주세요";
+    }
+    if (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE) {
+      return "주어진 질의응답 시간이 종료되었습니다!";
+    }
+    return "주어진 시간이 종료되었습니다!";
   };
 
   // 알림 시그널 전송
@@ -103,7 +115,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
   };
 
   // 타이머 시그널 전송
-  const sendTimerSignal = (currentSeconds: number, isLastMin: boolean) => {
+  const sendTimerSignal = (currentSeconds: number, currentRunningInfo: boolean) => {
     if (!session || !isAdmin) return;
 
     const timerType = conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE ? "qna" : "presentation";
@@ -111,7 +123,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     session.signal({
       data: JSON.stringify({
         currentSeconds,
-        isLastMinute: isLastMin,
+        isRunning: currentRunningInfo,
         timerType,
         presentationTime,
         qnaTime,
@@ -144,42 +156,34 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
 
   // 타이머 시그널 수신 처리
   useEffect(() => {
-    if (!session || isAdmin) return;
+    if (!session) return;
 
     session.on("signal:timer-sync", (event) => {
       if (event.data) {
         const data: TimerSignalData = JSON.parse(event.data);
         dispatch(setPresentationTime(data.presentationTime));
         dispatch(setQnATime(data.qnaTime));
-        setSeconds(data.currentSeconds);
-        setIsLastMinute(data.isLastMinute);
-      }
-    });
-  }, [session, isAdmin]);
 
-  useEffect(() => {
-    const initialMinutes = getInitialMinutes();
-    setSeconds(initialMinutes * 60);
-    setIsLastMinute(false);
-    setLastMinuteNotified(false);
+        const currentRunningInfo = data.isRunning;
+        const newSeconds = data.currentSeconds;
 
-    if (isAdmin) {
-      sendTimerSignal(initialMinutes * 60, false);
-    }
-  }, [conferenceStatus, presentationTime, qnaTime]);
+        if (!currentRunningInfo) {
+          setSeconds(newSeconds);
+          setIsRunning(currentRunningInfo);
+          setIsLastMinute(false);
+          setLastMinuteNotified(false);
+          setIsOvertime(false);
+          return;
+        }
 
-  // 타이머 동작 (admin만 실행)
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    let interval: NodeJS.Timeout | undefined;
-
-    if (isRunning && seconds > 0) {
-      interval = setInterval(() => {
-        setSeconds((prev) => {
-          const newSeconds = prev - 1;
-
-          // 1분 전 알림
+        if (newSeconds === 0) {
+          const message = getEndTimeMessage();
+          sendNotificationSignal(message);
+          setIsOvertime(true);
+          setSeconds(newSeconds);
+        } else if (newSeconds > 0 && isOvertime) {
+          setSeconds(newSeconds);
+        } else {
           if (newSeconds === 60 && !lastMinuteNotified) {
             setIsLastMinute(true);
             setLastMinuteNotified(true);
@@ -187,28 +191,46 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
             sendNotificationSignal(message);
           }
 
-          sendTimerSignal(newSeconds, isLastMinute);
+          setSeconds(newSeconds);
+        }
+      }
+    });
+  }, [session]);
 
-          if (newSeconds <= 0) {
-            if (interval) clearInterval(interval);
-            return 0;
-          }
-          return newSeconds;
-        });
+  // 타이머 초기정보 셋팅
+  useEffect(() => {
+    if (isAdmin) {
+      const initialMinutes = getInitialMinutes();
+      sendTimerSignal(initialMinutes * 60, false);
+    }
+  }, [conferenceStatus, presentationTime, qnaTime]);
+
+  // 타이머 시그널링 동작 (admin만 실행)
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let interval: NodeJS.Timeout | undefined;
+
+    if (isRunning) {
+      interval = setInterval(() => {
+        if (seconds === 0) {
+          sendTimerSignal(1, true);
+        } else if (seconds > 0 && isOvertime) {
+          sendTimerSignal(seconds + 1, true);
+        } else {
+          sendTimerSignal(seconds - 1, true);
+        }
       }, 1000);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, seconds, isAdmin, lastMinuteNotified, conferenceStatus]);
+  }, [isRunning, seconds, isAdmin, lastMinuteNotified, conferenceStatus, isOvertime]);
 
   const resetTimer = () => {
-    const initialMinutes = getInitialMinutes();
-    setSeconds(initialMinutes * 60);
-    setIsLastMinute(false);
-    setLastMinuteNotified(false);
     if (isAdmin) {
+      const initialMinutes = getInitialMinutes();
       sendTimerSignal(initialMinutes * 60, false);
     }
   };
@@ -219,5 +241,6 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     resetTimer,
     isLastMinute,
     isRunning,
+    isOvertime,
   };
 };
