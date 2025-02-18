@@ -65,11 +65,36 @@ public class AuthController {
     @GetMapping("/oauth2/google")
     public ResponseEntity<Map<String, Object>> loginGoogle(@RequestParam String code) {
         try {
-            GoogleResponse googleResponse = getGoogleTokens(code);
-            GoogleInfResponse userInfo = getGoogleUserInfo(googleResponse.getId_token());
+            System.out.println("Received code: " + code);  // 받은 코드 출력
 
-            String accessToken = JwtUtil.createAccessToken(jwtSecretKey, ACCESS_TOKEN_EXPIRATION, userInfo.getEmail());
-            String refreshToken = JwtUtil.createRefreshToken(jwtSecretKey, REFRESH_TOKEN_EXPIRATION, userInfo.getEmail());
+            GoogleResponse googleResponse = getGoogleTokens(code);
+            System.out.println("Google Response: " + googleResponse);  // 토큰 응답 출력
+
+            GoogleInfResponse userInfo = getGoogleUserInfo(googleResponse.getId_token());
+            System.out.println("받아온 유저 이메일: " + userInfo.getEmail());
+
+            // token 확인 추가
+            String refreshToken;
+            String accessToken;
+            Optional<User> existingUser = userRepository.findByUserEmail(userInfo.getEmail());
+
+            if (existingUser.isPresent() && existingUser.get().getRefreshToken() != null) {
+                try {
+                    // 기존 refresh token 유효성 검증
+                    JwtUtil.validateToken(jwtSecretKey, existingUser.get().getRefreshToken());
+                    // 유효한 경우 기존 refresh token 사용
+                    refreshToken = existingUser.get().getRefreshToken();
+                } catch (Exception e) {
+                    // 유효하지 않은 경우 새로운 refresh token 생성
+                    refreshToken = JwtUtil.createRefreshToken(jwtSecretKey, REFRESH_TOKEN_EXPIRATION, userInfo.getEmail());
+                }
+            } else {
+                // 새 사용자이거나 refresh token이 없는 경우
+                refreshToken = JwtUtil.createRefreshToken(jwtSecretKey, REFRESH_TOKEN_EXPIRATION, userInfo.getEmail());
+            }
+
+
+            accessToken = JwtUtil.createAccessToken(jwtSecretKey, ACCESS_TOKEN_EXPIRATION, userInfo.getEmail());
 
             User user = updateOrCreateUser(userInfo, refreshToken);
 
@@ -117,7 +142,7 @@ public class AuthController {
         Optional<User> user = userRepository.findByUserEmail(userEmail);  // findByEmail → findByUserEmail
 
         if (user.isPresent()) {
-            user.get().setRefreshToken(null);
+//            user.get().setRefreshToken(null);
             userRepository.save(user.get());
             return ResponseEntity.ok("Logged out successfully");
         }

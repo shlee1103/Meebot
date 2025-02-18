@@ -10,7 +10,7 @@ interface ConferenceStatusButtonProps {
 const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
   conferenceStatus,
   changeConferenceStatus,
-  className = ''
+  className = '',
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -50,7 +50,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return "발표회를 종료하기 위해 클릭해주세요";
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
-        return "발표회를 시작하기 위해 클릭해주세요";
+        return "발표회를 시작하기 위해 클릭해주세요";                             
       default:
         return "";
     }
@@ -61,7 +61,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return {
-          ring: 'ring-[#6B4CFF]/30',
+          ring: 'ring-[#6B4CFF]/30', 
           border: 'border-[#6B4CFF]/20',
           shadow: 'shadow-[0_0_20px_rgba(107,76,255,0.2)]',
           iconColor: 'text-[#6B4CFF]'

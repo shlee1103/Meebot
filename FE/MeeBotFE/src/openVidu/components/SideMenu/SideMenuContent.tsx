@@ -24,7 +24,6 @@ interface SideMenuContentProps {
 }
 
 const SideMenuContent: React.FC<SideMenuContentProps> = ({ activeTab, participantsList, accumulatedScript, conferenceStatus, currentPresenter, myUserName, messages, sendMessage }) => {
-  // console.log("참가 목록 :", participantsList);
   return (
     <div className="h-[calc(100%-7rem)] overflow-y-auto px-5">
       {activeTab === "participants" && <Participant participantsList={participantsList} />}
