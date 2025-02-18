@@ -12,6 +12,7 @@ const UserVideoComponent: React.FC<Props> = ({ streamManager }) => {
   const getNicknameTag = (): string => {
     return JSON.parse(streamManager.stream.connection.data).clientData.name;
   };
+  const profileImage = JSON.parse(streamManager.stream.connection.data).clientData.image;
   const isCameraEnabled = streamManager.stream.videoActive;
   const isAudioEnabled = streamManager.stream.audioActive;
 
@@ -26,7 +27,7 @@ const UserVideoComponent: React.FC<Props> = ({ streamManager }) => {
           ) : (
             <div className="aspect-video bg-[#171f2e]">
               {localStorage.getItem("profile") ? (
-                <img src={localStorage.getItem("profile")!} alt="Profile" className="w-12 h-12 rounded-full absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]" />
+                <img src={profileImage} alt="Profile" className="w-12 h-12 rounded-full absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]" />
               ) : (
                 <img src={userIcon} alt="Profile" className="w-12 h-12 rounded-full absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]" />
               )}
