@@ -10,7 +10,8 @@ export const useStreamControls = (
   startScreenShareSession: () => Promise<void>,
   stopScreenShareSession: () => Promise<void>,
   isScreenShared: boolean,
-  conferenceStatus: string
+  conferenceStatus: string,
+  updateParticipantState: () => void,
 ) => {
   const isMicEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const isCameraEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
@@ -36,16 +37,27 @@ export const useStreamControls = (
 
   const toggleAudio = () => {
     if (publisher) {
-      const newAudioState = !isMicEnabled;
-      publisher.publishAudio(newAudioState);
-      dispatch(toggleMic());
+      try {
+        const newAudioState = !isMicEnabled;
+        publisher.publishAudio(newAudioState);
+        dispatch(toggleMic());
+        updateParticipantState();
+      } catch (error) {
+        console.error('Failed to toggle audio:', error);
+      }
     }
   };
 
   const toggleVideo = () => {
     if (publisher) {
-      publisher.publishVideo(!isCameraEnabled);
-      dispatch(toggleCamera());
+      try {
+        const newVideoState = !isCameraEnabled;
+        publisher.publishVideo(newVideoState);
+        dispatch(toggleCamera());
+        updateParticipantState();
+      } catch (error) {
+        console.error('Failed to toggle video:', error);
+      }
     }
   };
 

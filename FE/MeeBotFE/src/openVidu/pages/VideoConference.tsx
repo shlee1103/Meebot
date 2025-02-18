@@ -37,6 +37,7 @@ const VideoConference: React.FC = () => {
   const isOpen = useRef(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const updateParticipantsState = useOpenVidu().updateParticipantState;
 
   const {
     session,
@@ -63,7 +64,8 @@ const VideoConference: React.FC = () => {
     startScreenShareSession,
     stopScreenShareSession,
     isScreenShared,
-    conferenceStatus
+    conferenceStatus,
+    updateParticipantsState
   );
 
   const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);

@@ -25,7 +25,7 @@ interface SideMenuContentProps {
 
 const SideMenuContent: React.FC<SideMenuContentProps> = ({ activeTab, participantsList, accumulatedScript, conferenceStatus, currentPresenter, myUserName, messages, sendMessage }) => {
   return (
-    <div className="h-[calc(100%-7rem)] overflow-y-auto px-5">
+    <div className="h-[calc(100%-7rem)] overflow-y-auto px-5 custom-scrollbar">
       {activeTab === "participants" && <Participant participantsList={participantsList} />}
       {activeTab === "chat" && <Chat myUserName={myUserName} messages={messages} sendMessage={sendMessage} />}
       {activeTab === "script" && <Script conferenceStatus={conferenceStatus} currentPresenter={currentPresenter} accumulatedScript={accumulatedScript} />}
