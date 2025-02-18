@@ -31,13 +31,6 @@ const Participant: React.FC<ParticipantProps> = ({ participantsList }) => {
                 src={participant.image}
                 alt="profile"
               />
-              {/* 활성 상태 표시 */}
-              <div className={`absolute -bottom-0 -right-0 w-3 h-3 rounded-full 
-                ${participant.isAudioActive || participant.isVideoActive
-                ? 'bg-gradient-to-r from-cyan-400 to-teal-400 animate-pulse'
-                : 'bg-gray-500/50'
-                } border-1 border-white/10 shadow-md`}
-              />
             </div>
 
             {/* 참가자 정보 섹션 */}
