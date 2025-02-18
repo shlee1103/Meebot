@@ -146,7 +146,7 @@ export const useOpenVidu = () => {
       const messageData = JSON.parse(event.data || "{}");
 
       setMessages((prevMessages) => {
-        const lastMeeuMessage = [...prevMessages].reverse().find(msg => msg.sender.name === "MeeU");
+        const lastMeeuMessage = [...prevMessages].reverse().find((msg) => msg.sender.name === "MeeU");
 
         if (lastMeeuMessage && lastMeeuMessage.eventType === messageData.eventType) {
           return prevMessages;
