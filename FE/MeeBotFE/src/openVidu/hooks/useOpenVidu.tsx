@@ -145,7 +145,7 @@ export const useOpenVidu = () => {
       const messageData = JSON.parse(event.data || "{}");
 
       setMessages((prevMessages) => {
-        const lastMeeuMessage = [...prevMessages].reverse().find(msg => msg.sender.name === "MeeU");
+        const lastMeeuMessage = [...prevMessages].reverse().find((msg) => msg.sender.name === "MeeU");
 
         if (lastMeeuMessage && lastMeeuMessage.eventType === messageData.eventType) {
           return prevMessages;
@@ -170,7 +170,7 @@ export const useOpenVidu = () => {
       const tokenData = await getToken(sessionId);
       const userProfileImage = localStorage.getItem("profile");
       const userEmail = localStorage.getItem("email");
-      
+
       await mySession.connect(tokenData, { clientData: { name: myUserName, email: userEmail || "", image: userProfileImage, role: userRole } });
 
       const myPublisher = await OV.current.initPublisherAsync(undefined, {
