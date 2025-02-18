@@ -326,7 +326,7 @@ public class SummaryService {
                                         "                \"paragraph\": {\n" +
                                         "                    \"rich_text\": [{\n" +
                                         "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n\n\n\n" +
+                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }" +
                                         "                    }]\n" +
                                         "                }\n" +
                                         "            }\n" +
@@ -412,7 +412,8 @@ public class SummaryService {
                                         "\n" +
                                         "응답은 반드시 순수 JSON 형식이어야 하며, 불필요한 설명이나 마크다운, 백틱을 포함하지 않아야 합니다. " +
                                         "pdf_html json 내용에는 아무 내용도 들어가지 않아야 합니다." +
-                                        "notion_rich_text와 pdf_html은 구조와 내용이 완전히 동일해야 합니다."),
+                                        "notion_rich_text와 pdf_html은 구조와 내용이 완전히 동일해야 합니다." +
+                                        "주의: 응답은 반드시 위의 모든 규칙을 준수한 유효한 JSON이어야 합니다. 추가 텍스트나 설명 없이 JSON만 응답하세요."),
                         Map.of("role", "user", "content", jsonPayload)
                 ),
                 "temperature", 0.5
