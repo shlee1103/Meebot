@@ -57,7 +57,7 @@ public class SummaryService {
     private String logoPath;
 
     @Value("${pdf.font.path}")
-    private String fontPath;
+    private String fontBasePath;
 
     private final String gptModel = "gpt-3.5-turbo";
 
@@ -722,13 +722,19 @@ public class SummaryService {
         }
     }
 
-    public String getFontPath() throws IOException {
-        if (fontPath.startsWith("classpath:")) {
-            // classpath 경로라면 실제 파일 경로로 변환
-            return new ClassPathResource(fontPath.substring(10)).getFile().getAbsolutePath();
-        } else {
-            // 절대 경로인 경우 그대로 반환
-            return fontPath;
+    private String getFontPath() {
+        try {
+            if (fontBasePath.startsWith("classpath:")) {
+                String fontPath = fontBasePath.substring("classpath:".length()) + "/malgun.ttf";
+                ClassPathResource resource = new ClassPathResource(fontPath);
+                return resource.getFile().getAbsolutePath();
+            } else {
+                // 일반 파일 시스템 경로인 경우
+                return fontBasePath + "/malgun.ttf";
+            }
+        } catch (IOException e) {
+            log.error("Font file not found: {}", e.getMessage());
+            throw new RuntimeException("Font file not found: " + e.getMessage());
         }
     }
 
