@@ -54,7 +54,7 @@ public class SummaryService {
     private String pdfLocation;
 
     @Value("${pdf.logo.path}")
-    private String logoPath;
+    private String logoBasePath;
 
     @Value("${pdf.font.path}")
     private String fontBasePath;
@@ -349,7 +349,12 @@ public class SummaryService {
                                         "                    \"rich_text\": [{\n" +
                                         "                        \"type\": \"text\",\n" +
                                         "                        \"text\": {\n" +
-                                        "                            \"content\": \"🧑‍💻 [presenter_names를 쉼표로 구분하여 나열]\"\n" +
+                                        "                            \"content\": \"🧑‍💻 \"\n" +
+                                        "                        }\n" +
+                                        "                    }, {\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"[presenter_names를 쉼표로 구분하여 나열]\"\n" +
                                         "                        }\n" +
                                         "                    }]\n" +
                                         "                }\n" +
@@ -415,7 +420,8 @@ public class SummaryService {
                                         "3. 각 presenter의 section은 순서대로 생성되어야 합니다.\n" +
                                         "4. content는 번호를 매겨 분리해주세요.\n" +
                                         "5. questions는 Q/A 형식으로 표기해주세요.\n" +
-                                        "6. 불필요한 설명, 마크다운, 백틱 없이 순수 JSON만 반환하세요."
+                                        "6. presenter_names는 실제 발표자 이름으로 대체되어야 합니다.\n" +
+                                        "7. 불필요한 설명, 마크다운, 백틱 없이 순수 JSON만 반환하세요."
                         ),
                         Map.of("role", "user", "content", jsonPayload)
                 ),
@@ -690,13 +696,13 @@ public class SummaryService {
 
 
     public String getLogoPath() throws IOException {
-        if (logoPath.startsWith("classpath:")) {
-            // classpath 경로인 경우, 실제 파일 경로로 변환
-            ClassPathResource resource = new ClassPathResource(logoPath.substring(10)); // "classpath:" 제거
+        if (logoBasePath.startsWith("classpath:")) {
+            // 로컬
+            ClassPathResource resource = new ClassPathResource(logoBasePath.substring(10) + "/MeeBot_Logo.png");
             return "file:///" + resource.getFile().getAbsolutePath().replace("\\", "/");
         } else {
-            // 절대 경로인 경우 그대로 반환 (EC2 환경)
-            return "file:///" + logoPath.replace("\\", "/");
+            // 배포
+            return "file:///" + logoBasePath + "/MeeBot_Logo.png";
         }
     }
 
