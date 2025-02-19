@@ -13,7 +13,6 @@ export interface ParticipantInfo {
   image: string;
   isAudioActive: boolean;
   isVideoActive: boolean;
-  role: string;
 }
 
 export const useOpenVidu = () => {
@@ -70,29 +69,41 @@ export const useOpenVidu = () => {
     if (!session) return;
 
     session.on("streamCreated", (event) => {
+      console.log("스트림 생성:", {
+        type: event.stream.typeOfVideo,
+        streamId: event.stream.streamId,
+      });
+
+      // 모든 스트림을 구독
+      const subscriber = session.subscribe(event.stream, undefined);
       const connectionData = JSON.parse(event.stream.connection.data);
 
       if (event.stream.typeOfVideo === "SCREEN") {
-        const screenSubscriber = session.subscribe(event.stream, undefined);
-        setMainStreamManager(screenSubscriber);
-        setScreenShareStream(screenSubscriber);
-        setScreenSharingUser(connectionData.clientData);
-        return;
+        console.log("화면 공유 스트림 구독 시작");
+        setMainStreamManager(subscriber);
+        setScreenShareStream(subscriber);
+        setScreenSharingUser(connectionData.clientData.name);
       }
+
+      // 모든 스트림을 subscribers 배열에 추가 (화면 공유 포함)
+      setSubscribers((prevSubscribers) => {
+        // 중복 구독 방지
+        const isExisting = prevSubscribers.some((sub) => sub.stream.streamId === subscriber.stream.streamId);
+        if (!isExisting) {
+          return [...prevSubscribers, subscriber];
+        }
+        return prevSubscribers;
+      });
     });
 
     session.on("streamDestroyed", (event) => {
-      const destroyedUserInfo = JSON.parse(event.stream.connection.data);
-
-      if (destroyedUserInfo.clientData.role === "admin") {
-        leaveSession();
-        return;
-      }
+      console.log("스트림 제거:", {
+        type: event.stream.typeOfVideo,
+        streamId: event.stream.streamId,
+      });
 
       if (event.stream.typeOfVideo === "SCREEN") {
-        // subscribers 배열에서 화면 공유 스트림 제거
         setSubscribers((prevSubscribers) => prevSubscribers.filter((sub) => sub.stream.streamId !== event.stream.streamId));
-
         setScreenShareStream(undefined);
         setScreenSharingUser(undefined);
         if (originalPublisher) {
@@ -102,8 +113,12 @@ export const useOpenVidu = () => {
       }
       deleteSubscriber(event.stream.streamManager);
     });
-  }, [session, originalPublisher, deleteSubscriber]);
 
+    return () => {
+      session?.off("streamCreated");
+      session?.off("streamDestroyed");
+    };
+  }, [session, originalPublisher, deleteSubscriber]);
   const joinSession = async (sessionId: string, isVideoEnabled: boolean, isAudioEnabled: boolean) => {
     OV.current = new OpenVidu();
     const mySession = OV.current.initSession();
@@ -111,14 +126,6 @@ export const useOpenVidu = () => {
     mySession.on("connectionCreated", (event) => {
       const connection = event.connection;
       setConnectionUser((prev) => [...prev, connection]);
-    });
-
-    mySession.on("streamCreated", (event) => {
-      const subscriber = mySession.subscribe(event.stream, undefined);
-      if (event.stream.typeOfVideo === "SCREEN") {
-        setMainStreamManager(subscriber);
-      }
-      setSubscribers((subscribers) => [...subscribers, subscriber]);
     });
 
     mySession.on("signal:chat", (event) => {
@@ -146,7 +153,7 @@ export const useOpenVidu = () => {
       const messageData = JSON.parse(event.data || "{}");
 
       setMessages((prevMessages) => {
-        const lastMeeuMessage = [...prevMessages].reverse().find(msg => msg.sender.name === "MeeU");
+        const lastMeeuMessage = [...prevMessages].reverse().find((msg) => msg.sender.name === "MeeU");
 
         if (lastMeeuMessage && lastMeeuMessage.eventType === messageData.eventType) {
           return prevMessages;
@@ -255,59 +262,137 @@ export const useOpenVidu = () => {
     }
   };
 
-  // 화면공유 시작
   const startScreenShare = async () => {
     try {
-      if (!OV.current || !session) return;
-
-      const originalPublisher = publisher;
-
-      if (publisher) {
-        await session.unpublish(publisher);
+      // OV.current와 session의 null 체크
+      if (!OV.current || !session) {
+        console.error("OpenVidu 인스턴스 또는 세션이 존재하지 않습니다.");
+        return;
       }
 
-      const screenPublisher = await OV.current.initPublisherAsync(undefined, {
-        audioSource: undefined,
-        videoSource: "screen",
-        publishAudio: true,
-        publishVideo: true,
-        resolution: "1920x1080",
-        frameRate: 15,
-        mirror: false,
+      const openViduInstance = OV.current;
+
+      // 1. 기존 퍼블리셔 제거
+      if (publisher) {
+        try {
+          await session.unpublish(publisher);
+          setPublisher(undefined);
+          setMainStreamManager(undefined);
+        } catch (unpublishError) {
+          console.error("퍼블리셔 언발행 중 오류:", unpublishError);
+        }
+      }
+
+      // 2. 화면 공유 스트림을 미리 가져옴
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false,
       });
 
-      if (screenPublisher) {
-        await session.publish(screenPublisher);
-        setScreenShareStream(screenPublisher);
-        setScreenSharingUser(myUserName);
-        setMainStreamManager(screenPublisher);
-        setPublisher(originalPublisher);
+      // navigator.mediaDevices.getDisplayMedia를 임시로 대체
+      const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+      navigator.mediaDevices.getDisplayMedia = async () => screenStream;
+
+      // 3. 화면 공유 퍼블리셔 생성
+      const screenPublisher = await openViduInstance.initPublisherAsync(undefined, {
+        videoSource: "screen",
+        publishVideo: true,
+        publishAudio: false,
+        resolution: "1280x720",
+        frameRate: 15,
+        insertMode: "APPEND",
+      });
+
+      // getDisplayMedia를 원래대로 복구
+      navigator.mediaDevices.getDisplayMedia = originalGetDisplayMedia;
+
+      // 4. 세션에 발행
+      await session.publish(screenPublisher);
+
+      // 5. 상태 업데이트
+      setMainStreamManager(screenPublisher);
+      setPublisher(screenPublisher);
+      setScreenShareStream(screenPublisher);
+      setScreenSharingUser(myUserName);
+
+      // 6. 화면 공유 종료 감지
+      screenStream.getTracks().forEach((track) => {
+        track.addEventListener("ended", () => {
+          console.log("화면 공유 종료");
+          stopScreenShare();
+        });
+      });
+    } catch (error) {
+      // getDisplayMedia를 원래대로 복구 (에러 발생 시에도)
+      const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+      if (navigator.mediaDevices.getDisplayMedia !== originalGetDisplayMedia) {
+        navigator.mediaDevices.getDisplayMedia = originalGetDisplayMedia;
       }
-    } catch {
-      if (publisher && session) {
-        await session.publish(publisher);
+
+      console.error("화면 공유 중 전체 오류:", error);
+
+      // 오류 시 복구 시도
+      if (session && OV.current) {
+        try {
+          // 원래 비디오/오디오 퍼블리셔 복원
+          const newPublisher = await OV.current.initPublisherAsync(undefined, {
+            audioSource: undefined,
+            videoSource: undefined,
+            publishAudio: true,
+            publishVideo: true,
+            resolution: "1920x1080",
+            frameRate: 15,
+            insertMode: "APPEND",
+            mirror: false,
+          });
+
+          await session.publish(newPublisher);
+          setMainStreamManager(newPublisher);
+          setPublisher(newPublisher);
+        } catch (recoveryError) {
+          console.error("복구 시도 중 오류:", recoveryError);
+        }
       }
     }
   };
 
-  // 화면공유 종료
   const stopScreenShare = async () => {
     if (!session) return;
 
     try {
+      console.log("화면 공유 종료 시작");
+
+      // 1. 화면 공유 스트림 중단
       if (screenShareStream) {
-        await session.unpublish(screenShareStream as Publisher);
+        if (screenShareStream instanceof Publisher) {
+          await session.unpublish(screenShareStream);
+        }
         setScreenShareStream(undefined);
         setScreenSharingUser(undefined);
       }
 
-      if (publisher) {
-        await session.publish(publisher);
-        setMainStreamManager(publisher);
-        publisher.publishVideo(true);
+      // 2. 새로운 통합 퍼블리셔 생성
+      if (OV.current) {
+        const newPublisher = await OV.current.initPublisherAsync(undefined, {
+          audioSource: undefined,
+          videoSource: undefined,
+          publishAudio: true,
+          publishVideo: true,
+          resolution: "1920x1080",
+          frameRate: 30,
+          insertMode: "APPEND",
+          mirror: false,
+        });
+
+        await session.publish(newPublisher);
+        setMainStreamManager(newPublisher);
+        setPublisher(newPublisher);
+        setOriginalPublisher(newPublisher);
       }
+
+      console.log("화면 공유 종료 완료");
     } catch (error) {
-      console.error("Error stopping screen share:", error);
+      console.error("화면 공유 종료 에러:", error);
     }
   };
 
@@ -328,7 +413,7 @@ export const useOpenVidu = () => {
     navigate("/");
   }, [session]);
 
-  const updateParticipantState = useCallback(() => {
+  useEffect(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);
       const isAudioActive = streamManager.stream.audioActive;
@@ -340,7 +425,6 @@ export const useOpenVidu = () => {
         email: clientData.email,
         isAudioActive,
         isVideoActive,
-        role: clientData.role,
       };
     };
 
@@ -349,45 +433,25 @@ export const useOpenVidu = () => {
     setParticipants(allParticipants);
   }, [subscribers, publisher]);
 
-  useEffect(() => {
-    updateParticipantState();
-  }, [updateParticipantState]);
-
-  useEffect(() => {
-    if (session) {
-      session.on('streamPropertyChanged', (event: any) => {
-        if (event.changedProperty === 'audioActive' || 
-            event.changedProperty === 'videoActive') {
-          updateParticipantState();
-        }
-      });
-
-      return () => {
-        session.off('streamPropertyChanged');
-      };
-    }
-  }, [session, updateParticipantState]);
-
-return {
-  mySessionId,
-  setMySessionId,
-  myUserName,
-  session,
-  mainStreamManager,
-  setMainStreamManager,
-  publisher,
-  subscribers,
-  joinSession,
-  leaveSession,
-  participants,
-  startScreenShare,
-  stopScreenShare,
-  isScreenShared: !!screenShareStream,
-  amISharing: screenSharingUser === myUserName,
-  connectionUser,
-  setConnectionUser,
-  messages,
-  sendMessage,
-  updateParticipantState,
-};
+  return {
+    mySessionId,
+    setMySessionId,
+    myUserName,
+    session,
+    mainStreamManager,
+    setMainStreamManager,
+    publisher,
+    subscribers,
+    joinSession,
+    leaveSession,
+    participants,
+    startScreenShare,
+    stopScreenShare,
+    isScreenShared: !!screenShareStream,
+    amISharing: screenSharingUser === myUserName,
+    connectionUser,
+    setConnectionUser,
+    messages,
+    sendMessage,
+  };
 };
