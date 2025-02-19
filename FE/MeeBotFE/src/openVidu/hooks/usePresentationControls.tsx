@@ -94,22 +94,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
     setCurrentPresentationData(presentationJson);
 
-    // 파일명 생성: "presentation_발표자명_타임스탬프.json"
-    const fileName = `presentation_${presenter}_${new Date().getTime()}.json`;
-    // JSON 데이터 생성
-    const json = JSON.stringify(presentationJson, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    // 다운로드 링크 생성 및 실행
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    // 다운로드 트리거 및 정리
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-
     // 백엔드로 요약 요청 보내기
     try {
       const response = await interimSummarize(presentationJson);
@@ -120,16 +104,13 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           summary: `[${currentPresenter?.name}님의 발표 요약]\n${response.summation.text}`,
           question: `[${currentPresenter?.name}님에 대한 질문]\n${response.summation.question}`,
           sender: { name: "MeeU", image: ChatMEEU },
-          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`
+          eventType: `PRESENTATION_SUMMARY_AND_QUESTION_${presenter}_${currentPresenterIndex}`,
         }),
         type: "MEEU_ANNOUNCEMENT",
       });
     } catch (error) {
       console.error("Error sending presentation data:", error);
     }
-
-    // 누적 스크립트 초기화
-    setAccumulatedScript("");
   };
 
   // QnA 스크립트 JSON 저장 함수 수정
@@ -152,19 +133,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
     try {
       const message = await saveQnA(qnaRequest);
       console.log("QnA 저장 성공:", message);
-
-      // 로컬 파일 저장
-      const fileName = `qna_session_${sessionId}_${currentPresenterIndex + 1}.json`;
-      const json = JSON.stringify(qnaRequest, null, 2);
-      const blob = new Blob([json], { type: "application/json" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
     } catch (error) {
       if (error instanceof Error) {
         console.error("QnA 저장 실패:", error.message);
@@ -186,9 +154,6 @@ export const usePresentationControls = (session: Session | undefined, myUserName
 
   // # 발표회 상태에 따라 수행되는 signal
   const changeConferenceStatus = async (currentStatus: string) => {
-    if (currentStatus === CONFERENCE_STATUS.PRESENTATION_READY) {
-      setAccumulatedScript(""); // 스크립트 초기화
-    }
     if (currentStatus === CONFERENCE_STATUS.CONFERENCE_WAITING) {
       setCurrentPresenterIndex(0);
       session?.signal({

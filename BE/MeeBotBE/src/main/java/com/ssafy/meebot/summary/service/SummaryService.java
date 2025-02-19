@@ -54,10 +54,10 @@ public class SummaryService {
     private String pdfLocation;
 
     @Value("${pdf.logo.path}")
-    private String logoPath;
+    private String logoBasePath;
 
     @Value("${pdf.font.path}")
-    private String fontPath;
+    private String fontBasePath;
 
     private final String gptModel = "gpt-3.5-turbo";
 
@@ -313,25 +313,20 @@ public class SummaryService {
                 "model", gptModel,
                 "messages", List.of(
                         Map.of("role", "system", "content",
-                                "당신은 발표 진행 사회자입니다. 발표회가 종료되었고, 오늘 발표회의 내용을 요약본으로 정리해야 합니다.\n" +
-                                        "주어진 JSON 데이터를 기반으로 아래와 같은 구조의 JSON을 생성해주세요. " +
-                                        "백틱(`)이나 마크다운 코드 블록(```json) 없이 순수 JSON만 응답하세요.\n" +
-                                        "주어진 JSON 데이터를 기반으로 정확히 구조화된 JSON으로 응답하세요.\n" +
-                                        "pdf_html은 xhtml로 작성하세요.\n" +
-                                        "각 presenter의 content와 questions는 입력된 순서대로 유지되어야 합니다.\n" +
+                                "당신은 발표 진행 사회자입니다. 발표회 종료 후 요약을 JSON 형식으로 작성합니다.\n" +
+                                        "반드시 아래 형식의 JSON을 정확하게 생성하세요:\n" +
+                                        "각 presenter마다 발표자 이름, 발표 요약, 질의응답 블록이 순서대로 반복되어야 합니다.\\n" +
                                         "\n" +
                                         "{\n" +
                                         "    \"notion_rich_text\": {\n" +
                                         "        \"properties\": {\n" +
                                         "            \"title\": {\n" +
-                                        "                \"title\": [\n" +
-                                        "                    {\n" +
-                                        "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": {\n" +
-                                        "                            \"content\": \"[room_title 값]\"\n" +
-                                        "                        }\n" +
+                                        "                \"title\": [{\n" +
+                                        "                    \"type\": \"text\",\n" +
+                                        "                    \"text\": {\n" +
+                                        "                        \"content\": \"[room_title]\"\n" +
                                         "                    }\n" +
-                                        "                ]\n" +
+                                        "                }]\n" +
                                         "            }\n" +
                                         "        },\n" +
                                         "        \"children\": [\n" +
@@ -341,7 +336,9 @@ public class SummaryService {
                                         "                \"paragraph\": {\n" +
                                         "                    \"rich_text\": [{\n" +
                                         "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": { \"content\": \"📅 [date를 'YYYY년 MM월 DD일' 형식으로 변환]\" }\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"📅 [YYYY년 MM월 DD일]\"\n" +
+                                        "                        }\n" +
                                         "                    }]\n" +
                                         "                }\n" +
                                         "            },\n" +
@@ -351,103 +348,84 @@ public class SummaryService {
                                         "                \"paragraph\": {\n" +
                                         "                    \"rich_text\": [{\n" +
                                         "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n\n\n\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"🧑‍💻 \"\n" +
+                                        "                        }\n" +
+                                        "                    }, {\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"[presenter_names를 쉼표로 구분하여 나열]\"\n" +
+                                        "                        }\n" +
                                         "                    }]\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"paragraph\",\n" +
+                                        "                \"paragraph\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"\\n\\n 🧑‍💻 [presenter_name]\"\n" +
+                                        "                        }\n" +
+                                        "                    }]\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"callout\",\n" +
+                                        "                \"callout\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \"발표 요약\\n\\n n1. [첫 번째 문장]\\n2. [두 번째 문장]\\n...\"\n" +
+                                        "                        }\n" +
+                                        "                    }],\n" +
+                                        "                    \"icon\": { \"emoji\": \"✨\" }\n" +
+                                        "                }\n" +
+                                        "            },\n" +
+                                        "            {\n" +
+                                        "                \"object\": \"block\",\n" +
+                                        "                \"type\": \"callout\",\n" +
+                                        "                \"callout\": {\n" +
+                                        "                    \"rich_text\": [{\n" +
+                                        "                        \"type\": \"text\",\n" +
+                                        "                        \"text\": {\n" +
+                                        "                            \"content\": \" 질의응답\\n\\nQ: [질문]\\nA: [답변]\\n\\n...\"\n" +
+                                        "                        }\n" +
+                                        "                    }],\n" +
+                                        "                    \"icon\": { \"emoji\": \"💬\" }\n" +
                                         "                }\n" +
                                         "            }\n" +
                                         "        ]\n" +
                                         "    },\n" +
-                                        "    \"pdf_html\": {" +
+                                        "    \"pdf_html\": {\n" +
                                         "        \"properties\": {\n" +
                                         "            \"title\": {\n" +
-                                        "                \"title\": [\n" +
-                                        "                    {\n" +
-                                        "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": {\n" +
-                                        "                            \"content\": \"[room_title 값]\"\n" +
-                                        "                        }\n" +
+                                        "                \"title\": [{\n" +
+                                        "                    \"type\": \"text\",\n" +
+                                        "                    \"text\": {\n" +
+                                        "                        \"content\": \"[room_title]\"\n" +
                                         "                    }\n" +
-                                        "                ]\n" +
+                                        "                }]\n" +
                                         "            }\n" +
                                         "        },\n" +
-                                        "        \"children\": [\n" +
-                                        "            {\n" +
-                                        "                \"object\": \"block\",\n" +
-                                        "                \"type\": \"paragraph\",\n" +
-                                        "                \"paragraph\": {\n" +
-                                        "                    \"rich_text\": [{\n" +
-                                        "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": { \"content\": \"📅 [date를 'YYYY년 MM월 DD일' 형식으로 변환]\" }\n" +
-                                        "                    }]\n" +
-                                        "                }\n" +
-                                        "            },\n" +
-                                        "            {\n" +
-                                        "                \"object\": \"block\",\n" +
-                                        "                \"type\": \"paragraph\",\n" +
-                                        "                \"paragraph\": {\n" +
-                                        "                    \"rich_text\": [{\n" +
-                                        "                        \"type\": \"text\",\n" +
-                                        "                        \"text\": { \"content\": \"\uD83D\uDC68\u200D\uD83D\uDCBB [모든 presenter를 쉼표로 구분하여 나열]\" }\n" +
-                                        "                    }]\n" +
-                                        "                }\n" +
-                                        "            }\n" +
-                                        "        ]\n" +
+                                        "        \"children\": []\n" +
                                         "    }\n" +
                                         "}\n" +
                                         "\n" +
-                                        "그 다음, 각 presenter에 대해 순서대로 다음 구조를 notion_rich_text에 추가:\n" +
-                                        "\n" +
-                                        "1. 발표자 표시:\n" +
-                                        "{\n" +
-                                        "    \"object\": \"block\",\n" +
-                                        "    \"type\": \"paragraph\",\n" +
-                                        "    \"paragraph\": {\n" +
-                                        "        \"rich_text\": [\n" +
-                                        "            {\n" +
-                                        "                \"type\": \"text\",\n" +
-                                        "                \"text\": { \"content\": \"\\n\\n \uD83D\uDC68\u200D\uD83D\uDCBB \" }\n" +
-                                        "            },\n" +
-                                        "            {\n" +
-                                        "                \"type\": \"text\",\n" +
-                                        "                \"text\": { \"content\": \"[presenter 이름]\" },\n" +
-                                        "            }\n" +
-                                        "        ]\n" +
-                                        "    }\n" +
-                                        "}\n"
-                                        +
-                                        "\n" +
-                                        "2. 발표 내용 요약:\n" +
-                                        "{\n" +
-                                        "    \"object\": \"block\",\n" +
-                                        "    \"type\": \"callout\",\n" +
-                                        "    \"callout\": {\n" +
-                                        "        \"rich_text\": [{\n" +
-                                        "            \"type\": \"text\",\n" +
-                                        "            \"text\": { \"content\": \"발표 요약\\n[presenter의 content를 문장단위로 적절히 분리하여 줄바꿈하고, 숫자로 순서를 부여하여 표시]\" }\n\n" +
-                                        "        }],\n" +
-                                        "        \"icon\": { \"emoji\": \"✨\" }\n" +
-                                        "    }\n" +
-                                        "}\n" +
-                                        "\n" +
-                                        "3. 질의응답 (questions가 있는 경우):\n" +
-                                        "{\n" +
-                                        "    \"object\": \"block\",\n" +
-                                        "    \"type\": \"callout\",\n" +
-                                        "    \"callout\": {\n" +
-                                        "        \"rich_text\": [{\n" +
-                                        "            \"type\": \"text\",\n" +
-                                        "            \"text\": { \"content\": \"질의응답\\n[presenter의 questions를 Q: ,\n A: 형식으로 줄바꿈하여 표시]\" }\n" +
-                                        "        }],\n" +
-                                        "        \"icon\": { \"emoji\": \"💬\" }\n" +
-                                        "    }\n" +
-                                        "}\n" +
-                                        "\n" +
-                                        "응답은 반드시 순수 JSON 형식이어야 하며, 불필요한 설명이나 마크다운, 백틱을 포함하지 않아야 합니다. " +
-                                        "pdf_html json 내용에는 아무 내용도 들어가지 않아야 합니다." +
-                                        "notion_rich_text와 pdf_html은 구조와 내용이 완전히 동일해야 합니다."),
+                                        "주의사항:\n" +
+                                        "1. JSON 형식을 정확히 지켜주세요.\n" +
+                                        "2. title 객체의 구조가 정확해야 합니다.\n" +
+                                        "3. 각 presenter의 section은 순서대로 생성되어야 합니다.\n" +
+                                        "4. content는 번호를 매겨 분리해주세요.\n" +
+                                        "5. questions는 Q/A 형식으로 표기해주세요.\n" +
+                                        "6. presenter_names는 실제 발표자 이름으로 대체되어야 합니다.\n" +
+                                        "7. 불필요한 설명, 마크다운, 백틱 없이 순수 JSON만 반환하세요."
+                        ),
                         Map.of("role", "user", "content", jsonPayload)
                 ),
-                "temperature", 0.5
+                "temperature", 0
         );
 
 
@@ -718,23 +696,29 @@ public class SummaryService {
 
 
     public String getLogoPath() throws IOException {
-        if (logoPath.startsWith("classpath:")) {
-            // classpath 경로인 경우, 실제 파일 경로로 변환
-            ClassPathResource resource = new ClassPathResource(logoPath.substring(10)); // "classpath:" 제거
+        if (logoBasePath.startsWith("classpath:")) {
+            // 로컬
+            ClassPathResource resource = new ClassPathResource(logoBasePath.substring(10) + "/MeeBot_Logo.png");
             return "file:///" + resource.getFile().getAbsolutePath().replace("\\", "/");
         } else {
-            // 절대 경로인 경우 그대로 반환 (EC2 환경)
-            return "file:///" + logoPath.replace("\\", "/");
+            // 배포
+            return "file:///" + logoBasePath + "/MeeBot_Logo.png";
         }
     }
 
-    public String getFontPath() throws IOException {
-        if (fontPath.startsWith("classpath:")) {
-            // classpath 경로라면 실제 파일 경로로 변환
-            return new ClassPathResource(fontPath.substring(10)).getFile().getAbsolutePath();
-        } else {
-            // 절대 경로인 경우 그대로 반환
-            return fontPath;
+    private String getFontPath() {
+        try {
+            if (fontBasePath.startsWith("classpath:")) {
+                String fontPath = fontBasePath.substring("classpath:".length()) + "/malgun.ttf";
+                ClassPathResource resource = new ClassPathResource(fontPath);
+                return resource.getFile().getAbsolutePath();
+            } else {
+                // 일반 파일 시스템 경로인 경우
+                return fontBasePath + "/malgun.ttf";
+            }
+        } catch (IOException e) {
+            log.error("Font file not found: {}", e.getMessage());
+            throw new RuntimeException("Font file not found: " + e.getMessage());
         }
     }
 
