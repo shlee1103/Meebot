@@ -28,7 +28,7 @@ interface QnAMessage {
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
   const [showFinishPopup, setShowFinishPopup] = useState<boolean>(false);
   const { sessionId, myUserName } = useParams();
   const hasShownLoading = useRef<boolean>(false);
@@ -446,7 +446,7 @@ const VideoConference: React.FC = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`fixed top-[50%] right-0 transform -translate-y-1/2
               w-7 h-28 
-              bg-[#111827] hover:bg-[#1f2937]
+              bg-[#171F2E] hover:bg-[#1f2937]
               transition-all duration-300 ease-in-out
               items-center justify-center
               border-y border-l border-[#1f2937]
