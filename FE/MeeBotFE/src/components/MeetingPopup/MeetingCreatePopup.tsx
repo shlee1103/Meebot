@@ -18,7 +18,7 @@ const MeetingCreatePopup: React.FC<MeetingCreatePopupProps> = ({ onClose }) => {
   const [isTitleHidden, setIsTitleHidden] = useState(false);
   const [isFullyHidden, setIsFullyHidden] = useState(true);
   const [sessionId, setSessionId] = useState("");
-  const BASE_URL = "http://meebot.site/meeting-setting"; // 화상 모임 참가 링크 복사를 위한 임시 주소
+  const BASE_URL = "http://meebot.site/meeting-setting";
 
   const navigate = useNavigate();
 
@@ -122,7 +122,6 @@ const MeetingCreatePopup: React.FC<MeetingCreatePopupProps> = ({ onClose }) => {
                   </button>
                 </div>
                 <div className="flex-1 flex flex-row items-center py-3 px-4 bg-[#334155] rounded-lg gap-3 min-w-0">
-                  {/* Todo: 실제 참가 링크 변경 */}
                   <Sm className="text-[#DDDDDD] font-semibold truncate">
                     {BASE_URL}/{sessionId}
                   </Sm>
