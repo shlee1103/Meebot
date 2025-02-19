@@ -14,7 +14,6 @@ const UserVideoComponent: React.FC<Props> = ({ streamManager }) => {
   };
   const profileImage = JSON.parse(streamManager.stream.connection.data).clientData.image;
   const isCameraEnabled = streamManager.stream.videoActive;
-  const isAudioEnabled = streamManager.stream.audioActive;
 
   return (
     <>
@@ -25,7 +24,7 @@ const UserVideoComponent: React.FC<Props> = ({ streamManager }) => {
               <OpenViduVideoComponent streamManager={streamManager} />
             </div>
           ) : (
-            <div className="aspect-video bg-[#171f2e]">
+            <div className="aspect-video bg-[#111827]">
               {localStorage.getItem("profile") ? (
                 <img src={profileImage} alt="Profile" className="w-12 h-12 rounded-full absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]" />
               ) : (
@@ -40,15 +39,6 @@ const UserVideoComponent: React.FC<Props> = ({ streamManager }) => {
           >
             <Mn className="text-white text-sm">{getNicknameTag()}</Mn>
           </div>
-
-          {!isAudioEnabled && (
-            <div
-              className="absolute top-2 right-2 px-2 py-0.5 
-              bg-red-500/80 backdrop-blur-[2px] rounded-md"
-            >
-              <Mn className="text-white text-sm">음소거</Mn>
-            </div>
-          )}
         </div>
       ) : null}
     </>
