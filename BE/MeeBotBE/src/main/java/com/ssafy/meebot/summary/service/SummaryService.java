@@ -161,6 +161,13 @@ public class SummaryService {
 
         Room room = roomRepository.findByRoomCode(roomCode);
 
+        // 기존 데이터가 있는지 확인
+        Optional<FinalSummary> existingSummary = finalSummarizeRepository.findByRoomForUpdate(room);
+
+        if (existingSummary.isPresent()) {
+            throw new IllegalStateException("이미 저장된 FinalSummary가 있습니다.");
+        }
+
         if (room == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(

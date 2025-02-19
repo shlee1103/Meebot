@@ -21,12 +21,16 @@ public class ParticipantService {
     public void saveParticipants(String roomCode, List<String> userEmails) {
         log.info("Saving participants for room: {}", roomCode);
         userEmails.forEach(email -> {
-            Participant participant = Participant.builder()
-                    .roomCode(roomCode)
-                    .userEmail(email)
-                    .build();
-            participantRepository.save(participant);
-            log.info("Saved participant. Room: {}, Email: {}", roomCode, email);
+            if (!participantRepository.existsByRoomCodeAndUserEmail(roomCode, email)) {
+                Participant participant = Participant.builder()
+                        .roomCode(roomCode)
+                        .userEmail(email)
+                        .build();
+                participantRepository.save(participant);
+                log.info("Saved participant. Room: {}, Email: {}", roomCode, email);
+            } else {
+                log.info("Participant already exists. Room: {}, Email: {}", roomCode, email);
+            }
         });
     }
 }

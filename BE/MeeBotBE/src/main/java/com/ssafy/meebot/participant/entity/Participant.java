@@ -18,7 +18,7 @@ public class Participant {
     @Column(name = "participant_id")
     private Integer participantId;  // id -> participantId
 
-    @Column(name = "room_code", length = 10)
+    @Column(name = "room_code", length = 10, unique = true)
     private String roomCode;
 
     @Column(name = "user_email", length = 50)

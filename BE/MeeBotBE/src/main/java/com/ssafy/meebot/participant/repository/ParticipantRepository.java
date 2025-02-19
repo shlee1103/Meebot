@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface ParticipantRepository extends JpaRepository<Participant, Integer> {
     List<Participant> findByUserEmail(String email);
     List<Participant> findByRoomCode(String roomCode);
+
+    boolean existsByRoomCodeAndUserEmail(String roomCode, String email);
 }
