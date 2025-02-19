@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Session } from "openvidu-browser";
-import { toast } from "react-toastify";
 import { RootState } from "../../stores/store";
 import { CONFERENCE_STATUS } from "../constants/conferenceConstants";
 import { useDispatch } from "react-redux";
 import { setPresentationTime, setQnATime } from "../../stores/store";
+import { showToast } from "../../components/common/ToastConfig";
 
 interface UseTimerProps {
   conferenceStatus: string;
@@ -30,10 +30,11 @@ interface TimerSignalData {
   timerType: "presentation" | "qna";
   presentationTime: number;
   qnaTime: number;
+  conferenceStatus: string;
 }
 
 interface NotificationData {
-  message: string;
+  messageList: string[];
   status: string;
 }
 
@@ -47,34 +48,34 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
   const [isOvertime, setIsOvertime] = useState(false);
 
   // 1분 전 알림 메시지 생성
-  const getLastMinuteMessage = () => {
-    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
-      return "발표 종료까지 1분 남았습니다!";
+  const getLastMinuteMessage = (status: string) => {
+    if (status === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
+      return ["발표 종료까지 1분 남았습니다!"];
     }
-    if (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE) {
-      return "질의응답 종료까지 1분 남았습니다!";
+    if (status === CONFERENCE_STATUS.QNA_ACTIVE) {
+      return ["질의응답 종료까지 1분 남았습니다!"];
     }
-    return "1분 남았습니다!";
+    return ["1분 남았습니다!"];
   };
 
   // 발표종료 시 알림 메시지 생성
-  const getEndTimeMessage = () => {
-    if (conferenceStatus === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
-      return "주어진 발표 시간이 종료되었습니다! 발표자는 발표를 마무리해주세요";
+  const getEndTimeMessage = (status: string) => {
+    if (status === CONFERENCE_STATUS.PRESENTATION_ACTIVE) {
+      return ["주어진 발표 시간이 종료되었습니다!", "발표자는 발표를 마무리해주세요"];
     }
-    if (conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE) {
-      return "주어진 질의응답 시간이 종료되었습니다!";
+    if (status === CONFERENCE_STATUS.QNA_ACTIVE) {
+      return ["주어진 질의응답 시간이 종료되었습니다!"];
     }
-    return "주어진 시간이 종료되었습니다!";
+    return ["주어진 시간이 종료되었습니다!"];
   };
 
   // 알림 시그널 전송
-  const sendNotificationSignal = (message: string) => {
+  const sendNotificationSignal = (messageList: string[]) => {
     if (!session || !isAdmin) return;
 
     session.signal({
       data: JSON.stringify({
-        message,
+        messageList,
         status: conferenceStatus,
       } as NotificationData),
       type: "timer-notification",
@@ -88,7 +89,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     const handleNotification = (event: any) => {
       if (event.data) {
         const data: NotificationData = JSON.parse(event.data);
-        toast.error(data.message);
+        showToast(data.messageList);
       }
     };
 
@@ -127,6 +128,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
         timerType,
         presentationTime,
         qnaTime,
+        conferenceStatus,
       } as TimerSignalData),
       type: "timer-sync",
     });
@@ -177,7 +179,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
         }
 
         if (newSeconds === 0) {
-          const message = getEndTimeMessage();
+          const message = getEndTimeMessage(data.conferenceStatus);
           sendNotificationSignal(message);
           setIsOvertime(true);
           setSeconds(newSeconds);
@@ -187,7 +189,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
           if (newSeconds === 60 && !lastMinuteNotified) {
             setIsLastMinute(true);
             setLastMinuteNotified(true);
-            const message = getLastMinuteMessage();
+            const message = getLastMinuteMessage(data.conferenceStatus);
             sendNotificationSignal(message);
           }
 
