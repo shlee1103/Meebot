@@ -110,13 +110,13 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
         className={`bg-gradient-to-b from-[#1C2135] to-[#171F2E] w-[650px] h-[85%]
         rounded-2xl flex flex-col shadow-2xl border border-[#2A3347]/30
         transition-all duration-300 ease-out
-        ${mounted ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-95"}`}
+        ${mounted ? "opacity-100" : "opacity-0"}`}
       >
         {/* Header */}
         <div
           className={`px-8 pt-8 pb-6 border-b border-[#2A3347]/30
           transition-all duration-500 delay-100
-          ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          ${mounted ? "opacity-100" : "opacity-0"}`}
         >
           <H3 className="text-white mb-3">발표회 설정</H3>
           <Mn className="text-gray-300">
@@ -129,7 +129,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
         <div
           className={`flex-1 overflow-y-auto px-8 py-6 space-y-12 custom-scrollbar
           transition-all duration-500 delay-200
-          ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+          ${mounted ? "opacity-100" : "opacity-0"}`}
         >
           {/* 타이머 설정 */}
           <section className="space-y-4">

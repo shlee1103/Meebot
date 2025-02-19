@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateRoomTitle } from "../../../apis/room";
 import { RootState, setMeetingTitle, setMeetingSettingOpenModal } from "../../../stores/store";
 import { Session } from "openvidu-browser";
-import { Sm, Mn } from "../../../components/common/Typography";
-import information from "../../assets/images/information.png";
+import { Sm } from "../../../components/common/Typography";
+import { BsInfoCircleFill } from "react-icons/bs";
 
 interface MeetingTitleProps {
   roomCode: string;
@@ -81,9 +81,9 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
   };
 
   return (
-    <div ref={titleRef} className="relative w-full max-w-none rounded font-pretendard text-lg font-semibold">
+    <div ref={titleRef} className="relative w-full max-w-none font-pretendard">
       {!isOpen ? (
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-4">
           <div
             onClick={() => {
               setIsOpen(true);
@@ -91,110 +91,155 @@ const MeetingTitle: React.FC<MeetingTitleProps> = ({ roomCode, session }) => {
             }}
             className="font-pretendard cursor-pointer flex-1 mr-3"
           >
-            <Sm className="text-[#FFFFFF] break-words leading-relaxed line-clamp-2">{meetingTitle}</Sm>
+            <p className="text-[#FFFFFF] break-words leading-relaxed line-clamp-2 
+                       font-semibold text-[15px]">
+              {meetingTitle}
+            </p>
           </div>
-          <img src={information} alt="Information" onClick={() => setIsOpen(true)} className="w-5 h-5 cursor-pointer flex-shrink-0" />
+          <div className="relative group">
+            <BsInfoCircleFill
+              onClick={() => setIsOpen(true)}
+              className="w-5 h-5 cursor-pointer flex-shrink-0 
+                     text-white/60 hover:text-white/90 transition-colors duration-200"
+            />
+            {/* Tooltip */}
+            <div className="absolute -left-10 -translate-x-1/2 top-full mt-2 
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                      pointer-events-none z-50">
+              {/* Tooltip Arrow */}
+              <div className="absolute left-4 bottom-full
+                        border-4 border-transparent border-b-white/15" />
+              <div className="bg-white/15 backdrop-blur-md text-white text-[11px] font-medium
+                        px-3 py-1.5 rounded-lg whitespace-nowrap
+                        border border-white/20">
+                클릭하여 미팅 정보 보기
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="rounded-t shadow-sm text-white bg-[#171F2E] text-base font-normal relative">
+        <div className="absolute top-0 left-0 right-0 z-50
+                      rounded-xl shadow-lg bg-white/15 backdrop-blur-md border border-white/20
+                      max-h-[80vh] overflow-y-auto custom-scrollbar">
           {/* 입력창 */}
-          <div className="flex items-center gap-2">
-            {role === "admin" ? (
-              <>
-                <div className="flex-1 relative w-full">
-                  <input
-                    type="text"
-                    value={tempTitle}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyPress}
-                    className="w-full outline-none bg-[#171F2E] text-white border border-[#6B4CFF] rounded-lg px-2 pr-8 py-1 caret-white"
-                    autoFocus
-                  />
-                  <button onClick={handleClose} className="absolute right-2 top-1/2 -translate-y-1/2">
-                    <X size={16} color="#E0E0E0" />
-                  </button>
+          <div className="p-4">
+            <div className="flex items-center gap-2">
+              {role === "admin" ? (
+                <>
+                  <div className="flex-1 relative w-full">
+                    <input
+                      type="text"
+                      value={tempTitle}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyPress}
+                      className="w-full outline-none bg-white/10 text-white 
+                              border border-white/20 rounded-lg px-3 py-2 
+                              placeholder:text-white/40 font-medium text-[14px]"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleClose}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 
+                               text-white/40 hover:text-white/60 transition-colors duration-200"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                  {hasBeenChanged && (
+                    <button
+                      onClick={handleClickEditText}
+                      className="bg-[#2A8A86] hover:bg-[#1AEBB8] text-white 
+                               px-4 py-2 rounded-lg transition-colors duration-200"
+                    >
+                      <p className="font-semibold text-[13px]">수정</p>
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex-1 px-3 py-2 bg-white/10 rounded-lg">
+                  <p className="text-white font-medium text-[14px]">{meetingTitle}</p>
                 </div>
-                {hasBeenChanged && (
-                  <button onClick={handleClickEditText} className="bg-[#6B4CFF] w-[45px] h-[34px] rounded-lg flex items-center justify-center">
-                    <Mn className="text-[#FFFFFF] font-semibold">수정</Mn>
-                  </button>
-                )}
-              </>
-            ) : (
-              <div className="flex-1 relative w-full bg-[#171F2E] text-white border border-[#171F2E] rounded-lg px-2 py-1">
-                <Sm className="text-[#FFFFFF]">{meetingTitle}</Sm>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
           {/* 정보창 */}
-          <div className="absolute top-full p-4 bg-[#171F2E] w-full rounded-b z-10">
+          <div className="px-4 py-4 border-t border-white/10 z-[100]">
             {presentersOrder.length === 0 ? (
-              <div className="p-6 text-center">
+              <div className="p-4">
                 {role === "admin" ? (
                   <div className="flex flex-col items-center justify-center space-y-6">
-                    <div className="w-16 h-16 bg-[#242C3C] rounded-full flex items-center justify-center">
-                      <svg className="w-10 h-10 text-[#8B8B8B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
+                      <svg className="w-10 h-10 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
                     <div className="text-center">
-                      <Sm className="text-[#8B8B8B] mb-2">발표회 설정이 필요합니다</Sm>
-                      <span className="text-[#8B8B8B] text-xs font-pretendard">아래 버튼을 클릭하여 발표회를 설정해주세요</span>
+                      <Sm className="text-white/60 mb-2">발표회 설정이 필요합니다</Sm>
+                      <span className="text-white/40 text-xs">아래 버튼을 클릭하여 발표회를 설정해주세요</span>
                     </div>
                     <button
                       onClick={handleOpenMeetingSettingModal}
-                      className="relative px-6 py-2 bg-[#6B4CFF] text-white rounded-lg hover:bg-[#5940CC] transition-all duration-200 transform hover:scale-105 flex items-center space-x-2 group"
+                      className="px-6 py-2 bg-[#2A8A86] hover:bg-[#1AEBB8] text-white 
+                               rounded-lg transition-all duration-200 
+                               hover:shadow-lg hover:shadow-[#2A8A86]/20"
                     >
-                      <div className="absolute -inset-0.5 bg-[#6B4CFF] opacity-40 rounded-lg blur-[2px] animate-pulse"></div>
-                      <div className="relative flex items-center space-x-2">
-                        <span>발표회 설정하기</span>
-                      </div>
+                      발표회 설정하기
                     </button>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center space-y-6">
-                    <div className="w-16 h-16 bg-[#242C3C] rounded-full flex items-center justify-center animate-pulse">
-                      <div className="w-14 h-14 bg-[#242C3C] rounded-full flex items-center justify-center">
-                        <div className="w-10 h-10 border-4 border-[#6B4CFF] border-t-transparent rounded-full animate-spin"></div>
-                      </div>
+                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 border-4 border-[#2A8A86] border-t-transparent rounded-full animate-spin" />
                     </div>
                     <div className="text-center">
-                      <Sm className="text-[#8B8B8B] mb-2">발표회 설정 대기 중</Sm>
-                      <span className="text-[#8B8B8B] text-xs font-pretendard">관리자가 발표회를 설정하고 있습니다</span>
+                      <Sm className="text-white/60 mb-2">발표회 설정 대기 중</Sm>
+                      <span className="text-white/40 text-xs">관리자가 발표회를 설정하고 있습니다</span>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
               <>
-                <Sm className="text-[#FFFFFF]">발표 시간</Sm>
-                <div className="mt-3 bg-[#242C3C] p-3 rounded">
-                  <Mn className="text-[#FFFFFF]">
-                    1인당 발표 시간 : <span className="text-[#1AEBB8]">{presentationTime}분</span>
-                  </Mn>
-                  <div className="mt-3">
-                    <Mn className="text-[#FFFFFF]">
-                      질의응답 시간 : <span className="text-[#1AEBB8]">{qnaTime}분</span>
-                    </Mn>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-white mb-2 font-bold text-[14px]">발표 시간</p>
+                    <div className="bg-white/10 p-3 rounded-lg space-y-3">
+                      <p className="text-white flex items-center gap-2 text-[13px]">
+                        <span className="text-lg">⏰</span>
+                        1인당 발표 시간 : <span className="text-[#1AEBB8] font-medium">{presentationTime}분</span>
+                      </p>
+                      <p className="text-white flex items-center gap-2 text-[13px]">
+                        <span className="text-lg">💭</span>
+                        질의응답 시간 : <span className="text-[#1AEBB8] font-medium">{qnaTime}분</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-white mb-2 font-bold text-[14px]">발표 순서</p>
+                    <div className="bg-white/10 p-3 rounded-lg space-y-2">
+                      {presentersOrder.map((presenter, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <div className="flex items-center justify-center w-[18px] h-[18px] 
+                                      text-xs text-white bg-white/10 rounded-full font-medium">
+                            {index + 1}
+                          </div>
+                          <p className="text-white font-medium text-[13px]">{presenter.name}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <Sm className="text-[#FFFFFF]">발표 순서</Sm>
-                  <div className="mt-2 space-y-1 bg-[#242C3C] p-3 rounded">
-                    {presentersOrder.map((presenter, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="flex items-center justify-center w-[18px] h-[18px] text-xs text-[#FFFFFF] bg-[#000000] rounded-full border border-[#6B4CFF]">{index + 1}</div>
-                        <Mn className="text-[#FFFFFF]">{presenter.name}</Mn>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+
                 {/* 요약 정보 */}
-                <div className="mt-6 flex items-center">
-                  <div className="w-1 h-6 bg-[#1AEBB8] rounded-full mr-3"></div>
-                  <Mn className="text-[#8B8B8B] leading-6">
-                    "{meetingTitle}"의 발표자는 {presentersOrder.length}명이며, 발표시간은 약 {(presentationTime + qnaTime) * presentersOrder.length}분으로 진행될 예정입니다.
-                  </Mn>
+                <div className="mt-6 flex items-center gap-3 p-3 bg-white/10 rounded-lg">
+                  <span className="text-xl">📢</span>
+                  <p className="text-white/60 leading-6 text-[13px]">
+                    "{meetingTitle}"의 발표자는 {presentersOrder.length}명이며,
+                    발표시간은 약 {(presentationTime + qnaTime) * presentersOrder.length}분으로
+                    진행될 예정입니다.
+                  </p>
                 </div>
               </>
             )}

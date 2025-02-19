@@ -14,7 +14,7 @@ const OpenViduVideoComponent: React.FC<Props> = ({ streamManager }) => {
     }
   }, [streamManager]);
 
-  return <video autoPlay={true} ref={videoRef} className="w-full h-full float-left cursor-pointer object-contain" />;
+  return <video autoPlay={true} ref={videoRef} className="object-cover" />;
 };
 
 export default OpenViduVideoComponent;
