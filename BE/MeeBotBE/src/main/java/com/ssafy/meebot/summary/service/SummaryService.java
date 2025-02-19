@@ -587,7 +587,11 @@ public class SummaryService {
                                                                                <div class="content-box">
                                                                                    <strong>발표 요약</strong><br />
                                                                                    <hr />
-                                                                                   [presenter의 content를 문장을 기준으로 적절히 잘라 1,2,3,... 번호를 매겨 표시, 각 번호별 줄바꿈 필수]
+                                                                                    [presenter의 content를 다음과 같이 번호와 줄바꿈을 포함하여 변환:
+                                                                                                                                                              예시:
+                                                                                                                                                              "1. 첫 번째 문장내용<br />\\n
+                                                                                                                                                              2. 두 번째 문장내용<br />\\n
+                                                                                                                                                              3. 세 번째 문장내용<br />\\n"
                                                                                </div>
                                                                        
                                                                                <br />
