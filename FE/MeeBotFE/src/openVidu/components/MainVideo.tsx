@@ -6,7 +6,7 @@ interface MainVideoProps {
 }
 
 const MainVideo: React.FC<MainVideoProps> = ({ mainStreamManager }) => {
-  return <div className="w-full h-full relative">{mainStreamManager && <UserVideoComponent streamManager={mainStreamManager} />}</div>;
+  return <div className="md:h-full md:w-auto h-auto w-full relative aspect-video flex items-center">{mainStreamManager && <UserVideoComponent streamManager={mainStreamManager} />}</div>;
 };
 
 export default MainVideo;
