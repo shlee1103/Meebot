@@ -19,6 +19,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
 import BackgroundGradients from "../../components/common/BackgroundGradients";
 import { saveSummary } from "../../apis/storage";
+import webClient from "../apis/webClient";
 interface QnAMessage {
   sender: string;
   text: string;
@@ -30,6 +31,7 @@ const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
   const [showFinishPopup, setShowFinishPopup] = useState<boolean>(false);
+  const [waitingMent, setWaitingMent] = useState<string>("");
   const { sessionId, myUserName } = useParams();
   const hasShownLoading = useRef<boolean>(false);
   const isMicEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
@@ -40,6 +42,8 @@ const VideoConference: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const updateParticipantsState = useOpenVidu().updateParticipantState;
+
+  const { presentationTime, qnaTime, presentersOrder } = useSelector((state: RootState) => state.presentation);
 
   const {
     session,
@@ -73,22 +77,37 @@ const VideoConference: React.FC = () => {
   const { currentSlide, handlePrevSlide, handleNextSlide } = useParticipantsSlider(subscribers, isMenuOpen);
 
   const { speech, isSpeaking, handleConferenceStatusChange, currentSentence } = useChatGPT(session, currentPresentationData);
-
   const handleStatusChange = async (status: string) => {
     await changeConferenceStatus(status);
 
     if (status === CONFERENCE_STATUS.CONFERENCE_WAITING && !hasShownLoading.current) {
-      setIsLoading(true);
-      hasShownLoading.current = true;
+      try {
+        const response = await webClient.post("/api/chatgpt/start-presentation", {
+          presentation_teams_num: presentersOrder.length,
+          presentation_time: presentationTime,
+          question_time: qnaTime,
+          roomTitle: meetingTitle,
+          presenter: {
+            presenter: presentersOrder.map((i) => i.name),
+          },
+        });
+        setWaitingMent(response.data.message);
+        setIsLoading(true);
+        hasShownLoading.current = true;
+      } catch (err) {
+        console.error("Error:", err);
+      }
     } else {
-      await handleConferenceStatusChange(status);
+      await handleConferenceStatusChange(status, waitingMent);
     }
   };
 
   // LoadingOverlay 완료 후 실행될 콜백
   const handleLoadingComplete = async () => {
     setIsLoading(false);
-    await handleConferenceStatusChange(CONFERENCE_STATUS.CONFERENCE_WAITING);
+    console.log();
+
+    await handleConferenceStatusChange(CONFERENCE_STATUS.CONFERENCE_WAITING, waitingMent);
   };
 
   useEffect(() => {
