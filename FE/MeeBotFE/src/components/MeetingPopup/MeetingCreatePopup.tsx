@@ -18,7 +18,7 @@ const MeetingCreatePopup: React.FC<MeetingCreatePopupProps> = ({ onClose }) => {
   const [isTitleHidden, setIsTitleHidden] = useState(false);
   const [isFullyHidden, setIsFullyHidden] = useState(true);
   const [sessionId, setSessionId] = useState("");
-  const BASE_URL = "http://localhost:5173/meeting-setting"; // 화상 모임 참가 링크 복사를 위한 임시 주소
+  const BASE_URL = "http://meebot.site/meeting-setting"; // 화상 모임 참가 링크 복사를 위한 임시 주소
 
   const navigate = useNavigate();
 
