@@ -35,6 +35,7 @@ const VideoConference: React.FC = () => {
   const isMicEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const isCameraEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
+  const role = useSelector((state: RootState) => state.role.role);
   const isOpen = useRef(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -365,9 +366,12 @@ const VideoConference: React.FC = () => {
   }, [session, turnOffAudio, myUserName]);
 
   useEffect(() => {
-    if (!isOpen.current) {
+    if (!isOpen.current && role === "admin") {
       joinSession(sessionId as string, isCameraEnabled, isMicEnabled);
       createRoom(sessionId as string, meetingTitle as string, localStorage.getItem("email") as string);
+      isOpen.current = true;
+    } else if (!isOpen.current && role === "participant") {
+      joinSession(sessionId as string, isCameraEnabled, isMicEnabled);
       isOpen.current = true;
     }
 
