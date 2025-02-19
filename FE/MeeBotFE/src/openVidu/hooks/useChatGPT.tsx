@@ -22,7 +22,7 @@ export const useChatGPT = (session: Session | undefined, currentPresentationData
   const [isSpeaking, setIsSpeaking] = useState(false);
   const tts = new TextToSpeech();
 
-  const { currentPresenterIndex, presentationTime, qnaTime, presentersOrder } = useSelector((state: RootState) => state.presentation);
+  const { currentPresenterIndex, presentersOrder } = useSelector((state: RootState) => state.presentation);
 
   const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const role = useSelector((state: RootState) => state.role.role);
@@ -111,27 +111,9 @@ export const useChatGPT = (session: Session | undefined, currentPresentationData
     };
   }, [session]);
 
-  const startConference = async () => {
-    const OrderPresenter = presentersOrder.map((i) => i.name);
-
-    try {
-      const response = await webClient.post("/api/chatgpt/start-presentation", {
-        presentation_teams_num: presentersOrder.length,
-        presentation_time: presentationTime,
-        question_time: qnaTime,
-        roomTitle: meetingTitle,
-        presenter: {
-          presenter: OrderPresenter,
-        },
-      });
-
-      const message = response.data.message;
-      if (isAdmin) {
-        await broadcastSpeech(message);
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      setError("AI 멘트 생성 중 오류가 발생했습니다.");
+  const startConference = async (ment: string) => {
+    if (isAdmin) {
+      await broadcastSpeech(ment);
     }
   };
 
@@ -205,10 +187,10 @@ export const useChatGPT = (session: Session | undefined, currentPresentationData
     }
   };
 
-  const handleConferenceStatusChange = async (currentStatus: string) => {
+  const handleConferenceStatusChange = async (currentStatus: string, ment: string) => {
     switch (currentStatus) {
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
-        await startConference();
+        await startConference(ment);
         break;
 
       case CONFERENCE_STATUS.PRESENTATION_READY:
