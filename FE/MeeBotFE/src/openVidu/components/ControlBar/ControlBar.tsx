@@ -157,8 +157,18 @@ const ControlBar: React.FC<ControlBarProps> = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-10">
       <div className="flex items-center justify-between px-4">
-        <div className="flex w-[350px]">
-          <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
+        <div className="flex w-[350px] items-center">
+          <div className="w-[108px]">
+            <Timer conferenceStatus={conferenceStatus} session={session} isSpeaking={isSpeaking} />
+          </div>
+          {currentPresenter && (
+            <div className="items-center gap-2 ml-4 hidden lg:flex">
+              <div className="w-1 h-1 bg-[#1AEBB8] rounded-full animate-pulse" />
+              <p className="font-pretendard text-[12px] text-white/60">
+                현재 발표자 <span className="text-white font-medium ml-1">{currentPresenter.name}</span>
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 flex items-center justify-center gap-7 py-4">

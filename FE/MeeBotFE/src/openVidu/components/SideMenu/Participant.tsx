@@ -12,7 +12,7 @@ const Participant: React.FC<ParticipantProps> = ({ participantsList }) => {
   const myUserName = useSelector((state: RootState) => state.myUsername.myUsername);
 
   return (
-    <div className="flex flex-col gap-3 py-4 font-pretendard">
+    <div className="flex flex-col gap-3 pb-6 font-pretendard">
       {participantsList.map((participant, i) => {
         const isMe = participant.name === myUserName;
         const isAdmin = participant.role === 'admin';
@@ -30,13 +30,6 @@ const Participant: React.FC<ParticipantProps> = ({ participantsList }) => {
                   shadow-lg hover:scale-105 transition-transform duration-200"
                 src={participant.image}
                 alt="profile"
-              />
-              {/* 활성 상태 표시 */}
-              <div className={`absolute -bottom-0 -right-0 w-3 h-3 rounded-full 
-                ${participant.isAudioActive || participant.isVideoActive
-                ? 'bg-gradient-to-r from-cyan-400 to-teal-400 animate-pulse'
-                : 'bg-gray-500/50'
-                } border-1 border-white/10 shadow-md`}
               />
             </div>
 
