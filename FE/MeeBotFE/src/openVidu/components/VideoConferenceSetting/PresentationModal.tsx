@@ -160,7 +160,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
 
                   {isTimeDropdownOpen && (
                     <div className="absolute z-10 w-full mt-2 py-1 bg-[#171F2E] rounded-lg border border-[#2A3347] shadow-lg">
-                      {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((minutes) => (
+                      {Array.from({ length: 12 }, (_, i) => (i + 1) * 1).map((minutes) => (
                         <button
                           key={minutes}
                           onClick={() => {
@@ -227,7 +227,7 @@ export const PresentationModal: React.FC<PresentationModalProps> = ({
 
                   {isQnaDropdownOpen && (
                     <div className="absolute z-10 w-full mt-2 py-1 bg-[#171F2E] rounded-lg border border-[#2A3347] shadow-lg">
-                      {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((minutes) => (
+                      {Array.from({ length: 12 }, (_, i) => (i + 1) * 1).map((minutes) => (
                         <button
                           key={minutes}
                           onClick={() => {
