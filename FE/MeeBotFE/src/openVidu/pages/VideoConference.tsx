@@ -34,6 +34,7 @@ const VideoConference: React.FC = () => {
   const hasShownLoading = useRef<boolean>(false);
   const isMicEnabled = useSelector((state: RootState) => state.device.isMicEnabled);
   const isCameraEnabled = useSelector((state: RootState) => state.device.isCameraEnabled);
+  const meetingTitle = useSelector((state: RootState) => state.meetingTitle.meetingTitle);
   const isOpen = useRef(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -366,7 +367,7 @@ const VideoConference: React.FC = () => {
   useEffect(() => {
     if (!isOpen.current) {
       joinSession(sessionId as string, isCameraEnabled, isMicEnabled);
-      createRoom(sessionId as string, myUserName as string, localStorage.getItem("email") as string);
+      createRoom(sessionId as string, meetingTitle as string, localStorage.getItem("email") as string);
       isOpen.current = true;
     }
 
