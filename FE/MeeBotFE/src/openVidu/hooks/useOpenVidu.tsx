@@ -255,136 +255,61 @@ export const useOpenVidu = () => {
     }
   };
 
+  // 화면공유 시작
   const startScreenShare = async () => {
     try {
-      if (!OV.current || !session) {
-        console.error("OpenVidu 인스턴스 또는 세션이 존재하지 않습니다.");
-        return;
-      }
+      if (!OV.current || !session) return;
 
-      const openViduInstance = OV.current;
+      const originalPublisher = publisher;
 
-      // 1. 기존 퍼블리셔 제거
       if (publisher) {
-        try {
-          await session.unpublish(publisher);
-          setPublisher(undefined);
-          setMainStreamManager(undefined);
-        } catch (unpublishError) {
-          console.error("퍼블리셔 언발행 중 오류:", unpublishError);
-        }
+        await session.unpublish(publisher);
       }
 
-      // 2. 화면 공유 스트림을 미리 가져옴
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: false,
-      });
-
-      // navigator.mediaDevices.getDisplayMedia를 임시로 대체
-      const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
-      navigator.mediaDevices.getDisplayMedia = async () => screenStream;
-
-      // 3. 화면 공유 퍼블리셔 생성
-      const screenPublisher = await openViduInstance.initPublisherAsync(undefined, {
+      const screenPublisher = await OV.current.initPublisherAsync(undefined, {
+        audioSource: undefined,
         videoSource: "screen",
+        publishAudio: true,
         publishVideo: true,
-        publishAudio: false,
-        resolution: "1280x720",
+        resolution: "1920x1080",
         frameRate: 15,
-        insertMode: "APPEND",
+        mirror: false,
       });
 
-      // getDisplayMedia를 원래대로 복구
-      navigator.mediaDevices.getDisplayMedia = originalGetDisplayMedia;
-
-      // 4. 세션에 발행
-      await session.publish(screenPublisher);
-
-      // 5. 상태 업데이트
-      setMainStreamManager(screenPublisher);
-      setPublisher(screenPublisher);
-      setScreenShareStream(screenPublisher);
-      setScreenSharingUser(myUserName);
-
-      // 6. 화면 공유 종료 감지
-      screenStream.getTracks().forEach((track) => {
-        track.addEventListener("ended", () => {
-          console.log("화면 공유 종료");
-          stopScreenShare();
-        });
-      });
-    } catch (error) {
-      // getDisplayMedia를 원래대로 복구 (에러 발생 시에도)
-      const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
-      if (navigator.mediaDevices.getDisplayMedia !== originalGetDisplayMedia) {
-        navigator.mediaDevices.getDisplayMedia = originalGetDisplayMedia;
+      if (screenPublisher) {
+        await session.publish(screenPublisher);
+        setScreenShareStream(screenPublisher);
+        setScreenSharingUser(myUserName);
+        setMainStreamManager(screenPublisher);
+        setPublisher(originalPublisher);
       }
-
-      console.error("화면 공유 중 전체 오류:", error);
-
-      if (session && OV.current) {
-        try {
-          const newPublisher = await OV.current.initPublisherAsync(undefined, {
-            audioSource: undefined,
-            videoSource: undefined,
-            publishAudio: true,
-            publishVideo: true,
-            resolution: "1920x1080",
-            frameRate: 15,
-            insertMode: "APPEND",
-            mirror: false,
-          });
-
-          await session.publish(newPublisher);
-          setMainStreamManager(newPublisher);
-          setPublisher(newPublisher);
-        } catch (recoveryError) {
-          console.error("복구 시도 중 오류:", recoveryError);
-        }
+    } catch {
+      if (publisher && session) {
+        await session.publish(publisher);
       }
     }
   };
 
+  // 화면공유 종료
   const stopScreenShare = async () => {
     if (!session) return;
 
     try {
-      console.log("화면 공유 종료 시작");
-
-      // 1. 화면 공유 스트림 중단
       if (screenShareStream) {
-        if (screenShareStream instanceof Publisher) {
-          await session.unpublish(screenShareStream);
-        }
+        await session.unpublish(screenShareStream as Publisher);
         setScreenShareStream(undefined);
         setScreenSharingUser(undefined);
       }
 
-      // 2. 새로운 통합 퍼블리셔 생성
-      if (OV.current) {
-        const newPublisher = await OV.current.initPublisherAsync(undefined, {
-          audioSource: undefined,
-          videoSource: undefined,
-          publishAudio: true,
-          publishVideo: true,
-          resolution: "1920x1080",
-          frameRate: 30,
-          insertMode: "APPEND",
-          mirror: false,
-        });
-
-        await session.publish(newPublisher);
-        setMainStreamManager(newPublisher);
-        setPublisher(newPublisher);
-        setOriginalPublisher(newPublisher);
+      if (publisher) {
+        await session.publish(publisher);
+        setMainStreamManager(publisher);
+        publisher.publishVideo(true);
       }
-
-      console.log("화면 공유 종료 완료");
     } catch (error) {
-      console.error("화면 공유 종료 에러:", error);
+      console.error("Error stopping screen share:", error);
     }
-  }
+  };
 
   const leaveSession = useCallback(() => {
     if (session) {
