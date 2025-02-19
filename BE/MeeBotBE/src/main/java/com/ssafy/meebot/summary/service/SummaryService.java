@@ -587,7 +587,11 @@ public class SummaryService {
                                                                                <div class="content-box">
                                                                                    <strong>발표 요약</strong><br />
                                                                                    <hr />
-                                                                                   [presenter의 content를 문장을 기준으로 적절히 잘라 1,2,3,... 번호를 매겨 표시, 각 번호별 줄바꿈 필수]
+                                                                                    [presenter의 content를 다음과 같이 번호와 줄바꿈을 포함하여 변환:
+                                                                                                                                                              예시:
+                                                                                                                                                              "1. 첫 번째 문장내용<br />\\n
+                                                                                                                                                              2. 두 번째 문장내용<br />\\n
+                                                                                                                                                              3. 세 번째 문장내용<br />\\n"
                                                                                </div>
                                                                        
                                                                                <br />
@@ -899,7 +903,7 @@ public class SummaryService {
                                 "한 사람의 발표가 끝났어. 지금까지 누구의 발표였는지에 대한 멘트 이후, " +
                                 "발표 내용 한 줄 요약, 마지막으로 발표에 대한 소감을 한 문장으로 추가해 줘." +
                                 "3줄로 요약해서 하나의 문장으로 작성해줘" +
-                                "그리고 마지막으로 관리자는 질의응답을 시작하기 위해 질의응답 시작 버튼을 눌러주세요. 라고 안내해줘"),
+                                "그리고 마지막으로 이제 발표자는 화면 공유를 종료하고, 관리자는 질의응답을 시작하기 위해 질의응답 시작 버튼을 눌러주세요. 라고 안내해줘"),
                         Map.of("role", "user", "content", String.format(
                                 "다음은 %s님의 발표 내용입니다:\n\n\"%s\"\n\n",
                                 presenter, transcripts
