@@ -31,6 +31,7 @@ interface TimerSignalData {
   presentationTime: number;
   qnaTime: number;
   conferenceStatus: string;
+  overTime: boolean;
 }
 
 interface NotificationData {
@@ -116,7 +117,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
   };
 
   // 타이머 시그널 전송
-  const sendTimerSignal = (currentSeconds: number, currentRunningInfo: boolean) => {
+  const sendTimerSignal = (currentSeconds: number, currentRunningInfo: boolean, isOver: boolean) => {
     if (!session || !isAdmin) return;
 
     const timerType = conferenceStatus === CONFERENCE_STATUS.QNA_ACTIVE ? "qna" : "presentation";
@@ -129,6 +130,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
         presentationTime,
         qnaTime,
         conferenceStatus,
+        overTime: isOver,
       } as TimerSignalData),
       type: "timer-sync",
     });
@@ -168,6 +170,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
 
         const currentRunningInfo = data.isRunning;
         const newSeconds = data.currentSeconds;
+        const overTimeok = data.overTime;
 
         if (!currentRunningInfo) {
           setSeconds(newSeconds);
@@ -186,7 +189,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
         } else if (newSeconds > 0 && isOvertime) {
           setSeconds(newSeconds);
         } else {
-          if (newSeconds === 60 && !lastMinuteNotified) {
+          if (newSeconds === 60 && !lastMinuteNotified && !overTimeok) {
             setIsLastMinute(true);
             setLastMinuteNotified(true);
             const message = getLastMinuteMessage(data.conferenceStatus);
@@ -203,7 +206,7 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
   useEffect(() => {
     if (isAdmin) {
       const initialMinutes = getInitialMinutes();
-      sendTimerSignal(initialMinutes * 60, false);
+      sendTimerSignal(initialMinutes * 60, false, false);
     }
   }, [conferenceStatus, presentationTime, qnaTime]);
 
@@ -216,11 +219,11 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
     if (isRunning) {
       interval = setInterval(() => {
         if (seconds === 0) {
-          sendTimerSignal(1, true);
+          sendTimerSignal(1, true, true);
         } else if (seconds > 0 && isOvertime) {
-          sendTimerSignal(seconds + 1, true);
+          sendTimerSignal(seconds + 1, true, true);
         } else {
-          sendTimerSignal(seconds - 1, true);
+          sendTimerSignal(seconds - 1, true, false);
         }
       }, 1000);
     }
