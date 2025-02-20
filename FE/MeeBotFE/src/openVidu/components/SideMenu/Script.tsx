@@ -56,7 +56,7 @@ const Script: React.FC<ScriptProps> = ({ conferenceStatus, accumulatedScript, cu
           <div ref={scriptRef} className="flex-1 overflow-y-auto custom-scrollbar">
             <div className="p-6 rounded-2xl bg-white/15 backdrop-blur-sm">
               {accumulatedScript ? (
-                <p className="text-[15px] text-white font-medium leading-[2.2] 
+                <p className="text-[18px] text-white font-medium leading-[2.2] 
                   tracking-wide whitespace-pre-wrap break-keep">
                   {accumulatedScript}
                 </p>

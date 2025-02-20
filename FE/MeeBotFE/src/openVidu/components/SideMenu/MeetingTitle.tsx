@@ -95,7 +95,7 @@ const MeetingTitle: React.FC<MeetingTitleProps> = () => {
           <div className="p-4">
             <div className="flex items-center gap-2">
               <div className="flex-1 px-3 py-2 bg-white/10 rounded-lg">
-                <p className="text-white font-medium text-[14px]">{meetingTitle}</p>
+                <p className="text-white font-medium text-[20px]">{meetingTitle}</p>
               </div>
             </div>
           </div>
