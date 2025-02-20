@@ -171,6 +171,11 @@ const VideoConference: React.FC = () => {
       if (data.action === CONFERENCE_STATUS.CONFERENCE_ENDED) {
         console.log("발표회 종료 후 출력");
 
+        dispatch(clearRaisedHands());
+        setIsHandRaised(false);
+        resetPresenter();
+        setConferenceStatus(data.action);
+
         if (session?.connection?.connectionId === event.from?.connectionId) {
           try {
             const emails = (participants ?? []).map((participant) => participant.email).filter((email): email is string => email !== undefined && email !== null);
@@ -188,10 +193,6 @@ const VideoConference: React.FC = () => {
           }
         }
 
-        dispatch(clearRaisedHands());
-        setIsHandRaised(false);
-        resetPresenter();
-        setConferenceStatus(data.action);
         setShowFinishPopup(true);
         return;
       }
