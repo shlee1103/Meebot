@@ -18,7 +18,7 @@ const MeetingCreatePopup: React.FC<MeetingCreatePopupProps> = ({ onClose }) => {
   const [isTitleHidden, setIsTitleHidden] = useState(false);
   const [isFullyHidden, setIsFullyHidden] = useState(true);
   const [sessionId, setSessionId] = useState("");
-  const BASE_URL = "http://meebot.site/meeting-setting";
+  const BASE_URL = "https://meebot.site/meeting-setting";
 
   const navigate = useNavigate();
 

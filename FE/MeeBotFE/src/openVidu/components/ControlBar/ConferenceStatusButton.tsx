@@ -7,11 +7,7 @@ interface ConferenceStatusButtonProps {
   className?: string;
 }
 
-const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
-  conferenceStatus,
-  changeConferenceStatus,
-  className = '',
-}) => {
+const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({ conferenceStatus, changeConferenceStatus, className = "" }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
@@ -19,7 +15,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       setShowTooltip(false);
       return;
     }
-    
+
     const message = getTooltipMessage();
     if (message) {
       setShowTooltip(true);
@@ -50,7 +46,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return "발표회를 종료하기 위해 클릭해주세요";
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
-        return "발표회를 시작하기 위해 클릭해주세요";                             
+        return "발표회를 시작하기 위해 클릭해주세요";
       default:
         return "";
     }
@@ -61,37 +57,37 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
       case CONFERENCE_STATUS.CONFERENCE_WAITING:
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return {
-          ring: 'ring-[#6B4CFF]/30', 
-          border: 'border-[#6B4CFF]/20',
-          shadow: 'shadow-[0_0_20px_rgba(107,76,255,0.2)]',
-          iconColor: 'text-[#6B4CFF]'
+          ring: "ring-[#6B4CFF]/30",
+          border: "border-[#6B4CFF]/20",
+          shadow: "shadow-[0_0_20px_rgba(107,76,255,0.2)]",
+          iconColor: "text-[#6B4CFF]",
         };
-      
+
       case CONFERENCE_STATUS.PRESENTATION_READY:
       case CONFERENCE_STATUS.PRESENTATION_ACTIVE:
         return {
-          ring: 'ring-[#3B82F6]/30',
-          border: 'border-[#3B82F6]/20',
-          shadow: 'shadow-[0_0_20px_rgba(59,130,246,0.2)]',
-          iconColor: 'text-[#3B82F6]'
+          ring: "ring-[#3B82F6]/30",
+          border: "border-[#3B82F6]/20",
+          shadow: "shadow-[0_0_20px_rgba(59,130,246,0.2)]",
+          iconColor: "text-[#3B82F6]",
         };
-      
+
       case CONFERENCE_STATUS.PRESENTATION_COMPLETED:
       case CONFERENCE_STATUS.QNA_READY:
       case CONFERENCE_STATUS.QNA_ACTIVE:
         return {
-          ring: 'ring-[#06B6D4]/30',
-          border: 'border-[#06B6D4]/20',
-          shadow: 'shadow-[0_0_20px_rgba(6,182,212,0.2)]',
-          iconColor: 'text-[#06B6D4]'
+          ring: "ring-[#06B6D4]/30",
+          border: "border-[#06B6D4]/20",
+          shadow: "shadow-[0_0_20px_rgba(6,182,212,0.2)]",
+          iconColor: "text-[#06B6D4]",
         };
-      
+
       default:
         return {
-          ring: 'ring-[#6B4CFF]/30',
-          border: 'border-[#6B4CFF]/20',
-          shadow: 'shadow-[0_0_20px_rgba(107,76,255,0.2)]',
-          iconColor: 'text-[#6B4CFF]'
+          ring: "ring-[#6B4CFF]/30",
+          border: "border-[#6B4CFF]/20",
+          shadow: "shadow-[0_0_20px_rgba(107,76,255,0.2)]",
+          iconColor: "text-[#6B4CFF]",
         };
     }
   };
@@ -108,7 +104,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
             </svg>
           ),
           style: "bg-gradient-to-r from-[#6B4CFF] to-[#8B6FFF] hover:from-[#5B3FE6] hover:to-[#7B5FE6] border-[#7C61FF] hover:border-[#6B4CFF]",
-          ringColor: "from-[#6B4CFF] to-[#8B6FFF]"
+          ringColor: "from-[#6B4CFF] to-[#8B6FFF]",
         };
       case CONFERENCE_STATUS.QNA_COMPLETED:
         return {
@@ -119,18 +115,23 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
             </svg>
           ),
           style: "bg-gradient-to-r from-[#6B4CFF] to-[#8B6FFF] hover:from-[#5B3FE6] hover:to-[#7B5FE6] border-[#7C61FF] hover:border-[#6B4CFF]",
-          ringColor: "from-[#6B4CFF] to-[#8B6FFF]"
+          ringColor: "from-[#6B4CFF] to-[#8B6FFF]",
         };
       case CONFERENCE_STATUS.PRESENTATION_READY:
         return {
           text: "발표 시작",
           icon: (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
             </svg>
           ),
           style: "bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#2563EB] hover:to-[#3B82F6] border-[#60A5FA] hover:border-[#3B82F6]",
-          ringColor: "from-[#3B82F6] to-[#60A5FA]"
+          ringColor: "from-[#3B82F6] to-[#60A5FA]",
         };
       case CONFERENCE_STATUS.PRESENTATION_ACTIVE:
         return {
@@ -142,7 +143,7 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
             </svg>
           ),
           style: "bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#2563EB] hover:to-[#3B82F6] border-[#60A5FA] hover:border-[#3B82F6]",
-          ringColor: "from-[#3B82F6] to-[#60A5FA]"
+          ringColor: "from-[#3B82F6] to-[#60A5FA]",
         };
       case CONFERENCE_STATUS.PRESENTATION_COMPLETED:
       case CONFERENCE_STATUS.QNA_READY:
@@ -154,25 +155,30 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
             </svg>
           ),
           style: "bg-gradient-to-r from-[#06B6D4] to-[#22D3EE] hover:from-[#0891B2] hover:to-[#06B6D4] border-[#22D3EE] hover:border-[#06B6D4]",
-          ringColor: "from-[#06B6D4] to-[#22D3EE]"
+          ringColor: "from-[#06B6D4] to-[#22D3EE]",
         };
       case CONFERENCE_STATUS.QNA_ACTIVE:
         return {
           text: "질의응답 종료",
           icon: (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
           ),
           style: "bg-gradient-to-r from-[#06B6D4] to-[#22D3EE] hover:from-[#0891B2] hover:to-[#06B6D4] border-[#22D3EE] hover:border-[#06B6D4]",
-          ringColor: "from-[#06B6D4] to-[#22D3EE]"
+          ringColor: "from-[#06B6D4] to-[#22D3EE]",
         };
       default:
         return {
           text: "",
           icon: null,
           style: "",
-          ringColor: ""
+          ringColor: "",
         };
     }
   };
@@ -183,7 +189,8 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
     <div className="relative group">
       {showTooltip && (
         <div className="fixed right-4 bottom-20 z-50">
-          <div className={`relative px-6 py-3.5
+          <div
+            className={`relative px-6 py-3.5
             bg-[#1a2435] 
             ring-2 ${getTooltipStyle().ring}
             text-white text-sm font-medium
@@ -194,34 +201,26 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
             animate-tooltip-bounce
             flex items-center gap-3`}
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className={`h-5 w-5 ${getTooltipStyle().iconColor} animate-pulse`}
-              viewBox="0 0 20 20" 
-              fill="currentColor"
-            >
-              <path 
-                fillRule="evenodd" 
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
-                clipRule="evenodd" 
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${getTooltipStyle().iconColor} animate-pulse`} viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
-            <div className="relative font-pretendard">
-              {getTooltipMessage()}
-            </div>
+            <div className="relative font-pretendard">{getTooltipMessage()}</div>
           </div>
-          <div className={`absolute inset-0 -z-10
-            bg-gradient-to-r ${getTooltipStyle().border.replace('border', 'from')} ${getTooltipStyle().border.replace('border', 'to')}
+          <div
+            className={`absolute inset-0 -z-10
+            bg-gradient-to-r ${getTooltipStyle().border.replace("border", "from")} ${getTooltipStyle().border.replace("border", "to")}
             rounded-2xl blur-xl
-            animate-pulse-slow`}>
-          </div>
+            animate-pulse-slow`}
+          ></div>
         </div>
       )}
 
-      <div className={`absolute -inset-[2px] bg-gradient-to-r ${config.ringColor}
+      <div
+        className={`absolute -inset-[2px] bg-gradient-to-r ${config.ringColor}
         rounded-xl blur-[4px] opacity-3 group-hover:opacity-15
         transition duration-1000 group-hover:duration-200
-        animate-pulse-slow`}></div>
+        animate-pulse-slow`}
+      ></div>
 
       <button
         onClick={() => changeConferenceStatus(conferenceStatus)}
@@ -234,12 +233,8 @@ const ConferenceStatusButton: React.FC<ConferenceStatusButtonProps> = ({
           ${config.style}
           ${className}`}
       >
-        <span className="relative transform group-hover:scale-110 transition-transform duration-300">
-          {config.icon}
-        </span>
-        <span className="relative font-pretendard transform group-hover:translate-x-0.5 transition-transform duration-300">
-          {config.text}
-        </span>
+        <span className="relative transform group-hover:scale-110 transition-transform duration-300">{config.icon}</span>
+        <span className="relative font-pretendard transform group-hover:translate-x-0.5 transition-transform duration-300">{config.text}</span>
       </button>
     </div>
   );
