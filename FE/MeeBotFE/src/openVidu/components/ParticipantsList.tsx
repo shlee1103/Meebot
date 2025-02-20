@@ -23,8 +23,8 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ subscribers, curren
             key={sub.id}
             className="flex-1 min-w-0 aspect-video rounded-lg overflow-hidden"
             style={{
-              maxWidth: isMenuOpen ? "22%" : "18%",
-              minWidth: isMenuOpen ? "20%" : "14%",
+              maxWidth: "18%",
+              minWidth: "14%",
             }}
           >
             <UserVideoComponent streamManager={sub} />
