@@ -38,7 +38,7 @@ const MeeU: React.FC<MeeUProps> = ({ currentSentence }) => {
   return (
     <div className="flex flex-col items-start justify-center p-3">
       <div className="flex flex-row items-start justify-start p-2 space-x-3">
-        <div className="w-14 h-14 animate-bounce-slow">
+        <div className="w-12 h-12 animate-bounce-slow">
           <img src={Meeu} alt="MeeU character" className="w-full h-full object-contain hover:scale-110 transition-transform duration-300" />
         </div>
 

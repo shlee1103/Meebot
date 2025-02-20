@@ -53,7 +53,7 @@ const MeetingTitle: React.FC<MeetingTitleProps> = () => {
           >
             <p
               className="text-[#FFFFFF] break-words leading-relaxed line-clamp-2 
-                       font-semibold text-[20px]"
+                       font-semibold text-[15px]"
             >
               {meetingTitle}
             </p>
