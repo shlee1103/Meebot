@@ -16,6 +16,7 @@ import MeeU from "../components/MeeU";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingOverlay from "../components/LoadingOverlay";
+import LoadingSummaryOverlay from "../components/LoadingSummaryOverlay";
 import FinishPopup from "../components/Popup/FinishPopup";
 import BackgroundGradients from "../../components/common/BackgroundGradients";
 import { saveSummary } from "../../apis/storage";
@@ -29,6 +30,7 @@ interface QnAMessage {
 
 const VideoConference: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingSummary, setIsLoadingSummary] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
   const [showFinishPopup, setShowFinishPopup] = useState<boolean>(false);
   const [waitingMent, setWaitingMent] = useState<string>("");
@@ -186,10 +188,14 @@ const VideoConference: React.FC = () => {
             const result = await saveParticipants(sessionId as string, emails);
             console.log("result", result);
 
+            // 요약본 생성 시작 시 로딩 표시
+            setIsLoadingSummary(true);
             const summary = await saveSummary(sessionId as string);
             console.log("summary", summary);
+            setIsLoadingSummary(false);
           } catch (error) {
             console.error("발표회 종료 처리 중 오류 발생 : ", error);
+            setIsLoadingSummary(false);
           }
         }
 
@@ -531,6 +537,13 @@ const VideoConference: React.FC = () => {
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] pointer-events-auto">
           <LoadingOverlay onLoadingComplete={handleLoadingComplete} />
+        </div>
+      )}
+
+      {/* 요약본 생성 로딩 오버레이 */}
+      {isLoadingSummary && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] pointer-events-auto">
+          <LoadingSummaryOverlay />
         </div>
       )}
 
