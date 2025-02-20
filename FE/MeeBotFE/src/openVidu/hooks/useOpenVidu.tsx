@@ -70,43 +70,29 @@ export const useOpenVidu = () => {
     if (!session) return;
 
     session.on("streamCreated", (event) => {
-      console.log("스트림 생성:", {
-        type: event.stream.typeOfVideo,
-        streamId: event.stream.streamId,
-      });
-
-      // 모든 스트림을 구독
-      const subscriber = session.subscribe(event.stream, undefined);
       const connectionData = JSON.parse(event.stream.connection.data);
 
       if (event.stream.typeOfVideo === "SCREEN") {
-        console.log("화면 공유 스트림 구독 시작");
-        setMainStreamManager(subscriber);
-        setScreenShareStream(subscriber);
-        setScreenSharingUser(connectionData.clientData.name);
+        const screenSubscriber = session.subscribe(event.stream, undefined);
+        setMainStreamManager(screenSubscriber);
+        setScreenShareStream(screenSubscriber);
+        setScreenSharingUser(connectionData.clientData);
+        return;
       }
-
-      // 모든 스트림을 subscribers 배열에 추가 (화면 공유 포함)
-      setSubscribers((prevSubscribers) => {
-        // 중복 구독 방지
-        const isExisting = prevSubscribers.some((sub) => sub.stream.streamId === subscriber.stream.streamId);
-        if (!isExisting) {
-          return [...prevSubscribers, subscriber];
-        }
-        return prevSubscribers;
-      });
     });
 
     session.on("streamDestroyed", (event) => {
-      console.log("스트림 제거:", {
-        type: event.stream.typeOfVideo,
-        streamId: event.stream.streamId,
-      });
-
       const destroyedUserInfo = JSON.parse(event.stream.connection.data);
 
+      if (destroyedUserInfo.clientData.role === "admin") {
+        leaveSession();
+        return;
+      }
+
       if (event.stream.typeOfVideo === "SCREEN") {
+        // subscribers 배열에서 화면 공유 스트림 제거
         setSubscribers((prevSubscribers) => prevSubscribers.filter((sub) => sub.stream.streamId !== event.stream.streamId));
+
         setScreenShareStream(undefined);
         setScreenSharingUser(undefined);
         if (originalPublisher) {
@@ -116,12 +102,8 @@ export const useOpenVidu = () => {
       }
       deleteSubscriber(event.stream.streamManager);
     });
-
-    return () => {
-      session?.off("streamCreated");
-      session?.off("streamDestroyed");
-    };
   }, [session, originalPublisher, deleteSubscriber]);
+
   const joinSession = async (sessionId: string, isVideoEnabled: boolean, isAudioEnabled: boolean) => {
     OV.current = new OpenVidu();
     const mySession = OV.current.initSession();
@@ -131,13 +113,13 @@ export const useOpenVidu = () => {
       setConnectionUser((prev) => [...prev, connection]);
     });
 
-    // mySession.on("streamCreated", (event) => {
-    //   const subscriber = mySession.subscribe(event.stream, undefined);
-    //   if (event.stream.typeOfVideo === "SCREEN") {
-    //     setMainStreamManager(subscriber);
-    //   }
-    //   setSubscribers((subscribers) => [...subscribers, subscriber]);
-    // });
+    mySession.on("streamCreated", (event) => {
+      const subscriber = mySession.subscribe(event.stream, undefined);
+      if (event.stream.typeOfVideo === "SCREEN") {
+        setMainStreamManager(subscriber);
+      }
+      setSubscribers((subscribers) => [...subscribers, subscriber]);
+    });
 
     mySession.on("signal:chat", (event) => {
       const connectionData = JSON.parse(event.from?.data || "{}").clientData;
@@ -275,7 +257,6 @@ export const useOpenVidu = () => {
 
   const startScreenShare = async () => {
     try {
-      // OV.current와 session의 null 체크
       if (!OV.current || !session) {
         console.error("OpenVidu 인스턴스 또는 세션이 존재하지 않습니다.");
         return;
@@ -342,10 +323,8 @@ export const useOpenVidu = () => {
 
       console.error("화면 공유 중 전체 오류:", error);
 
-      // 오류 시 복구 시도
       if (session && OV.current) {
         try {
-          // 원래 비디오/오디오 퍼블리셔 복원
           const newPublisher = await OV.current.initPublisherAsync(undefined, {
             audioSource: undefined,
             videoSource: undefined,
@@ -405,7 +384,7 @@ export const useOpenVidu = () => {
     } catch (error) {
       console.error("화면 공유 종료 에러:", error);
     }
-  };
+  }
 
   const leaveSession = useCallback(() => {
     if (session) {
@@ -424,7 +403,7 @@ export const useOpenVidu = () => {
     navigate("/");
   }, [session]);
 
-  useEffect(() => {
+  const updateParticipantState = useCallback(() => {
     const getParticipantInfo = (streamManager: StreamManager) => {
       const { clientData } = JSON.parse(streamManager.stream.connection.data);
       const isAudioActive = streamManager.stream.audioActive;
@@ -436,6 +415,7 @@ export const useOpenVidu = () => {
         email: clientData.email,
         isAudioActive,
         isVideoActive,
+        role: clientData.role,
       };
     };
 
@@ -444,25 +424,45 @@ export const useOpenVidu = () => {
     setParticipants(allParticipants);
   }, [subscribers, publisher]);
 
-  return {
-    mySessionId,
-    setMySessionId,
-    myUserName,
-    session,
-    mainStreamManager,
-    setMainStreamManager,
-    publisher,
-    subscribers,
-    joinSession,
-    leaveSession,
-    participants,
-    startScreenShare,
-    stopScreenShare,
-    isScreenShared: !!screenShareStream,
-    amISharing: screenSharingUser === myUserName,
-    connectionUser,
-    setConnectionUser,
-    messages,
-    sendMessage,
-  };
+  useEffect(() => {
+    updateParticipantState();
+  }, [updateParticipantState]);
+
+  useEffect(() => {
+    if (session) {
+      session.on('streamPropertyChanged', (event: any) => {
+        if (event.changedProperty === 'audioActive' || 
+            event.changedProperty === 'videoActive') {
+          updateParticipantState();
+        }
+      });
+
+      return () => {
+        session.off('streamPropertyChanged');
+      };
+    }
+  }, [session, updateParticipantState]);
+
+return {
+  mySessionId,
+  setMySessionId,
+  myUserName,
+  session,
+  mainStreamManager,
+  setMainStreamManager,
+  publisher,
+  subscribers,
+  joinSession,
+  leaveSession,
+  participants,
+  startScreenShare,
+  stopScreenShare,
+  isScreenShared: !!screenShareStream,
+  amISharing: screenSharingUser === myUserName,
+  connectionUser,
+  setConnectionUser,
+  messages,
+  sendMessage,
+  updateParticipantState,
+};
 };
