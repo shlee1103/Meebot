@@ -13,7 +13,6 @@ export interface ParticipantInfo {
   image: string;
   isAudioActive: boolean;
   isVideoActive: boolean;
-  role: string;
 }
 
 export const useOpenVidu = () => {
