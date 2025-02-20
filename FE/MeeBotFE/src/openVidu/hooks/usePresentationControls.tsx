@@ -207,11 +207,11 @@ export const usePresentationControls = (session: Session | undefined, myUserName
         type: "conference-status",
       });
     }
-    
+
     // 질의응답 종료버튼 눌렀을 때
     if (currentStatus === CONFERENCE_STATUS.QNA_ACTIVE) {
       const nextPresenter = getNextPresenter();
-      
+
       if (nextPresenter) {
         session?.signal({
           data: JSON.stringify({
@@ -229,7 +229,7 @@ export const usePresentationControls = (session: Session | undefined, myUserName
           type: "conference-status",
         });
       }
-      
+
       await saveQnAJSON(session?.sessionId);
     }
 
@@ -242,6 +242,8 @@ export const usePresentationControls = (session: Session | undefined, myUserName
         }),
         type: "conference-status",
       });
+
+      
     }
   };
 
