@@ -11,15 +11,39 @@
 ---
 
 ## 🤍 소개
-<b>AI 사회자가 진행하는 화상 회의 서비스</b>
+매 순간 발표를 경청하고 기록하는 과정은 발표자와 청중 모두에게 부담이 될 수 있습니다.
+
+참가자들은 중요한 내용을 메모하느라 발표에 온전히 집중하지 못하고, 불가피한 자리 이석으로 발표 내용을 놓치기도 합니다.
+
+또한 발표 내용을 제대로 이해하지 못해 질의응답 시간에 소극적인 태도를 보이게 되며, 이는 참가자들의 참여도 저하로 이어집니다.
+
+**MeeBot**은 발표회의 효율적인 진행과 기록을 돕는 **AI 기반 발표 지원 시스템**입니다.  MeeBot은 발표를 실시간으로 진행하고 기록하며, **자동 요약** 및 Q&A 정리를 통해 보다 **효율적인 발표 환경**을 제공합니다.
 
 ## 🖼️ 서비스 화면
 ### 온보딩
+#### 로그인 및 회의 생성, 참여 버튼이 있는 메인 페이지 입니다.
+![Image](https://github.com/user-attachments/assets/f52c2de3-b0fe-4b74-abed-646dcebd80f7)
+#### 미유에 대한 간략한 설명이 있는 온보딩 페이지 입니다.
+![Image](https://github.com/user-attachments/assets/4cb4f25d-0468-4281-86f5-8d16d47986ff)
+---
+![Image](https://github.com/user-attachments/assets/447f1e24-054e-414e-a7de-812e94604c54)
 ### 닉네임, 마이크 및 카메라 설정
-### 발표 순서 설정
+#### 발표회 입장 전 닉네임, 마이크 및 카메라를 설정합니다.
+![Image](https://github.com/user-attachments/assets/afc7c29b-7778-409a-94a5-2dfb2ec7fd4d)
+### 발표회 설정
+#### 발표회의 1인당 발표, 질의응답 시간을 설정합니다.
+![Image](https://github.com/user-attachments/assets/23f591e0-6a9d-4035-8f47-b6cbd24573ef)
+#### 발표 순서를 설정합니다. 정해진 순서가 있다면 그 순서대로 진행할 수 있고, 랜덤 순서 또한 가능합니다.
+![Image](https://github.com/user-attachments/assets/1015c4d6-2147-47df-8c95-da72a0f53566)
 ### 발표 내용 요약
+#### 중간 발표 내용의 요약 및 추천 질문이 채팅창에 나타납니다.
+![Image](https://github.com/user-attachments/assets/9a7ebd3c-22b6-4a6c-8968-11caef4fa19c)
 ### 질의 응답
+#### 질의 응답이 시작되면 손들기 버튼을 눌러 질문할 수 있습니다.
+![Image](https://github.com/user-attachments/assets/e6dab852-d9cf-4d7d-86dd-22be2a268947)
 ### 최종 요약 저장
+#### 발표회가 종료된 후, 최종 요약본이 보관함 페이지에 저장됩니다. 요약본은 Notion과 PDF로 제공됩니다.
+![Image](https://github.com/user-attachments/assets/08fc54a1-4b59-45de-8414-83b023cf1c8f)
 
 ## ✨ 주요 기능
 - `AI 사회자`
