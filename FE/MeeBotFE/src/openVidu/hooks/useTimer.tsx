@@ -236,7 +236,8 @@ export const useTimer = ({ conferenceStatus, session, isAdmin }: UseTimerProps):
   const resetTimer = () => {
     if (isAdmin) {
       const initialMinutes = getInitialMinutes();
-      sendTimerSignal(initialMinutes * 60, false, false); // 세 번째 인자 false 추가
+      // reset 이므로 isOver false
+      sendTimerSignal(initialMinutes * 60, false, false);
     }
   };
 
